@@ -1,0 +1,198 @@
+.register-wrapper {
+ display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 99vh;
+  max-width: 2000px; /* ⬅️ largeur max de la page */
+  margin: 0.3rem auto; /* moins d'espace haut/bas */
+  background: linear-gradient(to bottom, #f9fbfe, #e6ecf5); /* ✅ plus clair et professionnel */
+  position: relative;
+   box-shadow: 0 0 40px rgba(0, 0, 0, 0.04); /* doux contour */
+  border-radius: 12px;
+
+}
+
+.logo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+
+  .logo {
+    height: 200px;
+    cursor: pointer;
+  }
+
+  .partner-logos {
+    display: flex;
+    gap: 1rem;
+
+    img {
+      height: 60px;
+      transition: transform 0.3s;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+}
+
+.register-form {
+  background-color: white;
+  margin: auto 0; /* ✅ équilibre vertical "cette pour la phrase au dessus powred by "*/
+  padding: 3rem;
+  border-radius: 30px;
+  box-shadow: 0 16px 48px rgba(48, 47, 47, 0.1);
+  width: 100%;
+  padding-top: 1rem; //
+  padding-bottom: 3rem; // ⬅️ augmenté pour descendre le boutonx
+  min-height: 900px; // Ajuste selon le besoin
+  max-width: 990px;
+  text-align: center;
+  border-top: 8px solid #0a58ca;
+
+
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #0a58ca;
+  }
+
+  .form-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    input,
+    select {
+      flex: 1;
+      padding: 1rem; // ⬅️ plus grand
+      border-radius: 10px;
+      border: 1px solid #0a58ca;  
+      font-size: 1.3rem;
+    }
+  }
+
+  .checkboxes {
+    text-align: left;
+    margin: 1rem 0 2rem 0;
+
+    label {
+      display: block;
+      font-size: 1rem;
+      color: #474747;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .btn-submit {
+    background-color: #0a58ca;
+    color: white;
+    padding: 0.8rem 2rem;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: #084298;
+    }
+  }
+
+  .login-link {
+    display: block;
+    margin-top: 1.2rem;
+    color: #0a58ca;
+    font-size: 0.95rem;
+    text-decoration: underline;
+  }
+
+  .forgot-password-link {
+    display: block;
+    text-align: right;
+    margin: -1rem 0 1rem auto;
+    color: #0a58ca;
+    font-size: 0.85rem;
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  .auth-links-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.5rem;
+
+  a {
+    color: #0a58ca;
+    font-size: 0.95rem;
+    text-decoration: underline;
+    margin-bottom: 0.5rem;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+ 
+  
+}
+.form-group-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  .form-item {
+    display: flex;
+    flex-direction: column;
+
+    select {
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: 1px solid #0a58ca;  
+      font-size: 1.2rem;
+    }
+   
+    
+  }
+}
+
+ 
+}
+.footer {
+  text-align: center;
+  font-size: 1.10rem;
+  color: #999;
+  font-style: italic;
+}
+.form-control-block {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.is-invalid {
+  border: 2px solid #dc3545 !important;
+  background-color: #f8d7da;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+.success-message {
+  color: green;
+  font-weight: bold;
+  margin-top: 15px;
+  text-align: center;
+}
+
+

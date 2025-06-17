@@ -1,0 +1,126 @@
+
+
+.home-wrapper {
+ display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 99vh;
+  max-width: 2000px; /* ⬅️ largeur max de la page */
+  margin: 0.3rem auto; /* moins d'espace haut/bas */
+  background: linear-gradient(to bottom, #f9fbfe, #e6ecf5); /* ✅ plus clair et professionnel */
+  position: relative;
+   box-shadow: 0 0 40px rgba(0, 0, 0, 0.04); /* doux contour */
+  border-radius: 12px;
+}
+
+.card-home {
+  width: 100%;
+  max-width: 1300px;
+  margin: auto 0; /* ✅ équilibre vertical "cette pour la phrase au dessus powred by "*/
+  background-color: #ffffff;
+  padding: 6rem 4rem;
+  border-radius: 30px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-top: 12px solid #0a58ca;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.005);
+  }
+}
+
+.logo-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: space-between; /* logo à gauche, logos partenaires à droite */
+  align-items: center;
+  width: 100%;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.logo-wrapper img.logo {
+  height: 200px; /* Taille du logo EvalPro */
+}
+
+.partner-logos {
+  display: flex;
+  gap: 1rem;
+}
+
+.partner-logos img {
+  height: 60px;
+  transition: transform 0.3s ease;
+}
+
+.partner-logos img:hover {
+  transform: scale(1.05);
+}
+
+
+.welcome-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+
+  span {
+    color: #0a58ca;
+  }
+}
+
+.description {
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 3rem;
+  line-height: 2;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+
+  a.btn {
+    display: inline-block; /* Assure que le bouton s'adapte à son contenu */
+    max-width: 200px; /* Définit une largeur maximale pour limiter la taille */
+    width: auto; /* Ajuste automatiquement la largeur au contenu */
+    padding: 0.7rem 1rem; /* Ajuste les marges internes pour un bouton plus petit */
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1.5rem; /* Réduit légèrement la taille de la police */
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    overflow: hidden; /* Empêche le débordement du texte */
+    white-space: nowrap; /* Empêche le retour à la ligne */
+  }
+
+  .btn-primary {
+    background-color: #0a58ca;
+    color: white;
+    border: none;
+
+    &:hover {
+      background-color: #084298;
+    }
+  }
+
+  .btn-secondary {
+    background-color: white;
+    color: #0a58ca;
+    border: 2px solid #0a58ca;
+
+    &:hover {
+      background-color: #e9ecef;
+    }
+  }
+}
+
+.footer {
+  text-align: center;
+  font-size: 1.10rem;
+  color: #999;
+  font-style: italic;
+}

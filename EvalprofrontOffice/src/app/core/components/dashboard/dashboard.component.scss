@@ -1,0 +1,257 @@
+
+.dashboard-container {
+  max-width: 2230px; /* ou 1000px, 1100px selon ton besoin */
+  margin: 0 auto;     /* centre horizontalement */
+  padding: 2rem;      /* respiration intérieure */
+
+}
+
+/* Welcome Box - Design amélioré */
+.welcome-box {
+  background: linear-gradient(to bottom, #f9fbfe, #e6ecf5); 
+  padding: 2.5rem;/* Espace intérieur */ 
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 5.5rem;
+  margin-top: 3.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-box::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(to bottom, #007bff, #00a8ff);
+}
+
+.welcome-box h1 {
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #212529;
+  margin-bottom: 0.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.welcome-box h1::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: #007bff;
+  border-radius: 2px;
+}
+
+.username {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #495057;
+  margin: 1rem 0 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.username::before {
+  content: "\f007";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-right: 10px;
+  color: #6c757d;
+}
+
+.logout-btn {
+  background: linear-gradient(to right, #dc3545, #c82333);
+  color: white;
+  padding: 0.8rem 1.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(220, 53, 69, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.logout-btn::before {
+  content: "\f2f5";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+}
+
+/* Project Card - Version améliorée */
+.project-summary {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.project-card {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.25);
+  transition: transform 0.3s ease;
+  width: 440px;
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+}
+
+.project-card i {
+  font-size: 2.5rem;
+  opacity: 0.9;
+}
+
+.project-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.count {
+  font-size: 2.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.label {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-top: 0.5rem;
+}
+
+/* Section Notification - Style issu de l'image */
+.notice-box {
+  background: #ffffff;
+  border: 1px solid #e1e8ed;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 4rem 0;
+  max-width: 1100px; /* Largeur maximale pour garder la proportion : carte qui comporte les bouttons*/
+}
+
+.notice-box .highlight {
+  color: #2c3e50;
+  font-weight: 740;
+  font-size: 1.8rem; /* Taille du texte */
+  text-align: left; /* Alignement comme sur l'image */
+  margin-bottom: 1.8rem;
+  line-height: 1.6;
+  border-left: 4px solid #007bff;
+  padding-left: 1.5rem;
+}
+
+.notice-box .subtext {
+  font-size: 1.4rem; /* Taille du texte de petite phrase dans le carte de bouttons */
+  color: #4a5568;
+  text-align: center;
+  margin: 0 0 1.5rem;
+  line-height: 1.9 ; /* Plus d'espace entre les lignes */
+}
+
+/* Conteneur des boutons */
+.actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem; /* Espacement augmenté */
+  width: 100%;
+  margin: 3rem auto 0; /* Plus d'espace au-dessus */
+  padding: 0 2rem;
+}
+
+/* Style de base des boutons - Taille égale et augmentée */
+.btn.wide {
+  padding: 1rem 1rem; /* Taille augmentée */
+  border-radius: 12px; /* Bordures plus arrondies */
+  font-size: 1.3rem; /* Texte plus grand */
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 320px; /* Largeur augmentée */
+  width: 100%; /* S'adapte au conteneur */
+  max-width: 350px; /* Largeur maximale pour garder la proportion */
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem; /* Espace icône/texte augmenté */
+  margin: 0.5rem;
+}
+
+/* Bouton principal */
+.btn.wide.primary {
+  background: linear-gradient(to right, #007bff, #0062cc);
+  color: white;
+  border: none;
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.3);
+}
+
+/* Bouton secondaire */
+.btn.wide.secondary {
+  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  color: #2c3e50;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Effets hover */
+.btn.wide:hover {
+  transform: translateY(-5px); /* Effet plus marqué */
+  box-shadow: 0 8px 24px rgba(0, 123, 255, 0.4);
+}
+
+.btn.wide.secondary:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* Icônes */
+.btn.wide::before {
+  font-size: 1.4rem; /* Icônes plus grandes */
+  font-weight: 700;
+}
+
+/* Media Query pour mobile */
+@media (max-width: 768px) {
+  .actions {
+    gap: 1.5rem;
+  }
+  
+  .btn.wide {
+    padding: 1.3rem 2rem;
+    min-width: 280px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Icônes améliorées */
+.btn.wide.primary::before {
+  content: "+";
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+
+.btn.wide.secondary::before {
+  content: "→";
+  font-weight: bold;
+}

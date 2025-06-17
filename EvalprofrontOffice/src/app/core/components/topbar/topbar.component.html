@@ -1,0 +1,53 @@
+<header class="topbar">
+  <div class="left-section">
+    <i class="fas fa-bars toggle-icon" (click)="toggleSidebar()"></i>
+    <span class="breadcrumb">Accueil / Dashboard</span>
+  </div>
+
+  <div class="right-section">
+    <!-- REMPLACER CETTE SECTION -->
+    <div class="notifications">
+      <div class="notification-icon">
+        <i class="fas fa-bell"></i>
+        <span class="notification-badge">3</span>
+        <div class="notification-dropdown">
+          <div class="notification-header">
+            <span class="notification-title">Notifications</span>
+            <span class="mark-all-read">Tout marquer comme lu</span>
+          </div>
+          <div class="notification-item unread">
+            <div class="notification-icon-wrapper">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="notification-content">
+              <div class="notification-message">Nouveau message reçu</div>
+              <div class="notification-time">Il y a 5 min</div>
+            </div>
+          </div>
+          <div class="notification-footer">
+            <span class="view-all">Voir toutes</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="notification-icon">
+        <i class="fas fa-comments"></i>
+        <span class="notification-badge">5</span>
+        <!-- Menu déroulant des messages (même structure) -->
+      </div>
+    </div>
+    <!-- FIN DE LA SECTION REMPLACÉE -->
+    
+    <div class="profile">
+      <div class="profile-info">
+        <span class="profile-name">Slimani Asma</span>
+        <span class="profile-role">Administrateur</span>
+      </div>
+      <div class="avatar">S</div>
+      <div class="dropdown">
+        <a href="#"><i class="fas fa-user"></i> Mon compte</a>
+        <a href="#" (click)="logout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+      </div>
+    </div>
+  </div>
+</header>

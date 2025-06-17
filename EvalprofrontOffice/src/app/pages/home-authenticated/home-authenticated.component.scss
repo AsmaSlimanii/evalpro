@@ -1,0 +1,114 @@
+.home-auth-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 99vh;
+  max-width: 2000px;
+  margin: 0.3rem auto;
+  background: linear-gradient(to bottom, #f9fbfe, #e6ecf5);
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 1300px;
+  margin: auto 0;
+  background-color: #ffffff;
+  padding: 6rem 4rem;
+  border-radius: 30px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-top: 12px solid #0a58ca;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.005);
+  }
+}
+
+.logo-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.logo-wrapper img.logo {
+  height: 200px;
+}
+
+.partner-logos {
+  display: flex;
+  gap: 1rem;
+}
+
+.partner-logos img {
+  height: 60px;
+  transition: transform 0.3s ease;
+}
+
+.partner-logos img:hover {
+  transform: scale(1.05);
+}
+
+.welcome-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+
+  span {
+    color: #0a58ca;
+  }
+}
+
+.description {
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 3rem;
+  line-height: 2;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.btn-group .btn {
+  display: inline-block;
+  max-width: 350px;
+  width: auto;
+  padding: 0.7rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 1.5rem;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: #0a58ca;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #084298;
+}
+
+.footer {
+  text-align: center;
+  font-size: 1.10rem;
+  color: #999;
+  font-style: italic;
+  margin-top: 2rem;
+}

@@ -1,0 +1,58 @@
+<div class="connexion-wrapper">
+  <div class="logo-header">
+    <a routerLink="/">
+      <img src="assets/evalpro-logo.png" alt="EvalPro Logo" class="logo" />
+    </a>
+    <div class="partner-logos">
+      <a href="https://ec.europa.eu" target="_blank"><img src="assets/logo-eu.png" alt="EU Logo" /></a>
+      <a href="https://www.aics.gov.it/" target="_blank"><img src="assets/logo-aics.png" alt="AICS Logo" /></a>
+      <a href="https://www.wfp.org/" target="_blank"><img src="assets/logo-pam.png" alt="WFP Logo" /></a>
+      <a href="https://www.iresa.agrinet.tn/" target="_blank"><img src="assets/logo-iresa.png" alt="IRESA Logo" /></a>
+    </div>
+  </div>
+
+  <form class="connexion-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h2>Connexion</h2>
+
+    <div class="form-group">
+      <input type="email" placeholder="Email" formControlName="email"
+        [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].invalid }" />
+    </div>
+
+    <div class="form-group">
+      <input type="password" placeholder="Mot de passe" formControlName="password"
+        [ngClass]="{ 'is-invalid': f['password'].touched && f['password'].invalid }" />
+    </div>
+
+    <div class="form-row">
+      <div class="remember-me">
+        <input type="checkbox" formControlName="remember" />
+        <label>Se souvenir de moi</label>
+      </div>
+
+      <div class="recaptcha-box">
+       <re-captcha
+          [siteKey]="siteKey"
+          (resolved)="onCaptchaResolved($event)">
+        </re-captcha>
+
+        <div class="error" *ngIf="f['recaptcha'].touched && f['recaptcha'].invalid">
+          Veuillez cocher la case "Je ne suis pas un robot".
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+    <button type="submit" class="btn-submit" [disabled]="form.invalid">Se connecter</button>
+
+    <div class="auth-links-vertical">
+      <a routerLink="/mot-de-passe-oublie">Mot de passe oublié ?</a>
+      <a routerLink="/inscription">Pas encore inscrit ?</a>
+    </div>
+  </form>
+
+  <footer class="footer">
+    <p>Powered by EvalPro © 2025</p>
+  </footer>
+</div>

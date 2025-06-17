@@ -1,0 +1,13 @@
+# Java / Spring Boot
+/backend/target/
+/backend/.idea/
+*.iml
+
+# Angular / Node
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.angular/cache
+
+# OS / IDE
+.DS_Store
+*.log

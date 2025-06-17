@@ -1,0 +1,32 @@
+
+body.sidebar-collapsed .sidebar {
+  width: 60px !important;
+  padding: 1rem 0.5rem !important;
+}
+
+body.sidebar-collapsed .sidebar .sidebar-logo img {
+  width: 30px !important;
+}
+
+body.sidebar-collapsed .sidebar ul li > span,
+body.sidebar-collapsed .sidebar ul li ul {
+  display: none !important;
+}
+
+body.sidebar-collapsed .sidebar ul li a,
+body.sidebar-collapsed .sidebar ul li span {
+  justify-content: center !important;
+}
+
+body.sidebar-collapsed .sidebar ul li i {
+  margin: 0 auto !important;
+}
+
+body.sidebar-collapsed .main {
+  margin-left: 60px !important;
+  width: calc(100% - 60px) !important;
+}
+
+body.sidebar-collapsed .topbar {
+  left: 60px !important;
+}

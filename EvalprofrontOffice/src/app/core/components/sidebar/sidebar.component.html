@@ -1,0 +1,30 @@
+<aside class="sidebar" [class.collapsed]="isCollapsed">
+  <div class="sidebar-logo">
+    <img src="assets/evalpro-logo.png" alt="EvalPro Logo" />
+  </div>
+
+  <ul class="nav">
+    <li>
+      <a routerLink="/home-authenticated" class="active">
+        <i class="fas fa-home"></i>
+        <span class="nav-label">Accueil</span>
+      </a>
+    </li>
+    <li class="nav-section">
+      <a href="#">
+        <i class="fas fa-folder"></i>
+        <span class="nav-label">Projects</span>
+      </a>
+      <ul class="sub-nav">
+        <li><a routerLink="/projects/create"><i class="fas fa-plus-circle"></i> Create a project</a></li>
+        <li><a routerLink="/projects/list"><i class="fas fa-list-ul"></i> Project list</a></li>
+      </ul>
+    </li>
+    <li>
+      <a routerLink="/notifications">
+        <i class="fas fa-bell"></i>
+        <span class="nav-label">Notifications</span>
+      </a>
+    </li>
+  </ul>
+</aside>

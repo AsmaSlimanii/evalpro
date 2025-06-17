@@ -1,0 +1,98 @@
+<div class="create-project-container">
+   <div class="create-project-wrapper">
+     <!-- Nouveau message de succès -->
+    <div *ngIf="message" class="success-message-container">
+      <div class="success-message">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ message }}</span>
+        <button class="close-message" (click)="dismissMessage()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="page-header">
+      <h1 class="page-title">Constitution du dossier</h1>
+      <p class="page-subtitle">Suivez les étapes pour compléter votre demande de financement</p>
+    </div>
+    <div class="step-progress">
+      <div class="progress-container">
+        <div class="progress-fill" [style.width]="progressWidth"></div>
+      </div>
+      <div class="step-indicator">Étape {{currentStep}} sur {{totalSteps}}</div>
+    </div>
+
+    <div class="step-grid">
+      <!-- Étape 1 -->
+      <div class="step-card" (click)="goToStep(1)" [class.active]="currentStep === 1">
+        <div class="step-icon">
+          <i class="fas fa-file-signature"></i>
+          <div class="step-badge">1</div>
+        </div>
+        <h3 class="step-label">1-Pré-Identification</h3>
+        <p class="step-description">Définissez les bases de votre projet</p>
+        
+      </div>
+
+      <!-- Étape 2 -->
+      <div class="step-card" (click)="goToStep(2)" [class.active]="currentStep === 2">
+        <div class="step-icon">
+          <i class="fas fa-project-diagram"></i>
+          <div class="step-badge">2</div>
+        </div>
+        <h3 class="step-label">2-Création du projet</h3>
+        <p class="step-description">Détaillez les aspects techniques</p>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="step-card" (click)="goToStep(3)" [class.active]="currentStep === 3">
+        <div class="step-icon">
+          <i class="fas fa-clipboard-check"></i>
+          <div class="step-badge">3</div>
+        </div>
+        <h3 class="step-label">3-Auto Évaluation</h3>
+        <p class="step-description">Analysez votre projet</p>
+      </div>
+
+      <!-- Étape 4 -->
+      <div class="step-card" (click)="goToStep(4)" [class.active]="currentStep === 4">
+        <div class="step-icon">
+          <i class="fas fa-hand-holding-usd"></i>
+          <div class="step-badge">4</div>
+        </div>
+        <h3 class="step-label">4-Requête de financement</h3>
+        <p class="step-description">Soumettez votre demande</p>
+      </div>
+
+      <!-- Étape 5 -->
+      <div class="step-card" (click)="goToStep(5)" [class.active]="currentStep === 5">
+        <div class="step-icon">
+          <i class="fas fa-chart-pie"></i>
+          <div class="step-badge">5</div>
+        </div>
+        <h3 class="step-label">5-Schéma de financement</h3>
+        <p class="step-description">Finalisez le plan financier</p>
+      </div>
+    </div>
+    
+
+    <div class="action-buttons">
+  <button class="btn-outline" (click)="saveDraft()" [disabled]="isSaving">
+    <i class="fas fa-save"></i> 
+    <span *ngIf="!isSaving">Sauvegarder le brouillon</span>
+    <span *ngIf="isSaving">Sauvegarde en cours...</span>
+  </button>
+  
+  <button class="btn-primary" [disabled]="!canSubmit || isSubmitting" (click)="submitDossier()">
+    <i class="fas fa-paper-plane"></i> 
+    <span *ngIf="!isSubmitting">Soumettre mon dossier</span>
+    <span *ngIf="isSubmitting">Soumission en cours...</span>
+  </button>
+</div>
+    <!-- create-project.component.html -->
+
+  </div>
+
+
+</div>
+

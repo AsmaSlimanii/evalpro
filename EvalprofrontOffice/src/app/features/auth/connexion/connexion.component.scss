@@ -1,0 +1,163 @@
+/* Connexion Page Design identique à Inscription */
+
+.connexion-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 99vh;
+  max-width: 2000px;
+  margin: 0.3rem auto;
+  background: linear-gradient(to bottom, #f9fbfe, #e6ecf5);
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+}
+
+.logo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.logo-header .logo {
+  height: 200px;
+  cursor: pointer;
+}
+
+.partner-logos {
+  display: flex;
+  gap: 1rem;
+}
+
+.partner-logos img {
+  height: 60px;
+  transition: transform 0.3s;
+}
+
+.partner-logos img:hover {
+  transform: scale(1.05);
+}
+
+.connexion-form {
+  background-color: white;
+  margin: auto 0;
+  padding: 3rem;
+  border-radius: 30px;
+  box-shadow: 0 16px 48px rgba(48, 47, 47, 0.1);
+  width: 100%;
+  max-width: 990px;
+  text-align: center;
+  border-top: 8px solid #0a58ca;
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+}
+
+.connexion-form h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #0a58ca;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #0a58ca;
+  font-size: 1.3rem;
+  background-color: #e6f0ff;
+}
+
+input::placeholder {
+  color: #888;
+}
+
+.form-row {
+ .form-row {
+  display: flex;
+  flex-direction: row;     
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;         
+}
+
+}
+
+.recaptcha-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;   /* pour que le message d'erreur soit bien aligné */
+  gap: 0.4rem;
+}
+.remember-me {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  margin: 0.5rem 0 1.5rem 0;
+  gap: 0.5rem;
+}
+
+.btn-submit {
+  background-color: #0a58ca;
+  color: white;
+  padding: 0.8rem 2rem;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #084298;
+}
+
+.auth-links-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.auth-links-vertical a {
+  color: #0a58ca;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  margin-bottom: 0.5rem;
+}
+
+.auth-links-vertical a:hover {
+  text-decoration: none;
+}
+
+.footer {
+  text-align: center;
+  font-size: 1.10rem;
+  color: #999;
+  font-style: italic;
+  margin-top: 2rem;
+}
+
+.is-invalid {
+  border: 2px solid #dc3545 !important;
+  background-color: #f8d7da;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
