@@ -115,7 +115,7 @@ export class CreationProjetComponent implements OnInit {
       if (categoryCtrl) {
         this.updateOptionsForQuestion11(categoryCtrl.value);
         categoryCtrl.valueChanges.subscribe((value: any) => {
-          this.updateOptionsForQuestion11(Number(value)); // bien forcer en nombre
+          this.updateOptionsForQuestion11(Number(value)); 
         });
       }
 
@@ -188,12 +188,12 @@ export class CreationProjetComponent implements OnInit {
         .map(r => r.optionId);
 
       const selectedValue = questionResponses.find(r => r.value !== null)?.value || '';
-      // 👉 Ajout ici du champ autresCtrl pour Q10
+
 
 
       const group = this.fb.group({
         questionId: [question.id],
-        value: [ 
+        value: [
           selectedValue,
           question.isRequired ? Validators.required : null
         ],
@@ -208,14 +208,13 @@ export class CreationProjetComponent implements OnInit {
         this.updateOptionsForQuestion12(Number(selectedValue));
       }
 
-      // 👇🏽 👇🏽 AJOUTER LE BLOC ICI 👇🏽 👇🏽
+
       if (question.id === 15) {
         this.autresCtrl = this.fb.control('', question.isRequired ? Validators.required : null);
         this.formGroup.addControl('autres', this.autresCtrl);
       }
 
 
-      // 👉 Ajouter ce bloc ici
       if (question.id === 11) {
         const ctrl = group.get('value');
         ctrl?.valueChanges.subscribe((selectedOptId: any) => {
@@ -229,7 +228,7 @@ export class CreationProjetComponent implements OnInit {
       }
 
 
-      this.responses.push(group); // 👈 Ne pas oublier cette ligne
+      this.responses.push(group);
       if (question.id === 12) {
         const question11Ctrl = this.responses.controls.find(ctrl => ctrl.value.questionId === 11);
         const selectedParentOptionId = question11Ctrl?.get('value')?.value;
@@ -239,7 +238,7 @@ export class CreationProjetComponent implements OnInit {
         }
       }
 
-      // ✅ Ajoute ce bloc juste après
+
       if (question.id === 11) {
         const parentSelection = this.responses.controls.find(ctrl => ctrl.value.questionId === 10);
         const selectedParentOptionId = parentSelection?.get('value')?.value;
@@ -364,14 +363,9 @@ export class CreationProjetComponent implements OnInit {
       this.updateOptionsForQuestion11(selectedValue);
     }
     if (questionId === 11) {
-      this.updateOptionsForQuestion12(selectedValue); // 🔁 ajoute ceci pour déclencher le filtrage de Q12
+      this.updateOptionsForQuestion12(selectedValue);
     }
   }
-
-
-
-
-
 
   private scrollToFirstInvalidField(): void {
     setTimeout(() => {
