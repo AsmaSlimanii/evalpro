@@ -37,6 +37,6 @@ import java.util.List;
 
 
     public enum QuestionType {
-                TEXTE, CHOIXMULTIPLE, NUMERIQUE
+                TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE
         }
 }
