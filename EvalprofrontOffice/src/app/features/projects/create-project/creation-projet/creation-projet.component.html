@@ -1,75 +1,120 @@
-<div *ngIf="isLoading" class="loading">
-  Chargement du formulaire...
-</div>
-
-<form *ngIf="!isLoading" [formGroup]="formGroup" (ngSubmit)="submit()">
-  <div formArrayName="responses">
-    <div *ngFor="let q of questions; let i = index" [formGroupName]="i" class="form-group mb-4">
-
-      <!-- Titre de section -->
-      <h3 *ngIf="q.type === 'SECTION_TITLE'" class="text-primary mb-3">
-        {{ q.text }}
-      </h3>
-
-      <!-- Champ texte ou numérique -->
-      <ng-container *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'">
-        <label class="form-label">{{ q.text }}</label>
-        <input type="{{ q.type === 'NUMERIQUE' ? 'number' : 'text' }}" class="form-control" formControlName="value"
-          [placeholder]="q.placeholder || ''" (blur)="onFieldBlur(i)" />
-        <div class="text-danger" *ngIf="showError(i)">
-          Ce champ est requis
-        </div>
-      </ng-container>
-
-      <!-- Choix multiple -->
-      <ng-container *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length">
-        <label class="form-label d-block">{{ q.text }}</label>
-        <div class="form-check" *ngFor="let opt of q.options">
-          <input type="checkbox" class="form-check-input" [value]="opt.id" [checked]="isOptionChecked(i, opt.id)"
-            (change)="onCheckboxToggle(i, opt.id, $event)" />
-          <label class="form-check-label">{{ opt.value }}</label>
-        </div>
-        <div class="text-danger" *ngIf="showError(i)">
-          Veuillez sélectionner au moins une option
-        </div>
-      </ng-container>
-
-<!-- Liste déroulante dynamique -->
-<ng-container *ngIf="(q.type === 'RADIO' || q.type === 'SELECT') && q.options?.length">
-  <label class="form-label">{{ q.text }}</label>
-
-  <select class="form-control" formControlName="value"
-          (change)="onSelectChange(q.id, $event)" (blur)="onFieldBlur(i)">
-    <option value="">-- Sélectionnez une option --</option>
-    <option
-      *ngFor="let opt of (q.id === 11 ? filteredOptions11 : q.id === 12 ? filteredOptions12 : q.options)"
-      [value]="opt.id">
-      {{ opt.value }}
-    </option>
-  </select>
-
-  <div class="text-danger" *ngIf="showError(i)">
-    Veuillez sélectionner une option
-  </div>
-</ng-container>
-
-
-<!-- Zone de texte pour "Autres" (optionId = 27) -->
-<div *ngIf="shouldShowAutresTextField()" class="form-group mt-3">
-  <label class="form-label">Merci de préciser si "Autres"</label>
-  <input type="text" class="form-control" [formControl]="autresCtrl" placeholder="Détaillez ici..." />
-  <div class="text-danger" *ngIf="autresCtrl.invalid && isSubmitted">
-    Ce champ est requis.
-  </div>
-</div>
-
-
-
+<div class="form-container">
+  <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
+    <div class="form-header">
+      <div class="header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.5 3.75h-15v15h15v-15z" opacity="0.25"/>
+          <path d="M11.25 11.25h1.5v1.5h-1.5v-1.5zM7.5 11.25h1.5v1.5H7.5v-1.5zM15 11.25h1.5v1.5H15v-1.5z"/>
+        </svg>
+      </div>
+      <h2 class="form-title">
+        <span [class.invalid-title]="formGroup.invalid && formGroup.touched">
+          {{ formMetadata?.title }}
+          <svg *ngIf="formGroup.invalid && formGroup.touched" class="warning-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          </svg>
+        </span>
+      </h2>
+      <p class="form-description">{{ formMetadata?.description }}</p>
     </div>
-  </div>
 
-  <div class="d-flex justify-content-between mt-4">
-    <button type="button" class="btn btn-outline-secondary" (click)="goBack()">Retour</button>
-    <button type="submit" class="btn btn-primary">Valider</button>
+    <div formArrayName="responses">
+      <div *ngFor="let q of questions; let i = index" [formGroupName]="i" class="form-section">
+
+        <h3 *ngIf="q.type === 'SECTION_TITLE'" class="text-primary mb-3">{{ q.text }}</h3>
+
+        <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
+          <label class="label">{{ q.text }}<span *ngIf="q.is_required" class="required-asterisk">*</span></label>
+          <div class="input-wrapper">
+            <input
+              class="input"
+              [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'"
+              formControlName="value"
+              [placeholder]="q.placeholder || 'Saisissez votre réponse'"
+              (blur)="onFieldBlur(i)"
+              [class.invalid]="showError(i)"
+            />
+            <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="error-text" *ngIf="showError(i)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            Ce champ est requis
+          </div>
+        </div>
+
+        <div *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length" class="option-group">
+          <label class="label">{{ q.text }}<span *ngIf="q.is_required" class="required-asterisk">*</span></label>
+          <div class="checkbox-container" *ngFor="let opt of q.options">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                class="checkbox-input"
+                [value]="opt.id"
+                [checked]="isOptionChecked(i, opt.id)"
+                (change)="onCheckboxToggle(i, opt.id, $event)"
+              />
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">{{ opt.value }}</span>
+            </label>
+          </div>
+          <div class="error-text" *ngIf="showError(i)">
+            Veuillez sélectionner au moins une option
+          </div>
+        </div>
+
+        <ng-container *ngIf="(q.type === 'RADIO' || q.type === 'SELECT') && q.options?.length">
+          <label class="label">{{ q.text }}<span *ngIf="q.is_required" class="required-asterisk">*</span></label>
+          <div class="input-wrapper">
+            <select class="input" formControlName="value" (change)="onSelectChange(q.id, $event)" (blur)="onFieldBlur(i)">
+              <option value="">-- Sélectionnez une option --</option>
+              <option
+                *ngFor="let opt of (q.id === 11 ? filteredOptions11 : q.id === 12 ? filteredOptions12 : q.options)"
+                [value]="opt.id">
+                {{ opt.value }}
+              </option>
+            </select>
+            <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="error-text" *ngIf="showError(i)">
+            Veuillez sélectionner une option
+          </div>
+        </ng-container>
+
+        <div *ngIf="shouldShowAutresTextField()" class="input-container mt-3">
+          <label class="label">Merci de préciser si "Autres"</label>
+          <div class="input-wrapper">
+            <input type="text" class="input" [formControl]="autresCtrl" placeholder="Détaillez ici..." />
+            <svg *ngIf="autresCtrl.invalid && isSubmitted" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="error-text" *ngIf="autresCtrl.invalid && isSubmitted">
+            Ce champ est requis.
+          </div>
+        </div>
+
+      </div>
+      
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="goBack()">
+        Précédent
+      </button>
+      <button type="submit" class="btn-primary">
+        Valider
+      </button>
+    </div>
+  </form>
+
+  <div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement en cours...</p>
   </div>
-</form>
+</div>

@@ -12,7 +12,7 @@ interface QuestionOption {
 interface Question {
   id: number;
   text: string;
-  type: 'TEXT' | 'NUMERIQUE' | 'CHOIXMULTIPLE';
+  type: 'TEXT' | 'NUMERIQUE' | 'CHOIXMULTIPLE' | 'RADIO' | 'SECTION_TITLE';
   is_required?: boolean;
   options: QuestionOption[];
 }

@@ -1,7 +1,7 @@
 package com.medianet.evalpro.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+        import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,28 +15,28 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-    public class Question {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+public class Question {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-        private String text;
-        public String description;
+    private String text;
+    public String description;
 
-        public boolean isRequired;
+    public boolean isRequired;
 
-        @Enumerated(EnumType.STRING)
-        private QuestionType type;
+    @Enumerated(EnumType.STRING)
+    private QuestionType type;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
-        private List<Option> options;
+    private List<Option> options;
 
-        @ManyToMany(mappedBy = "questions")
-        private List<Form> forms;
+    @ManyToMany(mappedBy = "questions")
+    private List<Form> forms;
 
 
 
     public enum QuestionType {
-                TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE
-        }
+        TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE
+    }
 }

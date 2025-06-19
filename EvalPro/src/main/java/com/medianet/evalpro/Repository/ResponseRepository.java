@@ -28,7 +28,8 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
 
     @Modifying
     @Transactional
-    void deleteByFormIdAndDossierId(Long formId, Long dossierId);
+   void deleteByFormIdAndDossierId(Long formId, Long dossierId);
+  //  void deleteByFormIdAndDossierIdAndQuestionId(Long formId, Long dossierId, Long questionId);
 
 
 }

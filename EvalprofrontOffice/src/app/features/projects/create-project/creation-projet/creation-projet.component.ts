@@ -115,7 +115,7 @@ export class CreationProjetComponent implements OnInit {
       if (categoryCtrl) {
         this.updateOptionsForQuestion11(categoryCtrl.value);
         categoryCtrl.valueChanges.subscribe((value: any) => {
-          this.updateOptionsForQuestion11(Number(value)); 
+          this.updateOptionsForQuestion11(Number(value)); // bien forcer en nombre
         });
       }
 
@@ -175,7 +175,6 @@ export class CreationProjetComponent implements OnInit {
   }
 
   private buildFormControlsWithData(existingResponses: any[]): void {
-    // Vider le formulaire
     while (this.responses.length) this.responses.removeAt(0);
 
     this.questions.forEach((question, index) => {
@@ -189,77 +188,52 @@ export class CreationProjetComponent implements OnInit {
 
       const selectedValue = questionResponses.find(r => r.value !== null)?.value || '';
 
-
-
       const group = this.fb.group({
         questionId: [question.id],
-        value: [
-          selectedValue,
-          question.isRequired ? Validators.required : null
-        ],
+        value: [selectedValue, question.isRequired ? Validators.required : null],
         optionIds: this.fb.array(selectedOptionIds.map(id => this.fb.control(id)))
+
       });
 
-      if (question.id === 10) {
-        this.updateOptionsForQuestion11(Number(selectedValue));
-      }
+      this.responses.push(group);
 
-      if (question.id === 11) {
-        this.updateOptionsForQuestion12(Number(selectedValue));
-      }
-
-
+      // 🔁 Dynamique pour "Autres"
       if (question.id === 15) {
-        this.autresCtrl = this.fb.control('', question.isRequired ? Validators.required : null);
+        this.autresCtrl = this.fb.control(
+          selectedValue || '',
+          question.isRequired ? Validators.required : null
+        );
         this.formGroup.addControl('autres', this.autresCtrl);
       }
 
-
-      if (question.id === 11) {
-        const ctrl = group.get('value');
-        ctrl?.valueChanges.subscribe((selectedOptId: any) => {
-          this.updateOptionsForQuestion12(Number(selectedOptId));
-        });
-
-        const selectedParentOptionId = this.responses.controls.find(c => c.get('questionId')?.value === 10)?.get('value')?.value;
-        if (selectedParentOptionId) {
-          this.updateOptionsForQuestion11(Number(selectedParentOptionId));
-        }
-      }
-
-
-      this.responses.push(group);
-      if (question.id === 12) {
-        const question11Ctrl = this.responses.controls.find(ctrl => ctrl.value.questionId === 11);
-        const selectedParentOptionId = question11Ctrl?.get('value')?.value;
-
-        if (selectedParentOptionId) {
-          this.updateOptionsForQuestion12(Number(selectedParentOptionId));
-        }
-      }
-
-
-      if (question.id === 11) {
-        const parentSelection = this.responses.controls.find(ctrl => ctrl.value.questionId === 10);
-        const selectedParentOptionId = parentSelection?.get('value')?.value;
-
-        if (selectedParentOptionId) {
-          this.updateOptionsForQuestion11(Number(selectedParentOptionId));
-        }
-      }
-
-
-      // Gérer la dynamique pour Question 10
+      // Pour la question 10 → mise à jour dynamique des options Q11
       if (question.id === 10) {
-        this.updateOptionsForQuestion11(Number(selectedValue)); // Valeur initiale
-        const ctrl = group.get('value');
-        ctrl?.valueChanges.subscribe((value: any) => {
-          this.updateOptionsForQuestion11(Number(value));
+        // On attend que toutes les questions soient ajoutées (car Q11 est après)
+        setTimeout(() => {
+          const val = Number(selectedValue);
+          this.updateOptionsForQuestion11(val);
+        });
+
+        group.get('value')?.valueChanges.subscribe((val: any) => {
+          this.updateOptionsForQuestion11(Number(val));
         });
       }
+
+      // Pour la question 11 → mise à jour dynamique des options Q12
+      if (question.id === 11) {
+        setTimeout(() => {
+          const val = Number(selectedValue);
+          this.updateOptionsForQuestion12(val);
+        });
+
+        group.get('value')?.valueChanges.subscribe((val: any) => {
+          this.updateOptionsForQuestion12(Number(val));
+        });
+      }
+
+
     });
   }
-
 
   onFieldBlur(index: number): void {
     this.fieldStates[index].touched = true;
@@ -297,6 +271,7 @@ export class CreationProjetComponent implements OnInit {
 
   submit(): void {
     this.isSubmitted = true;
+
     Object.keys(this.fieldStates).forEach(key => {
       this.fieldStates[+key].touched = true;
     });
@@ -307,16 +282,18 @@ export class CreationProjetComponent implements OnInit {
     }
 
     const stepId = 2;
+
     const cleanedResponses = this.responses.controls
       .map((ctrl: any) => ({
         questionId: ctrl.value.questionId,
-        value: ctrl.value.value?.trim() || null,
+        value: typeof ctrl.value.value === 'string' ? ctrl.value.value.trim() : ctrl.value.value,
         optionIds: ((ctrl.get('optionIds') as FormArray).value || []).filter((id: any) => id != null)
       }))
       .filter(r =>
         (r.value !== null && r.value !== '') ||
         (Array.isArray(r.optionIds) && r.optionIds.length > 0)
       );
+
     if (this.shouldShowAutresTextField()) {
       cleanedResponses.push({
         questionId: 15,
@@ -325,17 +302,18 @@ export class CreationProjetComponent implements OnInit {
       });
     }
 
+    console.log('🚀 Payload envoyé:', cleanedResponses);
+
     const payload = {
       formId: this.formMetadata.id,
-      stepId,
-      responses: cleanedResponses,
-      autres: this.shouldShowAutresTextField() ? this.autresCtrl.value : null
+      stepId: stepId,
+      responses: cleanedResponses
     };
 
     const dossierIdToSend: number | null = this.dossierId ? Number(this.dossierId) : null;
-
     const onSuccess = (res: any): void => {
       const dossierId = res.dossierId || dossierIdToSend;
+
       if (dossierId) {
         localStorage.setItem('dossierId', String(dossierId));
         this.router.navigate([`/projects/edit/${dossierId}`], {
@@ -347,18 +325,27 @@ export class CreationProjetComponent implements OnInit {
     if (this.isEditMode && dossierIdToSend) {
       this.formService.submitStep(payload, stepId, dossierIdToSend).subscribe({
         next: onSuccess,
-        error: (err: any) => console.error('Erreur envoi (edit)', err)
+        error: (err: any) => {
+          console.error('Erreur envoi (edit)', err);
+        }
       });
     } else {
       this.formService.submitStep(payload, stepId, null).subscribe({
         next: onSuccess,
-        error: (err: any) => console.error('Erreur envoi (création)', err)
+        error: (err: any) => {
+          console.error('Erreur envoi (création)', err);
+        }
       });
     }
   }
 
   onSelectChange(questionId: number, event: Event): void {
     const selectedValue = Number((event.target as HTMLSelectElement).value);
+    const ctrl = this.responses.controls.find(c => c.value.questionId === questionId);
+    if (ctrl) {
+      ctrl.get('value')?.setValue(selectedValue);
+    }
+
     if (questionId === 10) {
       this.updateOptionsForQuestion11(selectedValue);
     }
@@ -366,6 +353,7 @@ export class CreationProjetComponent implements OnInit {
       this.updateOptionsForQuestion12(selectedValue);
     }
   }
+
 
   private scrollToFirstInvalidField(): void {
     setTimeout(() => {
