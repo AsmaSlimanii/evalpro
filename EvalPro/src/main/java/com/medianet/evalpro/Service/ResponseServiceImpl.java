@@ -172,6 +172,13 @@ public class ResponseServiceImpl implements ResponseService {
 
         System.out.println("✅✅ Toutes les réponses ont été enregistrées.");
     }
+    @Override
+    public boolean isPillarCompleted(Long dossierId, String pillar) {
+        // Supposons que le nom du champ "step" correspond à "step3" pour Auto-Eval
+        List<Response> responses = responseRepository.findByDossierIdAndStepAndPillar(dossierId, "step3", pillar);
+        return responses != null && !responses.isEmpty();
+    }
+
 
 
 

@@ -1,0 +1,233 @@
+.auto-eval-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header-section {
+    text-align: center;
+    margin-bottom: 3rem;
+
+    .main-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .subtitle {
+        color: #7f8c8d;
+        font-size: 1.1rem;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+}
+
+.pillars-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.pillar-card {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-left: 5px solid;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .pillar-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: rgba(0, 0, 0, 0.1);
+        margin-right: 1.5rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pillar-content {
+        flex: 1;
+    }
+
+    .pillar-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .pillar-description {
+        color: #7f8c8d;
+        margin-bottom: 1rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .progress-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: #ecf0f1;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.4s ease;
+    }
+
+    .progress-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #7f8c8d;
+        min-width: 40px;
+    }
+
+    .pillar-icon {
+        margin-left: 1.5rem;
+        font-size: 1.8rem;
+        color: white;
+        background: rgba(255, 255, 255, 0.2);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &.economic {
+        border-left-color: #3498db;
+        background: linear-gradient(135deg, #f8fcff 0%, #e3f2fd 100%);
+
+        .progress-fill {
+            background: linear-gradient(to right, #3498db, #64b5f6);
+        }
+
+        .pillar-icon {
+            background-color: #3498db;
+        }
+    }
+
+    &.social {
+        border-left-color: #e74c3c;
+        background: linear-gradient(135deg, #fff9f9 0%, #ffebee 100%);
+
+        .progress-fill {
+            background: linear-gradient(to right, #e74c3c, #ef9a9a);
+        }
+
+        .pillar-icon {
+            background-color: #e74c3c;
+        }
+    }
+
+    &.environmental {
+        border-left-color: #2ecc71;
+        background: linear-gradient(135deg, #f8fff9 0%, #e8f5e9 100%);
+
+        .progress-fill {
+            background: linear-gradient(to right, #2ecc71, #81c784);
+        }
+
+        .pillar-icon {
+            background-color: #2ecc71;
+        }
+    }
+}
+
+.step3-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 4rem 0 2rem;
+    background-color: #f8fafc;
+}
+
+.step3-card {
+    background-color: #fff;
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 27px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: 1160px;
+    margin-top: 5rem;
+    padding-bottom: 9rem;
+    position: relative;
+}
+
+
+
+.header-section {
+    text-align: center;
+    margin-bottom: 2.5rem;
+
+    .main-title {
+        font-size: 1.8rem;
+        color: #10386a;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .subtitle {
+        font-size: 1.25rem;
+        color: #6b7280;
+        line-height: 1.6;
+        max-width: 650px;
+        margin: 4rem auto 0 auto;
+        /* <-- Ajoute un espace au-dessus */
+    }
+}
+
+.pillars-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 900px;
+    /* ou 550px, à tester selon ton design */
+    margin: 0 auto;
+    /* pour centrer horizontalement */
+}
+
+.bottom-left-button {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 2rem;
+}
+
+.bottom-left-button button {
+  background-color: #c4dbf5;
+  color: #070707;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  font-size: 1.20rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease;
+}
+
+.bottom-left-button button:hover {
+  background-color: #0b2c55;
+}

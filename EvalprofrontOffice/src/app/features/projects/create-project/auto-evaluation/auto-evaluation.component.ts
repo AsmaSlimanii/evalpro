@@ -1,12 +1,57 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormService } from '../../../../core/services/form.service';
+
 
 @Component({
   selector: 'app-auto-evaluation',
-  standalone: true,
-  imports: [],
   templateUrl: './auto-evaluation.component.html',
-  styleUrl: './auto-evaluation.component.scss'
+  styleUrls: ['./auto-evaluation.component.scss']
 })
-export class AutoEvaluationComponent {
+export class AutoEvaluationComponent implements OnInit {
+  dossierId: string | null = null;
+
+  progress = {
+    economique: 0,
+    socio: 0,
+    environnemental: 0
+  };
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private formService: FormService
+  ) {}
+
+  ngOnInit(): void {
+    this.dossierId = this.route.snapshot.paramMap.get('id') || localStorage.getItem('dossierId');
+    if (!this.dossierId) {
+      this.router.navigate(['/projects/create']);
+      return;
+    }
+
+    this.loadProgress();
+  }
+
+  loadProgress(): void {
+    const dossierId = Number(this.dossierId);
+    this.formService.getPillarProgress(dossierId).subscribe({
+      next: (data: { economique: any; socio: any; environnemental: any; }) => {
+        this.progress.economique = data.economique ? 100 : 0;
+        this.progress.socio = data.socio ? 100 : 0;
+        this.progress.environnemental = data.environnemental ? 100 : 0;
+      },
+      error: (err: any) => console.error('Erreur progression pilier', err)
+    });
+  }
+
+  navigateTo(pilier: 'economique' | 'socio' | 'environnemental'): void {
+    if (this.dossierId) {
+      this.router.navigate([`/projects/edit/${this.dossierId}/step3/${pilier}`]);
+    }
+  }
+  goBack(): void {
+  this.router.navigate(['/projects/create']);
+}
 
 }

@@ -1,0 +1,93 @@
+.project-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 30px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+
+  th, td {
+    padding: 12px 10px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  thead {
+    background-color: #003b71;
+    color: white;
+    font-weight: 600;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f8f9fb;
+  }
+
+  tbody tr:nth-child(odd) {
+    background-color: #eaf3f9;
+  }
+
+  .project-title {
+    font-weight: 600;
+    color: #003b71;
+  }
+
+  .step {
+    margin: 0 2px;
+    padding: 5px 9px;
+    border-radius: 50%;
+    background: #cfd8dc;
+    color: #003b71;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 28px;
+
+    &.done {
+      background: #00cc99;
+      color: white;
+    }
+  }
+
+  .action-link {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 500;
+    margin: 0 5px;
+
+    &.delete {
+      color: #dc3545;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.pagination {
+  margin: 20px 0;
+  text-align: center;
+
+  button {
+    margin: 0 3px;
+    padding: 6px 12px;
+    border: 1px solid #003b71;
+    border-radius: 50%;
+    background-color: white;
+    color: #003b71;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 35px;
+
+    &.active {
+      background-color: #003b71;
+      color: white;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}

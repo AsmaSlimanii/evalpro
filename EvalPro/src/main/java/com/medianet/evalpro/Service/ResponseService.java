@@ -22,6 +22,7 @@ public interface ResponseService {
 
   //  void deleteByDossierIdAndStepIdAndQuestionId(Long dossierId, Long stepId, Long questionId);
 
+    boolean isPillarCompleted(Long dossierId, String pillar);
 
 
 

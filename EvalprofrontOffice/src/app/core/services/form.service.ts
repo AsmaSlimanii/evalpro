@@ -20,18 +20,26 @@ export class FormService {
     });
   }
 
-  getFormByStep(stepName: string): Observable<any> {
-    return this.http.get(`${this.formApiUrl}/by-step/${stepName}`, {
-      headers: this.getAuthHeaders()
-    });
-  }
+ getFormByStep(stepName: string, pillar?: string): Observable<any> {
+  const url = pillar
+    ? `${this.formApiUrl}/step?step=${stepName}&pillar=${pillar}`
+    : `${this.formApiUrl}/by-step/${stepName}`;
 
-  getFormWithResponses(step: string, dossierId: string | null): Observable<any> {
-    return this.http.get(
-      `${this.formApiUrl}/${step}/dossier/${dossierId}`,
-      { headers: this.getAuthHeaders() }
-    );
-  }
+  return this.http.get(url, {
+    headers: this.getAuthHeaders()
+  });
+}
+
+
+getFormWithResponses(step: string, dossierId: string | null, pillar?: string): Observable<any> {
+  const url = pillar
+    ? `${this.formApiUrl}/${step}/dossier/${dossierId}?pillar=${pillar}`
+    : `${this.formApiUrl}/${step}/dossier/${dossierId}`;
+
+  return this.http.get(url, {
+    headers: this.getAuthHeaders()
+  });
+}
 
   submitResponses(payload: any): Observable<any> {
     return this.http.post(`${this.responseApiUrl}`, payload, {
@@ -49,6 +57,11 @@ submitStep(payload: any, stepId: number, dossierId?: number | null): Observable<
 
   return this.http.post(url, payload, {
     headers: this.getAuthHeaders()  // ✅ Auth headers obligatoires
+  });
+}
+getPillarProgress(dossierId: number): Observable<any> {
+  return this.http.get(`${this.baseUrl}/api/responses/progress/${dossierId}`, {
+    headers: this.getAuthHeaders()
   });
 }
 

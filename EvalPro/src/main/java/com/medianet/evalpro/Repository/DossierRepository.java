@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Repository;
 
 import com.medianet.evalpro.Entity.Dossier;
+import com.medianet.evalpro.Entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,5 +24,9 @@ public interface DossierRepository extends JpaRepository<Dossier, Long> {
     Page<Dossier> findByStatusContainingIgnoreCase(String status, Pageable pageable);
     @Query("SELECT d FROM Dossier d JOIN FETCH d.user WHERE d.id = :id")
     Optional<Dossier> findByIdWithUser(@Param("id") Long id);
+
+    // Dans DossierRepository.java
+    List<Dossier> findByUser(User user);
+
 
 }

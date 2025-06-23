@@ -2,6 +2,7 @@ package com.medianet.evalpro.Controller;
 
 //import com.medianet.evalpro.Dto.FormDto;
 import com.medianet.evalpro.Dto.FormDTO;
+import com.medianet.evalpro.Dto.FormProgressDTO;
 import com.medianet.evalpro.Entity.Form;
 import com.medianet.evalpro.Service.FormService;
 import lombok.RequiredArgsConstructor;
@@ -90,8 +91,19 @@ public class FormController {
     @GetMapping("/{step}/dossier/{dossierId}")
     public ResponseEntity<FormDTO> getFormWithResponses(
             @PathVariable String step,
-            @PathVariable Long dossierId) {
-        return ResponseEntity.ok(formService.getFormWithResponses(step, dossierId));
+            @PathVariable Long dossierId,
+            @RequestParam(required = false) String pillar) {
+
+        FormDTO formDTO = formService.getFormWithResponses(step, dossierId, pillar);
+        return ResponseEntity.ok(formDTO);
+    }
+
+
+    // ✅ Correction ici : mapping bien formé avec PathVariable
+    @GetMapping("/progress/{dossierId}")
+    public ResponseEntity<FormProgressDTO> getProgress(@PathVariable Long dossierId) {
+        FormProgressDTO progress = formService.getPillarProgress(dossierId);
+        return ResponseEntity.ok(progress);
     }
 
 

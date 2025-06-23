@@ -8,15 +8,15 @@ import { AppComponent } from './app.component';
 import { ConnexionComponent } from './features/auth/connexion/connexion.component';
 import { InscriptionComponent } from './features/auth/inscription/inscription.component';
 import { DashboardComponent } from './core/components/dashboard/dashboard.component';
-import { RecaptchaModule , RecaptchaFormsModule, } from 'ng-recaptcha';
+import { RecaptchaModule, RecaptchaFormsModule, } from 'ng-recaptcha';
 import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 import { ResetPasswordConfirmComponent } from './features/auth/reset-password-confirm/reset-password-confirm.component';
 import { HomeAuthenticatedComponent } from './pages/home-authenticated/home-authenticated.component';
 import { TopbarComponent } from './core/components/topbar/topbar.component';
 import { SidebarComponent } from './core/components/sidebar/sidebar.component';
-import { LayoutComponent } from './layout/layout.component';
+
 import { CreateProjectComponent } from './features/projects/create-project/create-project.component';
-import {  PreIdentificationComponent } from './features/projects/create-project/pre-identification/pre-identification.component';
+import { PreIdentificationComponent } from './features/projects/create-project/pre-identification/pre-identification.component';
 import { CreationProjetComponent } from './features/projects/create-project/creation-projet/creation-projet.component';
 import { AutoEvaluationComponent } from './features/projects/create-project/auto-evaluation/auto-evaluation.component';
 import { RequeteFinancementComponent } from './features/projects/create-project/requete-financement/requete-financement.component';
@@ -25,6 +25,13 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
+import { ProjectListComponent } from './features/projects/project-list/project-list.component';
+import { TimeAgoPipe } from './shared/pipes/time-ago.pipe';
+import { LayoutComponent } from './layout/layout.component';
+import { PilierEconomiqueComponent } from './features/projects/create-project/auto-evaluation/pilier-economique/pilier-economique.component';
+import { PilierSocioComponent } from './features/projects/create-project/auto-evaluation/pilier-socio/pilier-socio.component';
+import { PilierEnvironnementalComponent } from './features/projects/create-project/auto-evaluation/pilier-environnemental/pilier-environnemental.component';
+
 
 
 
@@ -37,14 +44,21 @@ import { CommonModule } from '@angular/common';
     ResetPasswordComponent,
     ResetPasswordConfirmComponent,
     HomeAuthenticatedComponent,
-    TopbarComponent,      
+    TopbarComponent,
     SidebarComponent,
     LayoutComponent,
     CreateProjectComponent,
     PreIdentificationComponent,
     CreationProjetComponent,
-    
-    
+    AutoEvaluationComponent,
+    PilierEconomiqueComponent,
+    RequeteFinancementComponent,
+    SchemaFinancementComponent,
+    ProjectListComponent,
+    TimeAgoPipe,
+
+
+
   ],
   imports: [
     BrowserModule,
@@ -52,17 +66,20 @@ import { CommonModule } from '@angular/common';
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-   CommonModule,
+    CommonModule,
     RouterModule,
     RecaptchaModule,
     RecaptchaFormsModule,
     BrowserAnimationsModule,
-     MatSnackBarModule,
-     
-  
-        
+    MatSnackBarModule,
+
+    
+    ReactiveFormsModule,
+
+
+
   ],
-   providers: [
+  providers: [
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
@@ -71,4 +88,4 @@ import { CommonModule } from '@angular/common';
   ],
   bootstrap: [AppComponent] // ✅ INDISPENSABLE
 })
-export class AppModule {}
+export class AppModule { }

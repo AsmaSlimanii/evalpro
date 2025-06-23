@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Service;
 
 import com.medianet.evalpro.Dto.FormDTO;
+import com.medianet.evalpro.Dto.FormProgressDTO;
 import com.medianet.evalpro.Dto.OptionDTO;
 import com.medianet.evalpro.Dto.QuestionDTO;
 import com.medianet.evalpro.Entity.Form;
@@ -97,7 +98,7 @@ public class FormServiceImpl implements FormService {
 
 
     @Override
-    public FormDTO getFormWithResponses(String step, Long dossierId) {
+    public FormDTO getFormWithResponses(String step, Long dossierId, String pillar) {
         Form form = (Form) formRepository.findByStepName(step)
                 .orElseThrow(() -> new RuntimeException("Form not found"));
 
@@ -157,6 +158,19 @@ public class FormServiceImpl implements FormService {
                         .map(responseMapper::toDto)
                         .collect(Collectors.toList())) // ✅ ici tu ajoutes les réponses !
                 .build();
+    }
+
+    public FormProgressDTO getPillarProgress(Long dossierId) {
+        boolean ecoFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
+                responseRepository.existsByDossierIdAndPillar(dossierId, "ECONOMIQUE");
+
+        boolean socioFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
+                responseRepository.existsByDossierIdAndPillar(dossierId, "SOCIO");
+
+        boolean envFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
+                responseRepository.existsByDossierIdAndPillar(dossierId, "ENVIRONNEMENTAL");
+
+        return new FormProgressDTO(ecoFilled, socioFilled, envFilled);
     }
 
 }

@@ -1,0 +1,43 @@
+<table *ngIf="dossiers && dossiers.length > 0" class="project-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Titre</th>
+      <th>Catégorie</th>
+      <th>Situation</th>
+      <th>Statut du dossier</th>
+      <th>Progression</th>
+      <th>Dernière modification</th>
+      <th>Date création</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let dossier of dossiers">
+      <td><strong>{{ dossier.code }}</strong></td>
+      <td><span class="project-title">{{ dossier.nomOfficielProjet }}</span></td>
+      <td>{{ dossier.categorie || '-' }}</td>
+      <td>{{ dossier.situation || 'Création' }}</td>
+      <td>{{ dossier.statusLabel || 'Dossier en cours de préparation' }}</td>
+      <td>
+        <ng-container *ngFor="let step of dossier.steps">
+          <span class="step" [class.done]="step.completed">{{ step.number }}</span>
+        </ng-container>
+      </td>
+      <td>{{ dossier.updatedAt | timeAgo }}</td>
+      <td>{{ dossier.createdAt | timeAgo }}</td>
+      <td>
+        <a [routerLink]="['/projects/edit', dossier.id, 'step1']" class="action-link">✏️ Modifier</a>
+        |
+        <a (click)="deleteDossier(dossier.id)" class="action-link delete">🗑️ Supprimer</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="pagination">
+  <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">&lt;</button>
+  <button *ngFor="let page of pages" (click)="goToPage(page)" [class.active]="page === currentPage">{{ page }}</button>
+  <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">&gt;</button>
+</div>

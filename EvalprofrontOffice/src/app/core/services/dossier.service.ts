@@ -21,6 +21,7 @@ interface Question {
   providedIn: 'root'
 })
 export class DossierService {
+
   private readonly baseUrl = 'http://localhost:8081';
   private readonly formApiUrl = `${this.baseUrl}/api/forms`;
   private readonly responseApiUrl = `${this.baseUrl}/api/responses`;
@@ -88,4 +89,23 @@ export class DossierService {
       'Content-Type': 'application/json'
     });
   }
+
+  getAllDossiers(): Observable<any[]> {
+  return this.http.get<any[]>('/api/dossiers/user'); // ou le bon endpoint backend
+}
+// dossier.service.ts
+getPaginatedDossiers(page: number, size: number = 5): Observable<any> {
+  const url = `${this.baseUrl}/api/dossiers?page=${page}&size=${size}`;
+  return this.http.get<any>(url, {
+    headers: this.getAuthHeaders()
+  }).pipe(catchError(this.handleError.bind(this)));
+}
+
+
+deleteDossier(id: number): Observable<void> {
+  return this.http.delete<void>(`${this.baseUrl}/api/dossiers/${id}`, {
+    headers: this.getAuthHeaders()
+  }).pipe(catchError(this.handleError.bind(this)));
+}
+
 }

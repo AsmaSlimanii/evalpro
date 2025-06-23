@@ -1,1 +1,68 @@
-<p>auto-evaluation works!</p>
+<div class="step3-wrapper">
+    <div class="step3-card">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="main-title"> AUTO Évaluation</h1>
+            <p class="subtitle">
+                Complétez les 3 piliers pour analyser votre projet. Chaque pilier a sa propre évaluation et progression.
+            </p>
+        </div>
+
+        <!-- Section des piliers -->
+        <div class="pillars-section">
+            <!-- Pilier ÉCONOMIQUE -->
+            <div class="pillar-card economic" (click)="navigateTo('economique')">
+                <div class="pillar-number">1</div>
+                <div class="pillar-content">
+                    <h3 class="pillar-title">Pilier économique</h3>
+                    <p class="pillar-description">Apportez de la valeur et diversifiez vos revenus.</p>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" [style.width.%]="progress.economique"></div>
+                        </div>
+                        <span class="progress-value">{{ progress.economique }}%</span>
+                    </div>
+                </div>
+                <div class="pillar-icon"><i class="fas fa-chart-line"></i></div>
+            </div>
+
+            <!-- Pilier SOCIO -->
+            <div class="pillar-card social" (click)="navigateTo('socio')">
+                <div class="pillar-number">2</div>
+                <div class="pillar-content">
+                    <h3 class="pillar-title">Pilier socio territorial</h3>
+                    <p class="pillar-description">Renforcez l'emploi et le lien avec le territoire.</p>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" [style.width.%]="progress.socio"></div>
+                        </div>
+                        <span class="progress-value">{{ progress.socio }}%</span>
+                    </div>
+                </div>
+                <div class="pillar-icon"><i class="fas fa-users"></i></div>
+            </div>
+
+            <!-- Pilier ENVIRONNEMENT -->
+            <div class="pillar-card environmental" (click)="navigateTo('environnemental')">
+                <div class="pillar-number">3</div>
+                <div class="pillar-content">
+                    <h3 class="pillar-title">Pilier environnemental</h3>
+                    <p class="pillar-description">Réduisez les impacts environnementaux.</p>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" [style.width.%]="progress.environnemental"></div>
+                        </div>
+                        <span class="progress-value">{{ progress.environnemental }}%</span>
+                    </div>
+                </div>
+                <div class="pillar-icon"><i class="fas fa-leaf"></i></div>
+            </div>
+        </div>
+
+        <!-- Bouton -->
+        <div class="bottom-left-button">
+            <button (click)="goBack()">← Précédent</button>
+        </div>
+
+    </div>
+</div>

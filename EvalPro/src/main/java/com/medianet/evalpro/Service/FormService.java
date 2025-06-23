@@ -2,6 +2,7 @@ package com.medianet.evalpro.Service;
 
 //import com.medianet.evalpro.Dto.FormDto;
 import com.medianet.evalpro.Dto.FormDTO;
+import com.medianet.evalpro.Dto.FormProgressDTO;
 import com.medianet.evalpro.Entity.Form;
 import org.springframework.data.domain.Page;
 
@@ -23,7 +24,9 @@ public interface FormService {
 
     FormDTO getFormByStep(String stepName);
 
-    FormDTO getFormWithResponses(String step, Long dossierId);
+    FormDTO getFormWithResponses(String step, Long dossierId, String pillar);
+    FormProgressDTO getPillarProgress(Long dossierId);
+
 
 
     //List<Form> findByStepId(Long stepId);

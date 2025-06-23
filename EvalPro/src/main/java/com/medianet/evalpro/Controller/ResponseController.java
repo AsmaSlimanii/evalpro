@@ -119,6 +119,14 @@ public class ResponseController {
         responseService.saveStepResponses(dto, principal.getName());
         return ResponseEntity.ok(Map.of("dossierId", dossier_id));
     }
+    @GetMapping("/step3-progress/{dossierId}")
+    public ResponseEntity<Map<String, Boolean>> getStep3Progress(@PathVariable Long dossierId) {
+        Map<String, Boolean> result = new HashMap<>();
+        result.put("economique", responseService.isPillarCompleted(dossierId, "economique"));
+        result.put("socio", responseService.isPillarCompleted(dossierId, "socio"));
+        result.put("environnemental", responseService.isPillarCompleted(dossierId, "environnemental"));
+        return ResponseEntity.ok(result);
+    }
 
 
 }

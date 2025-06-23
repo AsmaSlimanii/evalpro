@@ -1,11 +1,15 @@
 package com.medianet.evalpro.Service.Auth;
 
+import com.medianet.evalpro.Entity.User;
 import com.medianet.evalpro.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -18,13 +22,21 @@ public class CustomUserDetailsService  implements UserDetailsService {
 
     //UserDetailsService et UserDetails de Spring Security : c’est l’interface que Spring utilise pour charger les utilisateurs.
     @Override
-
-
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException { //UsernameNotFoundException : exception si l’utilisateur n’est pas trouvé.
-
-        return userRepository.findByEmail(email)
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User utilisateur = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé avec l'email: " + email));
+
+        return new org.springframework.security.core.userdetails.User(
+                utilisateur.getEmail(),
+                utilisateur.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")) // <- ici
+        );
+
     }
+
+
+
+
 }
 
 

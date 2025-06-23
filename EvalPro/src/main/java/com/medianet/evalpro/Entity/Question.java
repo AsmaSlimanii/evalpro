@@ -34,6 +34,8 @@ public class Question {
     @ManyToMany(mappedBy = "questions")
     private List<Form> forms;
 
+    @Column(name = "pillar")
+    private String pillar;
 
 
     public enum QuestionType {

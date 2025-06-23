@@ -43,9 +43,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/forms/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/responses/**").authenticated()
+                        .requestMatchers("/api/responses/progress/**").hasRole("USER")
+
                         .anyRequest().authenticated()
                 )
+
 
 
                 .sessionManagement(sess -> sess

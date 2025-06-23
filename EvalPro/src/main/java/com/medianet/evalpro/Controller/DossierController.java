@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Controller;
 
 //import com.medianet.evalpro.Dto.DossierDto;
+import com.medianet.evalpro.Dto.DossierDto;
 import com.medianet.evalpro.Dto.DossierIdResponse;
 import com.medianet.evalpro.Dto.PreIdentificationDto;
 import com.medianet.evalpro.Entity.Dossier;
@@ -106,6 +107,15 @@ public class DossierController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new DossierIdResponse(newDossier.getId()));
     }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<DossierDto>> getUserDossiers(@RequestHeader("Authorization") String token) {
+        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        List<DossierDto> dossiers = dossierService.getUserDossiers(email);
+        return ResponseEntity.ok(dossiers);
+    }
+
+
 
 
 

@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Service;
 
 //import com.medianet.evalpro.Dto.PreIdentificationDto;
+import com.medianet.evalpro.Dto.DossierDto;
 import com.medianet.evalpro.Dto.PreIdentificationDto;
 import com.medianet.evalpro.Entity.Dossier;
 import org.springframework.data.domain.Page;
@@ -24,5 +25,10 @@ public interface DossierService {
     Dossier createNewDossierForUser(String name);
 
     Dossier createDossier(PreIdentificationDto dto, String email);
+
 //    void saveStep1(Long userId, PreIdentificationDto dto);
+
+    // Dans ton service interface (DossierService.java)
+    List<DossierDto> getUserDossiers(String email);
+
 }

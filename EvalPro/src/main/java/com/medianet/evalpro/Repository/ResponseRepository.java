@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -30,6 +32,18 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
     @Transactional
    void deleteByFormIdAndDossierId(Long formId, Long dossierId);
   //  void deleteByFormIdAndDossierIdAndQuestionId(Long formId, Long dossierId, Long questionId);
+  @Query("SELECT r FROM Response r WHERE r.dossier.id = :dossierId AND r.step.name = :step AND r.question.pillar = :pillar")
+  List<Response> findByDossierIdAndStepAndPillar(
+          @Param("dossierId") Long dossierId,
+          @Param("step") String step,
+          @Param("pillar") String pillar
+  );
 
+
+
+    boolean existsByDossierIdAndStepId(Long dossierId, long l);
+
+    @Query("SELECT COUNT(r) > 0 FROM Response r WHERE r.dossier.id = :dossierId AND r.step.id = 3 AND r.question.pillar = :pillar")
+    boolean existsByDossierIdAndPillar(@Param("dossierId") Long dossierId, @Param("pillar") String pillar);
 
 }

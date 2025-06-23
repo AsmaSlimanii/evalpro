@@ -37,6 +37,18 @@ public class Dossier {
     private List<Step> steps;
     private String nomOfficielProjet;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public int getLastCompletedStep() {
+        if (steps == null || steps.isEmpty()) {
+            return 0;
+        }
+
+        return (int) steps.stream()
+                .filter(Step::isCompleted)
+                .count();
+    }
 
 
     public enum Status {

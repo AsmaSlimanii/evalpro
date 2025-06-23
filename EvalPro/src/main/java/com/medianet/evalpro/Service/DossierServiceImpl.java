@@ -3,14 +3,14 @@ package com.medianet.evalpro.Service;
 //import com.medianet.evalpro.Dto.OptionDto;
 //import com.medianet.evalpro.Dto.PreIdentificationDto;
 //import com.medianet.evalpro.Dto.QuestionDto;
+import com.medianet.evalpro.Dto.DossierDto;
 import com.medianet.evalpro.Dto.PreIdentificationDto;
+import com.medianet.evalpro.Dto.StepDto;
 import com.medianet.evalpro.Entity.Dossier;
 import com.medianet.evalpro.Entity.User;
 import com.medianet.evalpro.Repository.DossierRepository;
 import com.medianet.evalpro.Repository.UserRepository;
 
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class DossierServiceImpl implements DossierService {
@@ -109,6 +110,37 @@ public class DossierServiceImpl implements DossierService {
 
         return dossierRepository.save(dossier);
     }
+
+    public List<DossierDto> getUserDossiers(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        List<Dossier> dossiers = dossierRepository.findByUserId(user.getId());
+
+        return dossiers.stream()
+                .map(d -> {
+                    return DossierDto.builder()
+                            .id(d.getId())
+                            .code("Pr-" + d.getId())
+                            .nomOfficielProjet(d.getNomOfficielProjet())
+                            .statusLabel("Dossier en cours de préparation")
+                            .createdAt(d.getCreatedAt())
+                            .updatedAt(d.getUpdatedAt())
+                            .steps(generateStepProgress(d))
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<StepDto> generateStepProgress(Dossier dossier) {
+        List<StepDto> steps = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            new StepDto(i, i <= dossier.getLastCompletedStep())
+            ;
+        }
+        return steps;
+    }
+
 
 
 
