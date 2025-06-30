@@ -21,7 +21,8 @@
     <div formArrayName="responses">
       <div *ngFor="let q of questions; let i = index" [formGroupName]="i" class="form-section">
 
-        <h3 *ngIf="q.type === 'SECTION_TITLE'" class="text-primary mb-3">{{ q.text }}</h3>
+        <h3 *ngIf="q.type === 'SELECTION'" class="text-primary mb-3">{{ q.text }}</h3>
+
 
         <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
           <label class="label">{{ q.text }}<span *ngIf="q.is_required" class="required-asterisk">*</span></label>

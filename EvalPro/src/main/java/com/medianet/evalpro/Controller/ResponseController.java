@@ -101,24 +101,30 @@ public class ResponseController {
 
     //1. Création (sans dossier)
     @PostMapping("/step{step_id}")
-    public ResponseEntity<?> saveStepWithoutDossier(@RequestBody ResponseRequestDTO dto, Principal principal,
-                                                    @PathVariable String step_id) {
+    public ResponseEntity<?> saveStepWithoutDossier(@RequestBody ResponseRequestDTO dto,
+                                                    @PathVariable String step_id,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
         dto.setStepId(Long.valueOf(step_id));
-        Dossier dossier = dossierService.createNewDossierForUser(principal.getName());
+        String email = userDetails.getUsername(); // <- ici c’est OK
+        Dossier dossier = dossierService.createNewDossierForUser(email);
         dto.setDossierId(dossier.getId());
-        responseService.saveStepResponses(dto, principal.getName());
+
+        responseService.saveStepResponses(dto, email);
         return ResponseEntity.ok(Map.of("dossierId", dossier.getId()));
     }
+
     //2. Mise à jour (avec dossier existant)
     @PostMapping("/step{step_id}/{dossier_id}")
-    public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto, Principal principal,
+    public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto,
                                       @PathVariable String step_id,
-                                      @PathVariable String dossier_id) {
+                                      @PathVariable String dossier_id,
+                                      @AuthenticationPrincipal UserDetails userDetails) {
         dto.setStepId(Long.valueOf(step_id));
         dto.setDossierId(Long.valueOf(dossier_id));
-        responseService.saveStepResponses(dto, principal.getName());
+        responseService.saveStepResponses(dto, userDetails.getUsername());
         return ResponseEntity.ok(Map.of("dossierId", dossier_id));
     }
+
     @GetMapping("/step3-progress/{dossierId}")
     public ResponseEntity<Map<String, Boolean>> getStep3Progress(@PathVariable Long dossierId) {
         Map<String, Boolean> result = new HashMap<>();

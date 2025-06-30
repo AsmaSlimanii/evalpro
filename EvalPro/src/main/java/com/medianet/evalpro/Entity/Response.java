@@ -48,6 +48,9 @@ import lombok.NoArgsConstructor;
         @JoinColumn(name = "step_id")
         @JsonBackReference
         private Step step;
+        @Column(name = "pillar")
+        private String pillar;
+
 
 
     }

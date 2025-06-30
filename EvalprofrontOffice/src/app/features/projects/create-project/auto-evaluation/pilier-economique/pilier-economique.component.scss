@@ -1,209 +1,217 @@
 .form-container {
-  max-width: 780px;
-  margin: 2rem auto;
-  background-color: #fff;
-  padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-  position: relative;
-  font-family: 'Segoe UI', sans-serif;
+    background: #f4f6fd;
+    ;
+    padding: 4rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', sans-serif;
+    max-width: 1260px;
+    /* ou 800px, 720px selon ton besoin */
+    margin: 0 auto;
+    margin-top: 8rem;
+    /* 🔽 tu peux ajuster cette valeur */
+}
+
+.form-title-wrapper {
+    text-align: center;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+
+
+.page-subtitle {
+    font-size: 1rem;
+    color: #555;
 }
 
 .form-header {
-  text-align: center;
-  margin-bottom: 2.5rem;
+    margin-bottom: 3.5rem; //size de titre Auto-Evalution
+}
 
-  .form-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #10386a;
-    margin-bottom: 1rem;
-  }
+.text-center {
+    text-align: center;
+}
 
-  .form-description {
-    font-size: 1.05rem;
-    color: #6b7280;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
+.pillar-title {
+    // Titre des piliers
+    font-size: 1.9rem;
+    font-weight: 750;
+    color: #1f3c88;
+    margin-bottom: 2.2rem;
+    text-align: left;
+    max-width: 900px;
+    margin-left: 0rem;
+    margin-right: auto;
+}
 
-  .header-icon {
-    margin-bottom: 1rem;
-    svg {
-      width: 48px;
-      height: 48px;
-      fill: #10386a;
-    }
-  }
+.form-subtitle-box {
+    background-color: #e6f4f9;
+    border: 1px solid #c5effc;
+    padding: 12px 20px;
+    border-radius: 10px;
+    color: #004e64;
+    font-size: 1.1rem;
+    margin: 0 auto 1.5rem auto;
+    max-width: 1125px;
+    text-align: left;
+    margin-bottom: 2.5rem;
+}
+
+.header-icon svg {
+    width: 2rem;
+    height: 2rem;
+    color: #2c7be5;
+    margin-right: 0.5rem;
+}
+
+.form-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+.form-description {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 0.25rem;
+}
+
+.form-banner {
+    display: flex;
+    align-items: center;
+    background-color: #b7cbee;
+    color: #142272;
+    font-weight: 600;
+    padding: 0.75rem 1.2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    border: 1px solid #c8e6c9;
+}
+
+.form-banner svg {
+    margin-right: 0.5rem;
 }
 
 .form-section {
-  margin-bottom: 2rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 0.75rem;
+    background-color: #fff;
 }
 
 .label {
-  font-weight: 600;
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #374151;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+}
 
-  &.invalid-label {
-    color: #dc2626;
-  }
-
-  .required-asterisk {
-    color: #dc2626;
+.required-asterisk {
+    color: red;
     margin-left: 4px;
-  }
 }
 
 .input-container {
-  margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+}
 
-  .input-wrapper {
-    position: relative;
-  }
+.input-wrapper {
+    display: flex;
+}
 
-  .input {
+.input {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
     font-size: 1rem;
-    transition: border-color 0.3s ease;
+}
 
-    &.invalid {
-      border-color: #dc2626;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: #2563eb;
-    }
-  }
-
-  .error-text {
-    color: #dc2626;
-    font-size: 0.85rem;
-    margin-top: 0.3rem;
-  }
+.input.invalid {
+    border-color: #e53e3e;
 }
 
 .option-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
 }
 
 .checkbox-container {
-  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+}
+
+.checkbox-label {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    font-size: 1rem;
     cursor: pointer;
-    user-select: none;
+}
 
-    .checkbox-input {
-      display: none;
-    }
+.checkbox-input {
+    margin-right: 0.5rem;
+}
 
-    .checkbox-custom {
-      width: 20px;
-      height: 20px;
-      border: 2px solid #9ca3af;
-      border-radius: 4px;
-      position: relative;
-      flex-shrink: 0;
+.checkbox-text {
+    font-size: 1.20rem; //le size des lignes 
+}
 
-      &::after {
-        content: '';
-        position: absolute;
-        top: 2px;
-        left: 5px;
-        width: 6px;
-        height: 12px;
-        border: solid white;
-        border-width: 0 2px 2px 0;
-        transform: rotate(45deg);
-        display: none;
-      }
-    }
-
-    .checkbox-input:checked + .checkbox-custom {
-      background-color: #2563eb;
-      border-color: #2563eb;
-    }
-
-    .checkbox-input:checked + .checkbox-custom::after {
-      display: block;
-    }
-
-    .checkbox-text {
-      color: #374151;
-    }
-  }
+.error-text {
+    color: #e53e3e;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
 }
 
 .form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
+.btn-secondary,
+.btn-primary {
+    padding: 0.5rem 1.5rem;
     border: none;
-    transition: background 0.3s ease;
-  }
+    border-radius: 2rem;
+    font-weight: 600;
+    cursor: pointer;
+}
 
-  .btn-primary {
-    background-color: #2563eb;
-    color: #fff;
+.btn-secondary {
+    background: #e2e8f0;
+    color: #2d3748;
+}
 
-    &:hover {
-      background-color: #1e40af;
-    }
-  }
+.btn-primary {
+    background: #2c7be5;
+    color: white;
+}
 
-  .btn-secondary {
-    background-color: #e5e7eb;
-    color: #1f2937;
-
-    &:hover {
-      background-color: #d1d5db;
-    }
-  }
+.btn-primary:hover {
+    background: #1a68d1;
 }
 
 .loading-spinner {
-  text-align: center;
-  padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
 
-  .spinner {
-    width: 36px;
-    height: 36px;
-    border: 4px solid #d1d5db;
-    border-top: 4px solid #2563eb;
+.spinner {
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #2c7be5;
     border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
     animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-  }
+}
 
-  @keyframes spin {
+@keyframes spin {
     to {
-      transform: rotate(360deg);
+        transform: rotate(360deg);
     }
-  }
-
-  p {
-    color: #6b7280;
-  }
 }

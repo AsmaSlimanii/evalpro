@@ -30,8 +30,9 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
 
     @Modifying
     @Transactional
-   void deleteByFormIdAndDossierId(Long formId, Long dossierId);
-  //  void deleteByFormIdAndDossierIdAndQuestionId(Long formId, Long dossierId, Long questionId);
+    void deleteByFormIdAndDossierIdAndPillar(Long formId, Long dossierId, String pillar);
+
+    //  void deleteByFormIdAndDossierIdAndQuestionId(Long formId, Long dossierId, Long questionId);
   @Query("SELECT r FROM Response r WHERE r.dossier.id = :dossierId AND r.step.name = :step AND r.question.pillar = :pillar")
   List<Response> findByDossierIdAndStepAndPillar(
           @Param("dossierId") Long dossierId,

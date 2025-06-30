@@ -1,90 +1,107 @@
 <div class="form-container">
-  <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
-    <!-- ✅ En-tête du formulaire -->
-    <div class="form-header">
-      <div class="header-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19.5 3.75h-15v15h15v-15z" opacity="0.25"/>
-          <path d="M11.25 11.25h1.5v1.5h-1.5v-1.5zM7.5 11.25h1.5v1.5H7.5v-1.5zM15 11.25h1.5v1.5H15v-1.5z"/>
-        </svg>
-      </div>
-      <h2 class="form-title">
-        {{ formMetadata?.title }}
-      </h2>
-      <p class="form-description">{{ formMetadata?.description }}</p>
-    </div>
+    <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
 
-    <!-- ✅ Questions dynamiques -->
-    <div formArrayName="responses">
-      <div *ngFor="let q of questions; let i = index" [formGroupName]="i" class="form-section">
-        <label class="label" [class.invalid-label]="showError(i)">
-          {{ q.text }}
-          <span *ngIf="q.isRequired" class="required-asterisk">*</span>
-        </label>
-
-        <!-- Type: Texte -->
-        <div *ngIf="q.type === 'TEXTE'" class="input-container">
-          <div class="input-wrapper">
-            <input
-              formControlName="value"
-              type="text"
-              class="input"
-              [placeholder]="q.placeholder || 'Saisissez votre réponse'"
-              [class.invalid]="showError(i)"
-              (blur)="onFieldBlur(i)"
-            />
-          </div>
-          <div class="error-text" *ngIf="showError(i)">Ce champ est obligatoire.</div>
+        <!-- ✅ En-tête -->
+        <div class="form-header text-center">
+            <h2 class="form-title">{{ formMetadata?.title }}</h2>
         </div>
 
-        <!-- Type: Numérique -->
-        <div *ngIf="q.type === 'NUMERIQUE'" class="input-container">
-          <div class="input-wrapper">
-            <input
-              formControlName="value"
-              type="number"
-              class="input"
-              [placeholder]="q.placeholder || 'Saisissez un nombre'"
-              [class.invalid]="showError(i)"
-              (blur)="onFieldBlur(i)"
-            />
-          </div>
-          <div class="error-text" *ngIf="showError(i)">Veuillez saisir un nombre valide.</div>
+        <h2 class="pillar-title">Pilier Économique</h2>
+
+        <div class="form-subtitle-box">
+            Durabilité économique : dites-nous comment votre projet améliore, diversifie et sécurise les revenus de
+            votre entreprise.
         </div>
 
-        <!-- Type: Choix multiple -->
-        <div *ngIf="q.type === 'CHOIXMULTIPLE'" class="option-group">
-          <div *ngFor="let opt of q.options" class="checkbox-container">
-            <label class="checkbox-label">
-              <input
-                type="checkbox"
-                class="checkbox-input"
-                [value]="opt.id"
-                [checked]="isOptionChecked(i, opt.id)"
-                (change)="onCheckboxToggle(i, opt.id, $event)"
-              />
-              <span class="checkbox-custom"></span>
-              <span class="checkbox-text">{{ opt.value }}</span>
-            </label>
-          </div>
+        <!-- ✅ Bannière -->
+        <!-- ✅ Bannières conditionnelles -->
+        <!-- Eco 1 : Valorisation -->
+        <div class="form-banner clickable" *ngIf="currentSection === 1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            
+            </svg>
+            Eco 1 : Valorisation
         </div>
-      </div>
-    </div>
 
-    <!-- ✅ Actions -->
-    <div class="form-actions">
-      <button type="button" class="btn-secondary" (click)="goBack()">
-        ← Précédent
-      </button>
-      <button type="submit" class="btn-primary">
-        Valider →
-      </button>
-    </div>
-  </form>
+        <!-- Eco 2 : Diversification -->
+        <div class="form-banner clickable" *ngIf="currentSection === 2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+        
+            </svg>
+            Eco 2 : Diversification
+        </div>
 
-  <!-- ✅ Chargement -->
-  <div class="loading-spinner" *ngIf="isLoading">
-    <div class="spinner"></div>
-    <p>Chargement en cours...</p>
-  </div>
+
+        <!-- ✅ Questions dynamiques -->
+        <div formArrayName="responses">
+            <div *ngFor="let q of questions; let i = index" [formGroupName]="i" class="form-section">
+                <label class="label" [class.invalid-label]="showError(i)">
+                    {{ q.text }}
+                    <span *ngIf="q.isRequired" class="required-asterisk">*</span>
+                </label>
+
+                <!-- TEXTE -->
+                <div *ngIf="q.type === 'TEXTE'" class="input-container">
+                    <input formControlName="value" type="text" class="input"
+                        [placeholder]="q.placeholder || 'Votre réponse'" [class.invalid]="showError(i)"
+                        (blur)="onFieldBlur(i)" />
+                    <div class="error-text" *ngIf="showError(i)">Ce champ est requis.</div>
+                </div>
+
+                <!-- NUMERIQUE -->
+                <div *ngIf="q.type === 'NUMERIQUE'" class="input-container">
+                    <input formControlName="value" type="number" class="input" [placeholder]="q.placeholder || '0'"
+                        [class.invalid]="showError(i)" (blur)="onFieldBlur(i)" />
+                    <div class="error-text" *ngIf="showError(i)">Valeur invalide.</div>
+                </div>
+
+                <!-- CHOIXMULTIPLE -->
+                <div *ngIf="q.type === 'CHOIXMULTIPLE'" class="option-group">
+                    <div *ngFor="let opt of q.options" class="checkbox-container">
+                        <label class="checkbox-label">
+                            <input type="checkbox" class="checkbox-input" [value]="opt.id"
+                                [checked]="isOptionChecked(i, opt.id)" (change)="onCheckboxToggle(i, opt.id, $event)" />
+                            <span class="checkbox-text">{{ opt.value }}</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- RADIO (choix unique) -->
+                <div *ngIf="q.type === 'RADIO'" class="option-group">
+                    <div *ngFor="let opt of q.options" class="checkbox-container">
+                        <label class="checkbox-label">
+                            <input type="radio" class="checkbox-input" [value]="opt.id"
+                                [checked]="isOptionChecked(i, opt.id)" (change)="onRadioSelect(i, opt.id)" />
+                            <span class="checkbox-text">{{ opt.value }}</span>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ✅ Actions -->
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="onPrevious()">← Précédent</button>
+
+            <!--<button type="submit" class="btn-primary">Valider →</button>-->
+
+            <!-- Bouton pour changer de section -->
+            <button type="button" class="btn-primary" *ngIf="currentSection === 1" (click)="goToSection(2)">
+                Continuer vers Eco 2 →
+            </button>
+            <button type="button" class="btn-secondary" *ngIf="currentSection === 2" (click)="goToSection(1)">
+                ← Retour vers Eco 1
+            </button>
+
+
+        </div>
+
+    </form>
+
+    <!-- ✅ Chargement -->
+    <div class="loading-spinner" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Chargement en cours...</p>
+    </div>
 </div>

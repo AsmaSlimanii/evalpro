@@ -81,49 +81,65 @@ export class CreationProjetComponent implements OnInit {
       this.formMetadata = form;
       this.questions = form.questions;
 
+      // 🔧 Ajout des parent_option_id pour Q11
       this.questions.forEach((q) => {
         if (q.id === 11) {
           q.options.forEach((opt: any) => {
-            if ([28, 29, 30].includes(opt.id)) opt.parent_option_id = 25;
-            if ([76, 77, 78, 79, 80].includes(opt.id)) opt.parent_option_id = 26;
+            const optId = Number(opt.id);
+                // 🔧 Sous-secteurs pour APII (option ID 15)
+            if ([65, 66, 67, 68, 69].includes(opt.id)) opt.parent_option_id = 15;
+
+       
+             // 🔧 Sous-secteurs pour APIA (option ID 14)
+            if ([17, 18, 19].includes(opt.id)) opt.parent_option_id = 14; 
+        
           });
         }
       });
 
+      // Pour Q12
       this.questions.forEach((q) => {
         if (q.id === 12) {
           q.options.forEach((opt: any) => {
-            if ([31, 32, 33, 34, 35, 36, 37, 38, 39].includes(opt.id)) opt.parent_option_id = 28;
-            if ([40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55].includes(opt.id)) opt.parent_option_id = 29;
-            if ([56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75].includes(opt.id)) opt.parent_option_id = 30;
-
-            if ([81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99].includes(opt.id)) opt.parent_option_id = 76;
-            if ([100, 101, 102, 103, 104, 105, 106, 107].includes(opt.id)) opt.parent_option_id = 77;
-            if ([108, 109, 110, 111, 112, 113, 114, 115].includes(opt.id)) opt.parent_option_id = 78;
-            if ([116, 117, 118, 119, 120, 121, 122, 123, 124].includes(opt.id)) opt.parent_option_id = 79;
-            if ([125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135].includes(opt.id)) opt.parent_option_id = 80;
+            const optId = Number(opt.id);
+            if ([20, 21, 22, 23, 24,25, 26, 27, 28].includes(optId)) opt.parent_option_id = 17; 
+            if ([29, 30, 31, 32, 33, 34, 35, 36, 37, 38,39,40,41,42,43, 44].includes(optId)) opt.parent_option_id = 18;
+            if ([45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64].includes(optId)) opt.parent_option_id = 19;
+            if ([70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96, 97].includes(optId)) opt.parent_option_id = 65;
+            if ([98,99,100, 101, 102, 103, 104, 105].includes(optId)) opt.parent_option_id = 66;
+            if ([106, 107, 108, 109, 110, 111, 112,113].includes(optId)) opt.parent_option_id = 67;
+            if ([114, 115, 116, 117, 118, 119, 120, 121,122].includes(optId)) opt.parent_option_id = 68;
+            if ([123, 124, 125,126, 127, 128, 129, 130, 131, 132, 133].includes(optId)) opt.parent_option_id = 69;
+          
           });
         }
       });
 
-
-
-
-
+      // 🧱 On construit les contrôles de formulaire
       this.buildFormControlsWithData(form.responses || []);
-      const categoryCtrl = this.responses.at(0)?.get('value'); // Question 10
+
+      // 🎯 Trouver la valeur sélectionnée de la Q10 (Catégorie investissement)
+      const categoryCtrl = this.responses.at(0)?.get('value');
       if (categoryCtrl) {
-        this.updateOptionsForQuestion11(categoryCtrl.value);
-        categoryCtrl.valueChanges.subscribe((value: any) => {
-          this.updateOptionsForQuestion11(Number(value)); // bien forcer en nombre
+        const selectedVal = Number(categoryCtrl.value);
+        console.log('🔍 Q10 sélectionnée (Catégorie):', selectedVal);
+
+        // 🔁 Mise à jour des options filtrées de Q11
+        this.updateOptionsForQuestion11(selectedVal);
+
+        // 🧠 Observer les changements en Q10
+        categoryCtrl.valueChanges.subscribe((val: any) => {
+          const numVal = Number(val);
+          console.log('🔄 Q10 modifiée → nouvelle valeur:', numVal);
+          this.updateOptionsForQuestion11(numVal);
         });
       }
 
-
+      // 🚀 Fin
       this.isLoading = false;
-
     };
 
+    // 📦 Récupération du formulaire
     if (this.isEditMode && this.dossierId) {
       this.formService.getFormWithResponses(step, this.dossierId).subscribe({
         next: onFormLoad,
@@ -136,6 +152,8 @@ export class CreationProjetComponent implements OnInit {
       });
     }
   }
+
+
   updateOptionsForQuestion11(selectedOptionId: number): void {
     const question11 = this.questions.find(q => q.id === 11);
     if (!question11) return;
@@ -151,6 +169,11 @@ export class CreationProjetComponent implements OnInit {
     this.filteredOptions12 = question12.options.filter(
       (opt: any) => opt.parent_option_id === parentOptionId
     );
+
+    console.log('📌 Options Q12 filtrées =', this.filteredOptions12);
+    console.log('🔎 parentOptionId reçu =', parentOptionId);
+    console.log('🧾 Tous parent_option_id disponibles dans q12 =', question12.options.map((o: { parent_option_id: any; }) => o.parent_option_id));
+
   }
 
 
@@ -163,7 +186,7 @@ export class CreationProjetComponent implements OnInit {
   }
 
   shouldShowQuestion12(): boolean {
-    const selectedQ11 = this.responses.controls.find(ctrl => ctrl.value.questionId === 11);
+    const selectedQ11 = this.responses.controls.find(ctrl => +ctrl.value.questionId === 11);
     const selectedQ10 = this.responses.at(0)?.get('value')?.value;
     return selectedQ10 !== 27 && !!selectedQ11?.get('value')?.value;
   }
@@ -186,7 +209,12 @@ export class CreationProjetComponent implements OnInit {
         .filter(r => r.optionId !== undefined && r.optionId !== null)
         .map(r => r.optionId);
 
-      const selectedValue = questionResponses.find(r => r.value !== null)?.value || '';
+      let selectedValue = questionResponses.find(r => r.value !== null)?.value || '';
+      if (typeof selectedValue === 'string' && question.type === 'SELECT') {
+        selectedValue = Number(selectedValue);
+      }
+
+      console.log('✅ filteredOptions11 =', this.filteredOptions11);
 
       const group = this.fb.group({
         questionId: [question.id],
@@ -220,14 +248,16 @@ export class CreationProjetComponent implements OnInit {
       }
 
       // Pour la question 11 → mise à jour dynamique des options Q12
+      // Pour la question 11 → mise à jour dynamique des options Q12
       if (question.id === 11) {
         setTimeout(() => {
-          const val = Number(selectedValue);
-          this.updateOptionsForQuestion12(val);
+          const val = typeof selectedValue === 'object' ? selectedValue?.id : selectedValue;
+          this.updateOptionsForQuestion12(Number(val));
         });
 
         group.get('value')?.valueChanges.subscribe((val: any) => {
-          this.updateOptionsForQuestion12(Number(val));
+          const optionId = typeof val === 'object' ? val?.id : val;
+          this.updateOptionsForQuestion12(Number(optionId));
         });
       }
 

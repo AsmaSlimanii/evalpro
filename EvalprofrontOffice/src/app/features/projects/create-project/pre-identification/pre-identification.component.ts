@@ -81,10 +81,10 @@ export class PreIdentificationComponent implements OnInit {
   private loadForm(): void {
     const step = 'pre-identification';
     this.isLoading = true;
-
     const onFormLoad = (form: any) => {
       this.formMetadata = form;
       this.questions = form.questions;
+      this.questions.forEach(q => q.isHidden = false); // initialise tout à visible
       this.buildFormControlsWithData(form.responses || []);
       this.isLoading = false;
     };
@@ -128,6 +128,7 @@ export class PreIdentificationComponent implements OnInit {
         ],
         optionIds: this.fb.array(selectedOptionIds.map(id => this.fb.control(id)))
       });
+      
 
       this.responses.push(group);
     });
@@ -244,6 +245,34 @@ export class PreIdentificationComponent implements OnInit {
       });
     }
   }
+  onRadioChange(i: number, selectedId: number): void {
+    const optionIds = this.responses.at(i).get('optionIds') as FormArray;
+
+    // Met à jour la valeur
+    while (optionIds.length !== 0) optionIds.removeAt(0);
+    optionIds.push(this.fb.control(selectedId));
+
+    // 👉 cacher ou afficher la question 4 selon le choix de la question 3
+    const question3Id = 3; // l’ID réel de ta question 3
+    const question4Index = this.questions.findIndex(q => q.id === 4); // ID réel de la question à cacher
+
+    if (this.questions[i].id === question3Id && question4Index !== -1) {
+      // si option 2 sélectionnée
+      const selectedOption = selectedId; // ex: id = 11 par exemple
+      if (selectedOption === 2) {
+        this.questions[question4Index].isHidden = false;
+      } else {
+        this.questions[question4Index].isHidden = true;
+      }
+    }
+  }
+
+
+  isRadioSelected(i: number, optionId: number): boolean {
+    const optionIds = this.responses.at(i).get('optionIds') as FormArray;
+    return optionIds.value?.[0] === optionId;
+  }
+
 
 
   private scrollToFirstInvalidField(): void {

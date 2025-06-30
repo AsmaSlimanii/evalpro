@@ -10,5 +10,7 @@ public class ResponseRequestDTO {
     private Long dossierId;
     private List<SingleResponseDTO> responses;
     private Long stepId;
+    private String pillar;
+
 
 }

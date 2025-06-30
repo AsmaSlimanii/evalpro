@@ -43,8 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/forms/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/responses/progress/**").hasRole("USER")
-
+                        .requestMatchers("/api/responses/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
 

@@ -121,7 +121,9 @@ public class ResponseServiceImpl implements ResponseService {
 
 
         // ❌ Supprimer les anciennes réponses (pour éviter les doublons)
-        responseRepository.deleteByFormIdAndDossierId(dto.getFormId(), dossier.getId());
+
+        responseRepository.deleteByFormIdAndDossierIdAndPillar(dto.getFormId(), dossier.getId(), dto.getPillar());
+
         System.out.println("🧹 Anciennes réponses supprimées pour le dossier " + dossier.getId());
 
         for (SingleResponseDTO r : dto.getResponses()) {
@@ -144,6 +146,7 @@ public class ResponseServiceImpl implements ResponseService {
                                 .option(opt)
                                 .value(null)
                                 .isValid(false)
+                                .pillar(r.getPillar())
                                 .build();
                         responseRepository.save(response);
                         System.out.println("✅ Réponse multiple enregistrée : questionId=" + r.getQuestionId() + " | optionId=" + optId);
@@ -164,6 +167,7 @@ public class ResponseServiceImpl implements ResponseService {
                         .value(r.getValue())
                         .option(null)
                         .isValid(false)
+                        .pillar(r.getPillar())
                         .build();
                 responseRepository.save(response);
                 System.out.println("✅ Réponse texte enregistrée : questionId=" + r.getQuestionId() + " | valeur='" + r.getValue() + "'");

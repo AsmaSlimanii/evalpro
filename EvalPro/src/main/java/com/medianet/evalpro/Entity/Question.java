@@ -39,6 +39,6 @@ public class Question {
 
 
     public enum QuestionType {
-        TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE
+        TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE,SELECT
     }
 }

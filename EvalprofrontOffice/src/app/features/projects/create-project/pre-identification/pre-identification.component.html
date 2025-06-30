@@ -1,19 +1,20 @@
-
-
 <div class="form-container">
   <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
     <div class="form-header">
       <div class="header-icon">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19.5 3.75h-15v15h15v-15z" opacity="0.25"/>
-          <path d="M11.25 11.25h1.5v1.5h-1.5v-1.5zM7.5 11.25h1.5v1.5H7.5v-1.5zM15 11.25h1.5v1.5H15v-1.5z"/>
+          <path d="M19.5 3.75h-15v15h15v-15z" opacity="0.25" />
+          <path d="M11.25 11.25h1.5v1.5h-1.5v-1.5zM7.5 11.25h1.5v1.5H7.5v-1.5zM15 11.25h1.5v1.5H15v-1.5z" />
         </svg>
       </div>
       <h2 class="form-title">
         <span [class.invalid-title]="formGroup.invalid && formGroup.touched">
           {{ formMetadata?.title }}
-          <svg *ngIf="formGroup.invalid && formGroup.touched" class="warning-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+          <svg *ngIf="formGroup.invalid && formGroup.touched" class="warning-icon" xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd" />
           </svg>
         </span>
       </h2>
@@ -21,98 +22,143 @@
     </div>
 
     <div formArrayName="responses">
-      <div *ngFor="let q of questions; let i = index" [formGroupName]="i" class="form-section">
-        <!-- Label de la question -->
-        <label class="label" [class.invalid-label]="showError(i)">
-          {{ q.text }}
-          <span *ngIf="q.isRequired" class="required-asterisk">*</span>
-          <svg *ngIf="showError(i)" class="error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-          </svg>
-        </label>
+      <ng-container *ngFor="let q of questions; let i = index">
+        <div *ngIf="!q.isHidden" [formGroupName]="i" class="form-section">
 
-        <!-- TEXTE -->
-        <div *ngIf="q.type === 'TEXTE'" class="input-container">
-          <div class="input-wrapper">
-            <input
-              class="input"
-              formControlName="value"
-              type="text"
-              [placeholder]="q.placeholder || 'Saisissez votre réponse'"
-              [class.invalid]="showError(i)"
-            />
-            <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+
+          <!-- Label de la question -->
+          <label class="label" [class.invalid-label]="showError(i)">
+            {{ q.text }}
+            <span *ngIf="q.isRequired" class="required-asterisk">*</span>
+            <svg *ngIf="showError(i)" class="error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+              fill="currentColor">
+              <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd" />
             </svg>
+          </label>
+
+          <!-- TEXTE -->
+          <div *ngIf="q.type === 'TEXTE'" class="input-container">
+            <div class="input-wrapper">
+              <input class="input" formControlName="value" type="text"
+                [placeholder]="q.placeholder || 'Saisissez votre réponse'" [class.invalid]="showError(i)" />
+              <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="error-text" *ngIf="showError(i)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd" />
+              </svg>
+              Ce champ est obligatoire.
+            </div>
           </div>
-          <div class="error-text" *ngIf="showError(i)">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-            </svg>
-          Ce champ est obligatoire.
+
+
+          <!-- NUMERIQUE -->
+          <div *ngIf="q.type === 'NUMERIQUE'" class="input-container">
+            <div class="input-wrapper">
+              <input class="input" formControlName="value" type="number"
+                [placeholder]="q.placeholder || 'Saisissez un nombre'" [class.invalid]="showError(i)" />
+              <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="error-text" *ngIf="showError(i)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd" />
+              </svg>
+              Veuillez saisir un nombre valide.
+            </div>
           </div>
+
+          <!-- CHOIXMULTIPLE -->
+          <div *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length" class="option-group">
+            <div *ngFor="let opt of q.options" class="checkbox-container">
+              <label class="checkbox-label">
+                <!-- ✅ Checkbox liée au FormArray -->
+                <input type="checkbox" class="checkbox-input" [value]="opt.id" [checked]="isOptionChecked(i, opt.id)"
+                  (change)="onCheckboxToggle(i, opt.id, $event)" />
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">{{ opt.value }}</span>
+              </label>
+            </div>
+          </div>
+          <!-- CHOIX UNIQUE (RADIO) -->
+          <div *ngIf="q.type === 'RADIO' && q.options?.length" class="option-group">
+            <div *ngFor="let opt of q.options" class="radio-container">
+              <label class="radio-label">
+                <input type="radio" class="radio-input" [value]="opt.id" [checked]="isRadioSelected(i, opt.id)"
+                  (change)="onRadioChange(i, opt.id)" name="radio-{{i}}" />
+                <span class="radio-custom"></span>
+                <span class="radio-text">{{ opt.value }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- SELECTION -->
+          <div *ngIf="q.type === 'SELECTION' && q.options?.length" class="input-container">
+            <div class="input-wrapper">
+              <select class="input" [formControlName]="'value'" [class.invalid]="showError(i)">
+                <option value="" disabled selected>Veuillez sélectionner une option</option>
+                <option *ngFor="let opt of q.options" [value]="opt.id">{{ opt.value }}</option>
+              </select>
+              <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div class="error-text" *ngIf="showError(i)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd" />
+              </svg>
+              Veuillez sélectionner une option.
+            </div>
+          </div>
+
+
         </div>
-
-
-         <!-- NUMERIQUE -->
-        <div *ngIf="q.type === 'NUMERIQUE'" class="input-container">
-          <div class="input-wrapper">
-            <input
-              class="input"
-              formControlName="value"
-              type="number"
-              [placeholder]="q.placeholder || 'Saisissez un nombre'"
-              [class.invalid]="showError(i)"
-            />
-            <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-            </svg>
-          </div>
-          <div class="error-text" *ngIf="showError(i)">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-            </svg>
-            Veuillez saisir un nombre valide.
-          </div>
-        </div>
-
-      <!-- CHOIXMULTIPLE -->
-<div *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length" class="option-group">
-  <div *ngFor="let opt of q.options" class="checkbox-container">
-    <label class="checkbox-label">
-      <!-- ✅ Checkbox liée au FormArray -->
-      <input
-        type="checkbox"
-        class="checkbox-input"
-        [value]="opt.id"
-        [checked]="isOptionChecked(i, opt.id)"
-        (change)="onCheckboxToggle(i, opt.id, $event)"
-      />
-      <span class="checkbox-custom"></span>
-      <span class="checkbox-text">{{ opt.value }}</span>
-    </label>
-  </div>
-</div>
-
-
-      </div>
+      </ng-container>
     </div>
+
 
     <div class="form-actions">
       <button type="button" class="btn-secondary" (click)="goBack()">
         <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd"
+            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+            clip-rule="evenodd" />
         </svg>
         Précédent
       </button>
-     <button type="submit" class="btn-primary">
+      <button type="submit" class="btn-primary">
         Valider
         <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          <path fill-rule="evenodd"
+            d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
         </svg>
       </button>
     </div>
+
   </form>
+
+
 
   <div class="loading-spinner" *ngIf="isLoading">
     <div class="spinner"></div>

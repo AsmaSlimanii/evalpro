@@ -9,4 +9,5 @@ public class SingleResponseDTO {
     private Long questionId;
     private String value;
     private List<Long> optionIds;
+    private String pillar;
 }
