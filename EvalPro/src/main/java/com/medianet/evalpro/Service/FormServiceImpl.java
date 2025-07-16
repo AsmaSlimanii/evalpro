@@ -98,7 +98,7 @@ public class FormServiceImpl implements FormService {
 
 
     @Override
-    public FormDTO getFormWithResponses(String step, Long dossierId, String pillar) {
+    public FormDTO getFormWithResponses(String step, Long dossierId) {
         Form form = (Form) formRepository.findByStepName(step)
                 .orElseThrow(() -> new RuntimeException("Form not found"));
 
@@ -111,6 +111,7 @@ public class FormServiceImpl implements FormService {
                     .text(q.getText())
                     .type(q.getType().name())
                     .isRequired(q.isRequired())
+                    .pillar(q.getPillar())
                     .build();
 
             // injecter la valeur
@@ -162,15 +163,16 @@ public class FormServiceImpl implements FormService {
 
     public FormProgressDTO getPillarProgress(Long dossierId) {
         boolean ecoFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
-                responseRepository.existsByDossierIdAndPillar(dossierId, "ECONOMIQUE");
+                responseRepository.existsByDossierIdAndQuestionPillar(dossierId, "ECONOMIQUE");
 
         boolean socioFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
-                responseRepository.existsByDossierIdAndPillar(dossierId, "SOCIO");
+                responseRepository.existsByDossierIdAndQuestionPillar(dossierId, "SOCIO");
 
         boolean envFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
-                responseRepository.existsByDossierIdAndPillar(dossierId, "ENVIRONNEMENTAL");
+                responseRepository.existsByDossierIdAndQuestionPillar(dossierId, "ENVIRONNEMENTAL");
 
         return new FormProgressDTO(ecoFilled, socioFilled, envFilled);
     }
+
 
 }

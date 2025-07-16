@@ -14,8 +14,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -122,9 +121,17 @@ public class ResponseServiceImpl implements ResponseService {
 
         // ❌ Supprimer les anciennes réponses (pour éviter les doublons)
 
-        responseRepository.deleteByFormIdAndDossierIdAndPillar(dto.getFormId(), dossier.getId(), dto.getPillar());
+      //  responseRepository.deleteByFormIdAndDossierIdAndPillar(dto.getFormId(), dossier.getId(), dto.getPillar());
+        if (dto.getStepId() == 3L && dto.getPillar() != null) {
+            responseRepository.deleteByFormIdAndDossierIdAndPillarAndStepId(dto.getFormId(), dossier.getId(), dto.getPillar(), step.getId());
+
+        } else {
+            responseRepository.deleteByFormIdAndDossierIdAndStepId(dto.getFormId(), dossier.getId(), dto.getStepId());
+        }
 
         System.out.println("🧹 Anciennes réponses supprimées pour le dossier " + dossier.getId());
+
+
 
         for (SingleResponseDTO r : dto.getResponses()) {
             System.out.println("🟡 Traitement de la question ID = " + r.getQuestionId());
@@ -146,7 +153,7 @@ public class ResponseServiceImpl implements ResponseService {
                                 .option(opt)
                                 .value(null)
                                 .isValid(false)
-                                .pillar(r.getPillar())
+                                .pillar(dto.getPillar())
                                 .build();
                         responseRepository.save(response);
                         System.out.println("✅ Réponse multiple enregistrée : questionId=" + r.getQuestionId() + " | optionId=" + optId);
@@ -167,7 +174,7 @@ public class ResponseServiceImpl implements ResponseService {
                         .value(r.getValue())
                         .option(null)
                         .isValid(false)
-                        .pillar(r.getPillar())
+                        .pillar(dto.getPillar())
                         .build();
                 responseRepository.save(response);
                 System.out.println("✅ Réponse texte enregistrée : questionId=" + r.getQuestionId() + " | valeur='" + r.getValue() + "'");
@@ -182,6 +189,43 @@ public class ResponseServiceImpl implements ResponseService {
         List<Response> responses = responseRepository.findByDossierIdAndStepAndPillar(dossierId, "step3", pillar);
         return responses != null && !responses.isEmpty();
     }
+
+
+
+
+
+    @Override
+    public Map<String, Object> calculatePillarScores(Long dossierId) {
+        List<Response> responses = responseRepository.findByDossierId(dossierId);
+
+        Map<String, Integer> scoreMap = new HashMap<>();
+        Map<String, Integer> maxScoreMap = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
+
+        for (Response r : responses) {
+            String pillar = r.getPillar();
+            if (pillar == null) continue;
+
+            int score = 0;
+            if (r.getOption() != null && r.getOption().getScore() != null) {
+                score = r.getOption().getScore();
+            }
+
+            scoreMap.merge(pillar, score, Integer::sum);
+            maxScoreMap.put(pillar, 15); // ou adapte dynamiquement
+        }
+
+        for (String p : scoreMap.keySet()) {
+            Map<String, Integer> pData = new HashMap<>();
+            pData.put("score", scoreMap.get(p));
+            pData.put("max", maxScoreMap.get(p));
+            pData.put("threshold", 9);
+            result.put(p.toLowerCase(), pData);
+        }
+
+        return result;
+    }
+
 
 
 

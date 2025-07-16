@@ -5,6 +5,7 @@ import com.medianet.evalpro.Entity.Response;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface ResponseService {
@@ -23,6 +24,9 @@ public interface ResponseService {
   //  void deleteByDossierIdAndStepIdAndQuestionId(Long dossierId, Long stepId, Long questionId);
 
     boolean isPillarCompleted(Long dossierId, String pillar);
+
+    Map<String, Object> calculatePillarScores(Long dossierId);
+
 
 
 

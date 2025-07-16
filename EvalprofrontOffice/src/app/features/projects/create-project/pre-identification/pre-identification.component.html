@@ -108,7 +108,7 @@
           </div>
 
           <!-- SELECTION -->
-          <div *ngIf="q.type === 'SELECTION' && q.options?.length" class="input-container">
+          <div *ngIf="q.type === 'SELECT' && q.options?.length" class="input-container">
             <div class="input-wrapper">
               <select class="input" [formControlName]="'value'" [class.invalid]="showError(i)">
                 <option value="" disabled selected>Veuillez sélectionner une option</option>

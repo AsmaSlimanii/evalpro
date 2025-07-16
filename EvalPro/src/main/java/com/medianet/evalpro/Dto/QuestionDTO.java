@@ -18,6 +18,7 @@ public class QuestionDTO {
     private boolean isRequired;
     private String value; // ← réponse texte/numérique
     private List<OptionDTO> options;
+    private String pillar;
     private List<Long> optionIds;
 
 }

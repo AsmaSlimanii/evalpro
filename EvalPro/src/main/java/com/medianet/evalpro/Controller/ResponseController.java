@@ -119,8 +119,15 @@ public class ResponseController {
                                       @PathVariable String step_id,
                                       @PathVariable String dossier_id,
                                       @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(403).body("Utilisateur non authentifié !");
+        }
+
         dto.setStepId(Long.valueOf(step_id));
         dto.setDossierId(Long.valueOf(dossier_id));
+
+        // ✅ AJOUTE CE LOG POUR DEBUG
+        System.out.println("📥 DTO reçu : step=" + dto.getStepId() + " | dossier=" + dto.getDossierId() + " | pillar=" + dto.getPillar());
         responseService.saveStepResponses(dto, userDetails.getUsername());
         return ResponseEntity.ok(Map.of("dossierId", dossier_id));
     }
@@ -133,6 +140,14 @@ public class ResponseController {
         result.put("environnemental", responseService.isPillarCompleted(dossierId, "environnemental"));
         return ResponseEntity.ok(result);
     }
+
+
+    @GetMapping("/step3-score/{dossierId}")
+    public ResponseEntity<?> getPillarScores(@PathVariable Long dossierId) {
+        Map<String, Object> scores = responseService.calculatePillarScores(dossierId);
+        return ResponseEntity.ok(scores);
+    }
+
 
 
 }

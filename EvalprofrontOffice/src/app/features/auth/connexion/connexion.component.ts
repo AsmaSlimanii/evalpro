@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { environment } from '../../../../environments/environment';
+//import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-connexion',
@@ -10,7 +10,7 @@ import { environment } from '../../../../environments/environment';
   styleUrls: ['./connexion.component.scss']
 })
 export class ConnexionComponent {
-  siteKey: string = environment.recaptcha.siteKey;
+ // siteKey: string = environment.recaptcha.siteKey;
   form: FormGroup;
   errorMessage: string = '';
 
@@ -22,7 +22,7 @@ export class ConnexionComponent {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
-      recaptcha: ['', Validators.required],
+   //   recaptcha: ['', Validators.required],
       remember: [false]
     });
   }
@@ -31,16 +31,17 @@ export class ConnexionComponent {
     return this.form.controls;
   }
 
-  onCaptchaResolved(token: string | null): void {
-  this.form.patchValue({
-    recaptcha: token || ''
-  });
-}
+ // onCaptchaResolved(token: string | null): void {
+ // this.form.patchValue({
+  //  recaptcha: token || ''
+ // });
+//}
   onSubmit(): void {
     if (this.form.valid) {
       const payload = this.form.value;
+       console.log('Payload envoyé au backend :', payload); // 👈 AJOUTE ÇA
 
-      this.http.post('http://localhost:8081/api/auth/login', payload).subscribe({
+      this.http.post('http://localhost:8080/api/auth/login', payload).subscribe({
         next: (response: any) => {
           localStorage.setItem('token', response.token);
           localStorage.setItem('userName', response.userName); 

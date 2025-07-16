@@ -24,7 +24,7 @@ public interface FormService {
 
     FormDTO getFormByStep(String stepName);
 
-    FormDTO getFormWithResponses(String step, Long dossierId, String pillar);
+    FormDTO getFormWithResponses(String step, Long dossierId);
     FormProgressDTO getPillarProgress(Long dossierId);
 
 

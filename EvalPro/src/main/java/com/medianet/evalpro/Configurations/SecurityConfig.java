@@ -43,7 +43,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/forms/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/responses/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .requestMatchers("/api/responses/**").permitAll()
+                        .requestMatchers("/api/responses/progress/**").permitAll()
+
+
+                        // .requestMatchers("/api/responses/**").hasAnyAuthority("ROLE_CLIENT", "ROLE_ADMIN", "ROLE_EXPERT")
+
+
                         .anyRequest().authenticated()
                 )
 
@@ -56,6 +62,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager() {

@@ -6,25 +6,29 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtil {
 
     //Déclaration de la clé secrète et de l’expiration
     private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long EXPIRATION = 86400000; // durée de vie du token, ici 1 jour en millisecondes (86400000 ms).
-
+  //  private final long EXPIRATION = 86400000; // durée de vie du token, ici 1 jour en millisecondes (86400000 ms).
+     private static final long EXPIRATION = 1000L * 60 * 60 * 24 * 30; // 30 days
 
     //Méthode pour générer un token JWT
     //Cette méthode crée un JWT signé, basé sur l’adresse e-mail de l’utilisateur
-    public String generateToken(String email) {
+    public String generateToken(String email, List<String> roles) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("authorities", roles) // ✅ AJOUT ICI
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
+
     }
+
 
 
     //Méthode pour extraire l'email depuis un token
@@ -51,6 +55,23 @@ public class JwtUtil {
             return false;
         }
     }
+
+    public List<String> extractRoles(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        Object authorities = claims.get("authorities");
+        if (authorities instanceof List<?>) {
+            return ((List<?>) authorities).stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+        return List.of();
+    }
+
 }
 
 //classe JwtUtil, qui est une classe utilitaire pour gérer les tokens JWT (JSON Web Token) dans Mon backend Spring Boot.

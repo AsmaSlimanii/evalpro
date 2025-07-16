@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Repository;
 
 import com.medianet.evalpro.Entity.Question;
+import com.medianet.evalpro.Entity.Step;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +15,10 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     // 2) Liste brute des questions d’un Form
     List<Question> findByFormsId(Long formId);
+    List<Question> findByStepAndPillar(Step step, String pillar);
 
 
-  //  List<Question> findByFormId(Long id);
+
+    //  List<Question> findByFormId(Long id);
 }
+

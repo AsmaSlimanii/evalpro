@@ -24,6 +24,7 @@
         [ngClass]="{ 'is-invalid': f['password'].touched && f['password'].invalid }" />
     </div>
 
+    <!--
     <div class="form-row">
       <div class="remember-me">
         <input type="checkbox" formControlName="remember" />
@@ -41,6 +42,7 @@
         </div>
       </div>
     </div>
+    -->
 
     <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
 

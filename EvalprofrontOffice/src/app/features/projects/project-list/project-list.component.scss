@@ -1,8 +1,9 @@
 .project-table {
-  width: 100%;
+   width: 95%;
+  margin-left: auto; /* ✅ Aligne la table à droite */
   border-collapse: separate;
   border-spacing: 0;
-  margin-top: 30px;
+  margin-top: 110px;
   font-size: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
@@ -70,7 +71,7 @@
   text-align: center;
 
   button {
-    margin: 0 3px;
+    margin: 0 25px;
     padding: 6px 12px;
     border: 1px solid #003b71;
     border-radius: 50%;

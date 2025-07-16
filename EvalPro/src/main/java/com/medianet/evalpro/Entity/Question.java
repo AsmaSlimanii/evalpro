@@ -37,6 +37,9 @@ public class Question {
     @Column(name = "pillar")
     private String pillar;
 
+    @ManyToOne
+    private Step step;
+
 
     public enum QuestionType {
         TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE,SELECT

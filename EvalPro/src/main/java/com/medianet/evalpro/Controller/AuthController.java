@@ -5,6 +5,7 @@ import com.medianet.evalpro.Entity.User;
 import com.medianet.evalpro.Repository.UserRepository;
 import com.medianet.evalpro.Service.AuthService;
 import com.medianet.evalpro.Service.MailService;
+//import com.medianet.evalpro.Service.Security.CaptchaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class AuthController {
     private final com.medianet.evalpro.Repository.UserRepository userRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final MailService mailService;
-
+   // private CaptchaService captchaService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -39,6 +40,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+//        boolean isCaptchaValid = captchaService.verifyToken(request.getRecaptcha());
+//        if (!isCaptchaValid) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body(new AuthResponse("Captcha invalide", null)); // réponse claire
+//        }
+
         return ResponseEntity.ok(authService.login(request));
     }
     @PostMapping("/reset-password/request")

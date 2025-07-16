@@ -48,7 +48,7 @@ export class InscriptionComponent {
 
   onSubmit(): void {
   if (this.form.valid) {
-    this.http.post('http://localhost:8081/api/auth/register', this.form.value).subscribe({
+    this.http.post('http://localhost:8080/api/auth/register', this.form.value).subscribe({
       next: () => {
         this.emailExists = false;
         this.successMessage = '✅ Inscription réussie ! Redirection vers la connexion...';

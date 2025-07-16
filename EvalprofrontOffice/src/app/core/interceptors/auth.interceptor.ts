@@ -19,11 +19,13 @@ export class AuthInterceptor implements HttpInterceptor {
           Authorization: `Bearer ${token}`
         }
       });
+       console.log("📦 Token envoyé dans le header : ", token);
 
       console.log('✅ JWT utilisé :', token); // ⬅️ utile pour debug
       return next.handle(cloned);
     }
 
     return next.handle(req);
+    
   }
 }

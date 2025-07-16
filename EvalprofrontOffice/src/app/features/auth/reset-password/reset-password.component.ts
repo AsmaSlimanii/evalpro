@@ -26,7 +26,7 @@ export class ResetPasswordComponent {
     if (this.form.valid) {
       const payload = { email: this.form.value.email };
 
-      this.http.post('http://localhost:8081/api/auth/reset-password/request', payload, { responseType: 'text' }).subscribe({
+      this.http.post('http://localhost:8080/api/auth/reset-password/request', payload, { responseType: 'text' }).subscribe({
         next: (response: string) => {
           this.successMessage = response || 'Un lien de réinitialisation vous a été envoyé.';
           this.errorMessage = '';

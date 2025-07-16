@@ -10,6 +10,7 @@ import { FormService } from '../../../../core/services/form.service';
 })
 export class AutoEvaluationComponent implements OnInit {
   dossierId: string | null = null;
+  scores: any = {};
 
   progress = {
     economique: 0,
@@ -21,9 +22,10 @@ export class AutoEvaluationComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private formService: FormService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+
     this.dossierId = this.route.snapshot.paramMap.get('id') || localStorage.getItem('dossierId');
     if (!this.dossierId) {
       this.router.navigate(['/projects/create']);
@@ -31,6 +33,7 @@ export class AutoEvaluationComponent implements OnInit {
     }
 
     this.loadProgress();
+    this.loadScores();
   }
 
   loadProgress(): void {
@@ -44,6 +47,16 @@ export class AutoEvaluationComponent implements OnInit {
       error: (err: any) => console.error('Erreur progression pilier', err)
     });
   }
+  loadScores(): void {
+    const dossierId = Number(this.dossierId);
+    this.formService.getPillarScores(dossierId).subscribe({
+      next: (data) => {
+        this.scores = data;
+        console.log('✅ Scores chargés :', data);
+      },
+      error: (err) => console.error('❌ Erreur chargement scores', err)
+    });
+  }
 
   navigateTo(pilier: 'economique' | 'socio' | 'environnemental'): void {
     if (this.dossierId) {
@@ -51,7 +64,7 @@ export class AutoEvaluationComponent implements OnInit {
     }
   }
   goBack(): void {
-  this.router.navigate(['/projects/create']);
-}
+    this.router.navigate(['/projects/create']);
+  }
 
 }

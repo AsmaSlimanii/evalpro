@@ -4,7 +4,7 @@ import { catchError, map, Observable, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:8081/api'; // adapte si besoin
+  private readonly apiUrl = 'http://localhost:8080/api'; // adapte si besoin
 
   constructor(private http: HttpClient) {}
 

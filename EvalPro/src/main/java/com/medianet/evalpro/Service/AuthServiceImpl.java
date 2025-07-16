@@ -10,15 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
 
-    //userRepository : pour enregistrer ou chercher un utilisateur.
-    //
-    //passwordEncoder : pour encoder les mots de passe en Bcrypt.
-    //
-    //jwtUtil : pour générer des tokens JWT.
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -45,28 +42,17 @@ public class AuthServiceImpl implements AuthService{
                 .activation(request.getActivation())
                 .role(request.getRole() != null ? request.getRole() : User.Role.CLIENT)
                 .build();
+        //
 
         userRepository.save(user);
-        String token = jwtUtil.generateToken(user.getEmail());
+
+        // 🔐 Ajout du rôle dans le token JWT
+        List<String> roles = List.of("ROLE_" + user.getRole().name());
+        // ou ROLE_ADMIN selon le rôle réel
+        String token = jwtUtil.generateToken(user.getEmail(), roles);
+
         return new AuthResponse(token, "Inscription réussie !");
     }
-
-    //Explication :
-    //cherches un utilisateur par email.
-    //
-    //Si l’email n’existe pas → exception : "User not found".
-    //
-    //compares le mot de passe envoyé avec le mot de passe encodé en base.
-    //
-    //Si ça ne correspond pas → exception : "Invalid password".
-    //
-    //Si tout est bon :
-    //
-    //génères un token JWT.
-    //
-    //le retournes dans un objet AuthResponse.
-    //
-    //Résultat : si les identifiants sont valides, le backend renvoie un JWT au client.
 
     @Override
     public AuthResponse login(AuthRequest request) {
@@ -77,8 +63,10 @@ public class AuthServiceImpl implements AuthService{
             throw new RuntimeException("Mot de passe invalide.");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponse(token, "Connexion réussie !");
+        // 🔐 Ajout du rôle dans le token JWT
+        List<String> roles = List.of("ROLE_USER"); // ou récupérer depuis user.getRole()
+        String token = jwtUtil.generateToken(user.getEmail(), roles);
 
+        return new AuthResponse(token, "Connexion réussie !");
     }
 }

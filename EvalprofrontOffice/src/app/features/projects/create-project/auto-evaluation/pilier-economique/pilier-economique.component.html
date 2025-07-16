@@ -15,10 +15,10 @@
 
         <!-- ✅ Bannière -->
         <!-- ✅ Bannières conditionnelles -->
+
         <!-- Eco 1 : Valorisation -->
         <div class="form-banner clickable" *ngIf="currentSection === 1">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-            
             </svg>
             Eco 1 : Valorisation
         </div>
@@ -26,76 +26,120 @@
         <!-- Eco 2 : Diversification -->
         <div class="form-banner clickable" *ngIf="currentSection === 2">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-        
             </svg>
             Eco 2 : Diversification
         </div>
 
+        <!-- Eco 3 : Sécurisation & Autonomie -->
+        <div class="form-banner clickable" *ngIf="currentSection === 3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            </svg>
+            Eco 3 : Sécurisation & Autonomie
+        </div>
+
+        <!-- Eco : Compléments -->
+        <div class="form-banner clickable" *ngIf="currentSection === 4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            </svg>
+            Eco : Compléments
+        </div>
+
+
 
         <!-- ✅ Questions dynamiques -->
         <div formArrayName="responses">
-            <div *ngFor="let q of questions; let i = index" [formGroupName]="i" class="form-section">
-                <label class="label" [class.invalid-label]="showError(i)">
-                    {{ q.text }}
-                    <span *ngIf="q.isRequired" class="required-asterisk">*</span>
-                </label>
+            <ng-container *ngFor="let q of allQuestions; let i = index">
+                <div *ngIf="isQuestionInCurrentSection(q)" [formGroupName]="i" class="form-section">
 
-                <!-- TEXTE -->
-                <div *ngIf="q.type === 'TEXTE'" class="input-container">
-                    <input formControlName="value" type="text" class="input"
-                        [placeholder]="q.placeholder || 'Votre réponse'" [class.invalid]="showError(i)"
-                        (blur)="onFieldBlur(i)" />
-                    <div class="error-text" *ngIf="showError(i)">Ce champ est requis.</div>
-                </div>
+                    <h3 *ngIf="q.type === 'SECTION_TITLE'" class="text-primary mb-3">{{ q.text }}</h3>
 
-                <!-- NUMERIQUE -->
-                <div *ngIf="q.type === 'NUMERIQUE'" class="input-container">
-                    <input formControlName="value" type="number" class="input" [placeholder]="q.placeholder || '0'"
-                        [class.invalid]="showError(i)" (blur)="onFieldBlur(i)" />
-                    <div class="error-text" *ngIf="showError(i)">Valeur invalide.</div>
-                </div>
-
-                <!-- CHOIXMULTIPLE -->
-                <div *ngIf="q.type === 'CHOIXMULTIPLE'" class="option-group">
-                    <div *ngFor="let opt of q.options" class="checkbox-container">
-                        <label class="checkbox-label">
-                            <input type="checkbox" class="checkbox-input" [value]="opt.id"
-                                [checked]="isOptionChecked(i, opt.id)" (change)="onCheckboxToggle(i, opt.id, $event)" />
-                            <span class="checkbox-text">{{ opt.value }}</span>
-                        </label>
+                    <!-- TEXTE / NUMERIQUE -->
+                    <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
+                        <label class="label">{{ q.text }}<span *ngIf="q.is_required"
+                                class="required-asterisk">*</span></label>
+                        <div class="input-wrapper">
+                            <input [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'" class="input"
+                                formControlName="value" [placeholder]="q.placeholder || 'Votre réponse'"
+                                [class.invalid]="showError(i)" (blur)="onFieldBlur(i)" />
+                        </div>
+                        <div class="error-text" *ngIf="showError(i)">Ce champ est requis</div>
                     </div>
-                </div>
-                <!-- RADIO (choix unique) -->
-                <div *ngIf="q.type === 'RADIO'" class="option-group">
-                    <div *ngFor="let opt of q.options" class="checkbox-container">
-                        <label class="checkbox-label">
-                            <input type="radio" class="checkbox-input" [value]="opt.id"
-                                [checked]="isOptionChecked(i, opt.id)" (change)="onRadioSelect(i, opt.id)" />
-                            <span class="checkbox-text">{{ opt.value }}</span>
-                        </label>
-                    </div>
-                </div>
 
-            </div>
+                    <!-- CHOIXMULTIPLE -->
+                    <div *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length" class="option-group">
+                        <div *ngFor="let opt of q.options" class="checkbox-container">
+                            <label class="checkbox-label">
+                                <!-- ✅ Checkbox liée au FormArray -->
+                                <input type="checkbox" class="checkbox-input" [value]="opt.id"
+                                    [checked]="isOptionChecked(i, opt.id)"
+                                    (change)="onCheckboxToggle(i, opt.id, $event)" />
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">{{ opt.value }}</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- CHOIX UNIQUE (RADIO) -->
+                    <div *ngIf="q.type === 'RADIO' && q.options?.length" class="option-group">
+                        <div *ngFor="let opt of q.options" class="radio-container">
+                            <label class="radio-label">
+                                <input type="radio" class="radio-input" [value]="opt.id"
+                                    [checked]="isRadioSelected(i, opt.id)" (change)="onRadioChange(i, opt.id)"
+                                    name="radio-{{i}}" />
+                                <span class="radio-custom"></span>
+                                <span class="radio-text">{{ opt.value }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+
+                </div>
+            </ng-container>
         </div>
+
+
+
 
 
         <!-- ✅ Actions -->
         <div class="form-actions">
+            <!-- Bouton précédent -->
             <button type="button" class="btn-secondary" (click)="onPrevious()">← Précédent</button>
 
-            <!--<button type="submit" class="btn-primary">Valider →</button>-->
+            <!-- Navigation en fonction de la section actuelle -->
+            <ng-container [ngSwitch]="currentSection">
 
-            <!-- Bouton pour changer de section -->
-            <button type="button" class="btn-primary" *ngIf="currentSection === 1" (click)="goToSection(2)">
-                Continuer vers Eco 2 →
-            </button>
-            <button type="button" class="btn-secondary" *ngIf="currentSection === 2" (click)="goToSection(1)">
-                ← Retour vers Eco 1
-            </button>
+                <!-- Eco 1 -->
+                <button *ngSwitchCase="1" type="button" class="btn-primary" (click)="goToSection(2)">
+                    Continuer vers Eco 2 →
+                </button>
 
+                <!-- Eco 2 -->
+                <ng-container *ngSwitchCase="2">
 
+                    <button type="button" class="btn-primary" (click)="goToSection(3)">
+                        Continuer vers Eco 3 →
+                    </button>
+                </ng-container>
+
+                <!-- Eco 3 -->
+                <ng-container *ngSwitchCase="3">
+
+                    <button type="button" class="btn-primary" (click)="goToSection(4)">
+                        Continuer vers Compléments →
+                    </button>
+                </ng-container>
+
+                <!-- Compléments -->
+                <ng-container *ngSwitchCase="4">
+
+                    <button type="submit" class="btn-primary">
+                        Valider →
+                    </button>
+                </ng-container>
+
+            </ng-container>
         </div>
+
 
     </form>
 

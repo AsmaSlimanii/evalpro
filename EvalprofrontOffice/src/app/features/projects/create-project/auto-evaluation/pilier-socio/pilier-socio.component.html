@@ -1,1 +1,89 @@
-<p>pilier-socio works!</p>
+<div class="form-container">
+    <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
+        <!-- ✅ En-tête -->
+        <div class="form-header text-center">
+            <h2 class="form-title">{{ formMetadata?.title }}</h2>
+        </div>
+
+        <h2 class="pillar-title">Pilier Socio-Territorial</h2>
+
+        <div class="form-subtitle-box">
+            Durabilité socio-territoriale : indiquez comment votre projet renforce les liens sociaux, l’implication
+            locale et le territoire.
+        </div>
+ 
+        <!-- ✅ Bannières conditionnelles -->
+        <div class="form-banner clickable" *ngIf="currentSection === 1">Socio 1 : Recrutement permanent</div>
+        <div class="form-banner clickable" *ngIf="currentSection === 2">Socio 2 : Emploi décent</div>
+        <div class="form-banner clickable" *ngIf="currentSection === 3">Socio 3 : Ancrage territorial</div>  
+        <div class="form-banner clickable" *ngIf="currentSection === 4">Socio : Compléments</div> 
+ 
+        <div formArrayName="responses">
+            <ng-container *ngFor="let q of allQuestions; let i = index">
+                <div *ngIf="isQuestionInCurrentSection(q)" [formGroupName]="i" class="form-section">
+
+                    <h3 *ngIf="q.type === 'SECTION_TITLE'" class="text-primary mb-3">{{ q.text }}</h3>
+
+                    <!-- TEXTE / NUMERIQUE -->
+                    <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
+                        <label class="label">{{ q.text }}<span *ngIf="q.is_required"
+                                class="required-asterisk">*</span></label>
+                        <div class="input-wrapper">
+                            <input [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'" class="input"
+                                formControlName="value" [placeholder]="q.placeholder || 'Votre réponse'"
+                                [class.invalid]="showError(i)" (blur)="onFieldBlur(i)" />
+                        </div>
+                        <div class="error-text" *ngIf="showError(i)">Ce champ est requis</div>
+                    </div>
+
+                    <!-- CHOIXMULTIPLE -->
+                    <div *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length" class="option-group">
+                        <div *ngFor="let opt of q.options" class="checkbox-container">
+                            <label class="checkbox-label">
+                                <!-- ✅ Checkbox liée au FormArray -->
+                                <input type="checkbox" class="checkbox-input" [value]="opt.id"
+                                    [checked]="isOptionChecked(i, opt.id)"
+                                    (change)="onCheckboxToggle(i, opt.id, $event)" />
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">{{ opt.value }}</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- CHOIX UNIQUE (RADIO) -->
+                    <div *ngIf="q.type === 'RADIO' && q.options?.length" class="option-group">
+                        <div *ngFor="let opt of q.options" class="radio-container">
+                            <label class="radio-label">
+                                <input type="radio" class="radio-input" [value]="opt.id"
+                                    [checked]="isRadioSelected(i, opt.id)" (change)="onRadioChange(i, opt.id)"
+                                    name="radio-{{i}}" />
+                                <span class="radio-custom"></span>
+                                <span class="radio-text">{{ opt.value }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+
+                </div>
+            </ng-container>
+        </div>
+
+
+        <!-- ✅ Boutons de navigation -->
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="onPrevious()">← Précédent</button>
+            <ng-container [ngSwitch]="currentSection">
+                <button *ngSwitchCase="1" type="button" class="btn-primary" (click)="goToSection(2)">→ Socio 2</button>
+                <button *ngSwitchCase="2" type="button" class="btn-primary" (click)="goToSection(3)">→ Socio 3</button>
+                <button *ngSwitchCase="3" type="button" class="btn-primary" (click)="goToSection(4)">→
+                    Compléments</button>
+                <button *ngSwitchCase="4" type="submit" class="btn-primary">Valider</button>
+            </ng-container>
+        </div>
+    </form>
+
+    <!-- ✅ Loading -->
+    <div class="loading-spinner" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Chargement en cours...</p>
+    </div>
+</div>

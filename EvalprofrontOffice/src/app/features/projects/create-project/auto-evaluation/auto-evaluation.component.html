@@ -58,6 +58,16 @@
                 <div class="pillar-icon"><i class="fas fa-leaf"></i></div>
             </div>
         </div>
+        <div *ngIf="scores?.economique">
+            <strong>Économique:</strong> {{ scores.economique.score }}/{{ scores.economique.max }}
+        </div>
+        <div *ngIf="scores?.socio">
+            <strong>Socio:</strong> {{ scores.socio.score }}/{{ scores.socio.max }}
+        </div>
+        <div *ngIf="scores?.environnemental">
+            <strong>Environnemental:</strong> {{ scores.environnemental.score }}/{{ scores.environnemental.max }}
+        </div>
+
 
         <!-- Bouton -->
         <div class="bottom-left-button">

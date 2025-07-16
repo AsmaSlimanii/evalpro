@@ -290,6 +290,7 @@ export class CreationProjetComponent implements OnInit {
     const optionIdsControl = this.responses.at(questionIndex).get('optionIds') as FormArray;
     return optionIdsControl?.value.includes(optionId);
   }
+  
 
   goBack(): void {
     if (this.dossierId) {

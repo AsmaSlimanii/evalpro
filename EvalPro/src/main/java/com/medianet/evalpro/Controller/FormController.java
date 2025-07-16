@@ -94,7 +94,7 @@ public class FormController {
             @PathVariable Long dossierId,
             @RequestParam(required = false) String pillar) {
 
-        FormDTO formDTO = formService.getFormWithResponses(step, dossierId, pillar);
+        FormDTO formDTO = formService.getFormWithResponses(step, dossierId );
         return ResponseEntity.ok(formDTO);
     }
 

@@ -54,7 +54,7 @@ export class ResetPasswordConfirmComponent implements OnInit {
       newPassword: this.form.value.password
     };
 
-    this.http.post('http://localhost:8081/api/auth/reset-password/confirm', data, { responseType: 'text' }).subscribe({
+    this.http.post('http://localhost:8080/api/auth/reset-password/confirm', data, { responseType: 'text' }).subscribe({
   next: (response) => {
     this.successMessage = response; // ça contiendra "Mot de passe modifié avec succès."
     this.errorMessage = '';

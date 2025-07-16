@@ -8,7 +8,7 @@ import { AppComponent } from './app.component';
 import { ConnexionComponent } from './features/auth/connexion/connexion.component';
 import { InscriptionComponent } from './features/auth/inscription/inscription.component';
 import { DashboardComponent } from './core/components/dashboard/dashboard.component';
-import { RecaptchaModule, RecaptchaFormsModule, } from 'ng-recaptcha';
+//import { RecaptchaModule, RecaptchaFormsModule, } from 'ng-recaptcha';
 import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 import { ResetPasswordConfirmComponent } from './features/auth/reset-password-confirm/reset-password-confirm.component';
 import { HomeAuthenticatedComponent } from './pages/home-authenticated/home-authenticated.component';
@@ -52,6 +52,7 @@ import { PilierEnvironnementalComponent } from './features/projects/create-proje
     CreationProjetComponent,
     AutoEvaluationComponent,
     PilierEconomiqueComponent,
+    PilierSocioComponent,
     RequeteFinancementComponent,
     SchemaFinancementComponent,
     ProjectListComponent,
@@ -68,8 +69,8 @@ import { PilierEnvironnementalComponent } from './features/projects/create-proje
     ReactiveFormsModule,
     CommonModule,
     RouterModule,
-    RecaptchaModule,
-    RecaptchaFormsModule,
+   // RecaptchaModule,
+   //RecaptchaFormsModule,
     BrowserAnimationsModule,
     MatSnackBarModule,
 
