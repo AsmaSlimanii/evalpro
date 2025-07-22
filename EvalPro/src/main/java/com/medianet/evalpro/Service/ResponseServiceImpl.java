@@ -207,26 +207,42 @@ public class ResponseServiceImpl implements ResponseService {
             if (pillar == null) continue;
 
             int score = 0;
+
             if (r.getOption() != null && r.getOption().getScore() != null) {
+                // Cas des options (RADIO, CHOIXMULTIPLE...)
                 score = r.getOption().getScore();
+            }else if (r.getQuestion() != null && r.getValue() != null && !r.getValue().isEmpty()) {
+                String type = r.getQuestion().getType().name();
+
+                if ("TEXTE".equalsIgnoreCase(type)) {
+                    score = 1;
+                } else if ("NUMERIQUE".equalsIgnoreCase(type)) {
+                    try {
+                        score = Integer.parseInt(r.getValue());
+                    } catch (NumberFormatException e) {
+                        score = 0;
+                    }
+                }
             }
 
+
             scoreMap.merge(pillar, score, Integer::sum);
-            maxScoreMap.put(pillar, 15); // ou adapte dynamiquement
+
+            // TODO : à améliorer avec vrai max dynamique plus tard
+            maxScoreMap.put(pillar, 15);
         }
 
+        // ⚠️ Tu avais oublié cette partie ! Elle remplit le `result`
         for (String p : scoreMap.keySet()) {
             Map<String, Integer> pData = new HashMap<>();
             pData.put("score", scoreMap.get(p));
-            pData.put("max", maxScoreMap.get(p));
-            pData.put("threshold", 9);
+            pData.put("max", maxScoreMap.getOrDefault(p, 15));
+            pData.put("threshold", 9); // seuil fixe (à adapter si nécessaire)
             result.put(p.toLowerCase(), pData);
         }
 
         return result;
     }
-
-
 
 
 

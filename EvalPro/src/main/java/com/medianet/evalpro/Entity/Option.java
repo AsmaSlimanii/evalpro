@@ -18,7 +18,9 @@ public class Option {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String value;
+    @Column(name = "score")
     private Integer score;
+
 
     @ManyToOne
     @JoinColumn(name = "question_id")

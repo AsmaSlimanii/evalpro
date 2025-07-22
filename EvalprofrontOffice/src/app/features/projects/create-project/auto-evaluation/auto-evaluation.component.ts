@@ -33,7 +33,7 @@ export class AutoEvaluationComponent implements OnInit {
     }
 
     this.loadProgress();
-    this.loadScores();
+    // this.loadScores();
   }
   loadProgress(): void {
     const dossierId = Number(this.dossierId);
@@ -49,11 +49,6 @@ export class AutoEvaluationComponent implements OnInit {
       error: (err) => console.error('❌ Erreur progression pilier', err)
     });
   }
-
-
-
-
-
   loadScores(): void {
     const dossierId = Number(this.dossierId);
     this.formService.getPillarScores(dossierId).subscribe({
@@ -64,7 +59,13 @@ export class AutoEvaluationComponent implements OnInit {
       error: (err) => console.error('❌ Erreur chargement scores', err)
     });
   }
-
+  hasAnyPillarFailed(): boolean {
+    return (
+      this.scores?.economique?.score < this.scores?.economique?.threshold ||
+      this.scores?.socio_territorial?.score < this.scores?.socio_territorial?.threshold ||
+      this.scores?.environnemental?.score < this.scores?.environnemental?.threshold
+    );
+  }
   navigateTo(pilier: 'economique' | 'socio' | 'environnemental'): void {
     if (this.dossierId) {
       this.router.navigate([`/projects/edit/${this.dossierId}/step3/${pilier}`]);

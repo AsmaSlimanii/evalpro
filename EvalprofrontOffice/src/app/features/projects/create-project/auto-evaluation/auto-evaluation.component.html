@@ -7,6 +7,15 @@
                 Complétez les 3 piliers pour analyser votre projet. Chaque pilier a sa propre évaluation et progression.
             </p>
         </div>
+        <!-- ✅ Message SUCCÈS -->
+        <div *ngIf="scores && !hasAnyPillarFailed()" class="alert alert-success">
+            Bravo, votre évaluation est complète. Vous pouvez l’évaluer en cliquant sur "J’évalue mon projet"
+        </div>
+
+        <!-- ❌ Message ERREUR si un pilier échoue -->
+        <div *ngIf="scores && hasAnyPillarFailed()" class="alert alert-danger">
+            Votre projet ne dépasse pas le seuil requis sur un ou plusieurs piliers. Il est donc considéré comme non durable. Vous pouvez le modifier et réévaluer, ou créer un nouveau projet.
+        </div>
 
         <!-- Section des piliers -->
         <div class="pillars-section">
@@ -16,6 +25,15 @@
                 <div class="pillar-content">
                     <h3 class="pillar-title">Pilier économique</h3>
                     <p class="pillar-description">Apportez de la valeur et diversifiez vos revenus.</p>
+
+                    <!-- ✅ Score intégré ici -->
+                    <div class="score-inline" *ngIf="scores?.economique"
+                        [ngClass]="{'text-danger': scores.economique.score < scores.economique.threshold}">
+                        Score : {{ scores.economique.score }}/{{ scores.economique.max }}<br>
+                        Seuil : {{ scores.economique.threshold }}
+                    </div>
+
+
                     <div class="progress-container">
                         <div class="progress-bar">
                             <div class="progress-fill" [style.width.%]="progress.economique"></div>
@@ -26,12 +44,21 @@
                 <div class="pillar-icon"><i class="fas fa-chart-line"></i></div>
             </div>
 
+
             <!-- Pilier SOCIO -->
             <div class="pillar-card social" (click)="navigateTo('socio')">
                 <div class="pillar-number">2</div>
                 <div class="pillar-content">
                     <h3 class="pillar-title">Pilier socio territorial</h3>
                     <p class="pillar-description">Renforcez l'emploi et le lien avec le territoire.</p>
+
+                    <!-- ✅ Score intégré ici -->
+                    <div class="score-inline" *ngIf="scores?.socio_territorial"
+                        [ngClass]="{'text-danger': scores.socio_territorial.score < scores.socio_territorial.threshold}">
+                        Score : {{ scores.socio_territorial.score }}/{{ scores.socio_territorial.max }}<br>
+                        Seuil : {{ scores.socio_territorial.threshold }}
+                    </div>
+
                     <div class="progress-container">
                         <div class="progress-bar">
                             <div class="progress-fill" [style.width.%]="progress.socio"></div>
@@ -42,12 +69,22 @@
                 <div class="pillar-icon"><i class="fas fa-users"></i></div>
             </div>
 
+
             <!-- Pilier ENVIRONNEMENT -->
             <div class="pillar-card environmental" (click)="navigateTo('environnemental')">
                 <div class="pillar-number">3</div>
                 <div class="pillar-content">
                     <h3 class="pillar-title">Pilier environnemental</h3>
                     <p class="pillar-description">Réduisez les impacts environnementaux.</p>
+
+                    <!-- ✅ Score intégré ici -->
+                    <div class="score-inline" *ngIf="scores?.environnemental"
+                        [ngClass]="{'text-danger': scores.environnemental.score < scores.environnemental.threshold}">
+                        Score : {{ scores.environnemental.score }}/{{ scores.environnemental.max }}<br>
+                        Seuil : {{ scores.environnemental.threshold }}
+                    </div>
+
+
                     <div class="progress-container">
                         <div class="progress-bar">
                             <div class="progress-fill" [style.width.%]="progress.environnemental"></div>
@@ -57,22 +94,20 @@
                 </div>
                 <div class="pillar-icon"><i class="fas fa-leaf"></i></div>
             </div>
-        </div>
-        <div *ngIf="scores?.economique">
-            <strong>Économique:</strong> {{ scores.economique.score }}/{{ scores.economique.max }}
-        </div>
-        <div *ngIf="scores?.socio">
-            <strong>Socio:</strong> {{ scores.socio.score }}/{{ scores.socio.max }}
-        </div>
-        <div *ngIf="scores?.environnemental">
-            <strong>Environnemental:</strong> {{ scores.environnemental.score }}/{{ scores.environnemental.max }}
-        </div>
 
+
+
+        </div>
 
         <!-- Bouton -->
         <div class="bottom-left-button">
             <button (click)="goBack()">← Précédent</button>
         </div>
+        <!-- Bouton J’évalue mon projet -->
+        <div class="right-button">
+            <button (click)="loadScores()">✔ J’évalue mon projet</button>
+        </div>
+
 
     </div>
 </div>
