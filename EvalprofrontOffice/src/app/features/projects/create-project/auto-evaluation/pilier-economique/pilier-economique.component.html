@@ -66,10 +66,13 @@
                     </div>
 
                     <!-- CHOIXMULTIPLE -->
+                    <!-- ✅ CORRIGÉ -->
                     <div *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length" class="option-group">
+                        <label class="label">{{ q.text }}<span *ngIf="q.is_required"
+                                class="required-asterisk">*</span></label>
+
                         <div *ngFor="let opt of q.options" class="checkbox-container">
                             <label class="checkbox-label">
-                                <!-- ✅ Checkbox liée au FormArray -->
                                 <input type="checkbox" class="checkbox-input" [value]="opt.id"
                                     [checked]="isOptionChecked(i, opt.id)"
                                     (change)="onCheckboxToggle(i, opt.id, $event)" />
@@ -78,8 +81,13 @@
                             </label>
                         </div>
                     </div>
+
+
                     <!-- CHOIX UNIQUE (RADIO) -->
+                    <!-- ✅ CHOIX UNIQUE (RADIO) -->
                     <div *ngIf="q.type === 'RADIO' && q.options?.length" class="option-group">
+                        <label class="label">{{ q.text }}<span *ngIf="q.is_required"
+                                class="required-asterisk">*</span></label>
                         <div *ngFor="let opt of q.options" class="radio-container">
                             <label class="radio-label">
                                 <input type="radio" class="radio-input" [value]="opt.id"
@@ -90,6 +98,7 @@
                             </label>
                         </div>
                     </div>
+
 
 
                 </div>

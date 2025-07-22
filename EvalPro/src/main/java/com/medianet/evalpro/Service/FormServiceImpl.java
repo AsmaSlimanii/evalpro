@@ -17,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -161,17 +163,27 @@ public class FormServiceImpl implements FormService {
                 .build();
     }
 
-    public FormProgressDTO getPillarProgress(Long dossierId) {
-        boolean ecoFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
-                responseRepository.existsByDossierIdAndQuestionPillar(dossierId, "ECONOMIQUE");
+    public Map<String, Integer> getPillarProgressPercentage(Long dossierId) {
+        Map<String, Integer> progressMap = new HashMap<>();
+        List<String> pillars = List.of("ECONOMIQUE", "SOCIO", "ENVIRONNEMENTAL");
+        Long stepId = 3L; // ID de l'étape auto-évaluation
 
-        boolean socioFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
-                responseRepository.existsByDossierIdAndQuestionPillar(dossierId, "SOCIO");
+        for (String pillar : pillars) {
+            long totalQuestions = Optional.ofNullable(
+                    questionRepository.countQuestionsByPillarAndStep(pillar, stepId)
+            ).orElse(0L);
 
-        boolean envFilled = responseRepository.existsByDossierIdAndStepId(dossierId, 3L) &&
-                responseRepository.existsByDossierIdAndQuestionPillar(dossierId, "ENVIRONNEMENTAL");
+            Long answered = Optional.ofNullable(
+                    responseRepository.countResponsesByDossierIdAndPillar(dossierId, pillar)
+            ).orElse(0L);
 
-        return new FormProgressDTO(ecoFilled, socioFilled, envFilled);
+            int progress = (totalQuestions == 0) ? 0 : (int) Math.round(answered * 100.0 / totalQuestions);
+
+            progressMap.put(pillar, progress);
+            System.out.println("Progress " + pillar + ": " + answered + "/" + totalQuestions + " → " + progress + "%");
+        }
+
+        return progressMap;
     }
 
 

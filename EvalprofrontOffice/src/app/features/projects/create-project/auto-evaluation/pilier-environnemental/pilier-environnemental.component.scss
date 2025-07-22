@@ -1,0 +1,217 @@
+.form-container {
+    background: #f4f6fd;
+    ;
+    padding: 4rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', sans-serif;
+    max-width: 1260px;
+    /* ou 800px, 720px selon ton besoin */
+    margin: 0 auto;
+    margin-top: 8rem;
+    /* 🔽 tu peux ajuster cette valeur */
+}
+
+.form-title-wrapper {
+    text-align: center;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+
+
+.page-subtitle {
+    font-size: 1rem;
+    color: #555;
+}
+
+.form-header {
+    margin-bottom: 3.5rem; //size de titre Auto-Evalution
+}
+
+.text-center {
+    text-align: center;
+}
+
+.pillar-title {
+    // Titre des piliers
+    font-size: 1.9rem;
+    font-weight: 750;
+    color: #1f3c88;
+    margin-bottom: 2.2rem;
+    text-align: left;
+    max-width: 900px;
+    margin-left: 0rem;
+    margin-right: auto;
+}
+
+.form-subtitle-box {
+    background-color: #e6f4f9;
+    border: 1px solid #c5effc;
+    padding: 12px 20px;
+    border-radius: 10px;
+    color: #004e64;
+    font-size: 1.1rem;
+    margin: 0 auto 1.5rem auto;
+    max-width: 1125px;
+    text-align: left;
+    margin-bottom: 2.5rem;
+}
+
+.header-icon svg {
+    width: 2rem;
+    height: 2rem;
+    color: #2c7be5;
+    margin-right: 0.5rem;
+}
+
+.form-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+.form-description {
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: 0.25rem;
+}
+
+.form-banner {
+    display: flex;
+    align-items: center;
+    background-color: #b7cbee;
+    color: #142272;
+    font-weight: 600;
+    padding: 0.75rem 1.2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    border: 1px solid #c8e6c9;
+}
+
+.form-banner svg {
+    margin-right: 0.5rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 0.75rem;
+    background-color: #fff;
+}
+
+.label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.required-asterisk {
+    color: red;
+    margin-left: 4px;
+}
+
+.input-container {
+    margin-bottom: 0.5rem;
+}
+
+.input-wrapper {
+    display: flex;
+}
+
+.input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.input.invalid {
+    border-color: #e53e3e;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: flex-start;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-input {
+    margin-right: 0.5rem;
+}
+
+.checkbox-text {
+    font-size: 1.20rem; //le size des lignes 
+}
+
+.error-text {
+    color: #e53e3e;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.btn-secondary,
+.btn-primary {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 2rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #2d3748;
+}
+
+.btn-primary {
+    background: #2c7be5;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1a68d1;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.spinner {
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #2c7be5;
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

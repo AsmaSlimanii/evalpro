@@ -11,13 +11,15 @@
             Durabilité socio-territoriale : indiquez comment votre projet renforce les liens sociaux, l’implication
             locale et le territoire.
         </div>
- 
+
         <!-- ✅ Bannières conditionnelles -->
         <div class="form-banner clickable" *ngIf="currentSection === 1">Socio 1 : Recrutement permanent</div>
         <div class="form-banner clickable" *ngIf="currentSection === 2">Socio 2 : Emploi décent</div>
-        <div class="form-banner clickable" *ngIf="currentSection === 3">Socio 3 : Ancrage territorial</div>  
-        <div class="form-banner clickable" *ngIf="currentSection === 4">Socio : Compléments</div> 
- 
+        <div class="form-banner clickable" *ngIf="currentSection === 3">Socio 3 : Ancrage territorial</div>
+        <div class="form-banner clickable" *ngIf="currentSection === 4">Socio : Compléments</div>
+
+
+        <!-- ✅ Questions dynamiques -->
         <div formArrayName="responses">
             <ng-container *ngFor="let q of allQuestions; let i = index">
                 <div *ngIf="isQuestionInCurrentSection(q)" [formGroupName]="i" class="form-section">
@@ -37,10 +39,13 @@
                     </div>
 
                     <!-- CHOIXMULTIPLE -->
+                    <!-- ✅ CORRIGÉ -->
                     <div *ngIf="q.type === 'CHOIXMULTIPLE' && q.options?.length" class="option-group">
+                        <label class="label">{{ q.text }}<span *ngIf="q.is_required"
+                                class="required-asterisk">*</span></label>
+
                         <div *ngFor="let opt of q.options" class="checkbox-container">
                             <label class="checkbox-label">
-                                <!-- ✅ Checkbox liée au FormArray -->
                                 <input type="checkbox" class="checkbox-input" [value]="opt.id"
                                     [checked]="isOptionChecked(i, opt.id)"
                                     (change)="onCheckboxToggle(i, opt.id, $event)" />
@@ -49,8 +54,13 @@
                             </label>
                         </div>
                     </div>
+
+
                     <!-- CHOIX UNIQUE (RADIO) -->
+                    <!-- ✅ CHOIX UNIQUE (RADIO) -->
                     <div *ngIf="q.type === 'RADIO' && q.options?.length" class="option-group">
+                        <label class="label">{{ q.text }}<span *ngIf="q.is_required"
+                                class="required-asterisk">*</span></label>
                         <div *ngFor="let opt of q.options" class="radio-container">
                             <label class="radio-label">
                                 <input type="radio" class="radio-input" [value]="opt.id"
@@ -63,9 +73,11 @@
                     </div>
 
 
+
                 </div>
             </ng-container>
         </div>
+
 
 
         <!-- ✅ Boutons de navigation -->

@@ -100,11 +100,11 @@ public class FormController {
 
 
     // ✅ Correction ici : mapping bien formé avec PathVariable
-    @GetMapping("/progress/{dossierId}")
-    public ResponseEntity<FormProgressDTO> getProgress(@PathVariable Long dossierId) {
-        FormProgressDTO progress = formService.getPillarProgress(dossierId);
-        return ResponseEntity.ok(progress);
+    @GetMapping("/step3-pillar-progress/{dossierId}")
+    public ResponseEntity<Map<String, Integer>> getPillarProgressPercentage(@PathVariable Long dossierId) {
+        return ResponseEntity.ok(formService.getPillarProgressPercentage(dossierId));
     }
+
 
 
 //getformbystepandbydossierid

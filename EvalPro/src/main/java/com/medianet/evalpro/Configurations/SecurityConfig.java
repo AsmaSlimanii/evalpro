@@ -45,11 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/responses/**").permitAll()
                         .requestMatchers("/api/responses/progress/**").permitAll()
-
-
-                        // .requestMatchers("/api/responses/**").hasAnyAuthority("ROLE_CLIENT", "ROLE_ADMIN", "ROLE_EXPERT")
-
-
+                        .requestMatchers("/api/responses/step3-pillar-progress/**").permitAll()
                         .anyRequest().authenticated()
                 )
 

@@ -35,18 +35,25 @@ export class AutoEvaluationComponent implements OnInit {
     this.loadProgress();
     this.loadScores();
   }
-
   loadProgress(): void {
     const dossierId = Number(this.dossierId);
-    this.formService.getPillarProgress(dossierId).subscribe({
-      next: (data: { economique: any; socio: any; environnemental: any; }) => {
-        this.progress.economique = data.economique ? 100 : 0;
-        this.progress.socio = data.socio ? 100 : 0;
-        this.progress.environnemental = data.environnemental ? 100 : 0;
+    this.formService.getStep3PillarProgress(dossierId).subscribe({
+      next: (data: { [key: string]: number }) => {
+        console.log('🟢 Progress reçu :', data); // <= Vérifie les noms ici
+
+        this.progress.economique = data['ECONOMIQUE'] || 0;
+        this.progress.socio = data['SOCIO'] || 0;
+        this.progress.environnemental = data['ENVIRONNEMENTAL'] || 0;
+
       },
-      error: (err: any) => console.error('Erreur progression pilier', err)
+      error: (err) => console.error('❌ Erreur progression pilier', err)
     });
   }
+
+
+
+
+
   loadScores(): void {
     const dossierId = Number(this.dossierId);
     this.formService.getPillarScores(dossierId).subscribe({

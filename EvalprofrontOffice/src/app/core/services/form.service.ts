@@ -10,7 +10,7 @@ export class FormService {
   private readonly formApiUrl = `${this.baseUrl}/api/forms`;
   private readonly responseApiUrl = `${this.baseUrl}/api/responses`;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   private getAuthHeaders(): HttpHeaders {
     const token = this.authService.getToken();
@@ -53,19 +53,29 @@ export class FormService {
       : `${this.responseApiUrl}/step${stepId}`;
     return this.http.post(url, payload, { headers: this.getAuthHeaders() });
   }
-  getPillarProgress(dossierId: number): Observable<any> {
-  return this.http.get(`${this.responseApiUrl}/step3-pillar-progress/${dossierId}`, {
-    headers: this.getAuthHeaders()
-  });
+
+  // getPillarProgress(dossierId: number): Observable<any> {
+  // return this.http.get(`${this.responseApiUrl}/step3-pillar-progress/${dossierId}`, {
+  //    headers: this.getAuthHeaders()
+  //  });
+  //}
+
+
+  // getProgress(stepId: number, dossierId: string, pillar: string): Observable<number> {
+  //  return this.http.get<number>(
+  //  `${this.responseApiUrl}/progress/${stepId}/${dossierId}?pillar=${pillar}`,
+  //   { headers: this.getAuthHeaders() }
+  // );
+  // }
+getStep3PillarProgress(dossierId: number): Observable<{ [key: string]: number }> {
+  // ✅ URL correcte vers FormController
+return this.http.get<{ [key: string]: number }>(
+  `${this.formApiUrl}/step3-pillar-progress/${dossierId}`,
+  { headers: this.getAuthHeaders() }
+);
+
 }
 
-
-  getProgress(stepId: number, dossierId: string, pillar: string): Observable<number> {
-    return this.http.get<number>(
-      `${this.responseApiUrl}/progress/${stepId}/${dossierId}?pillar=${pillar}`,
-      { headers: this.getAuthHeaders() }
-    );
-  }
 
   getPillarScores(dossierId: number): Observable<any> {
     return this.http.get(`${this.responseApiUrl}/step3-score/${dossierId}`, {

@@ -58,6 +58,11 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
     boolean existsByDossierIdAndStepId(Long dossierId, long l);
     boolean existsByDossierIdAndQuestionPillar(Long dossierId, String pillar);
 
+    //une méthode pour compter les réponses par pilier et dossier
+    @Query("SELECT COUNT(r) FROM Response r WHERE r.dossier.id = :dossierId AND r.question.pillar = :pillar AND r.step.id = 3")
+    Long countResponsesByDossierIdAndPillar(@Param("dossierId") Long dossierId, @Param("pillar") String pillar);
+
+
 
 
 }

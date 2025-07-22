@@ -53,6 +53,7 @@ import { PilierEnvironnementalComponent } from './features/projects/create-proje
     AutoEvaluationComponent,
     PilierEconomiqueComponent,
     PilierSocioComponent,
+    PilierEnvironnementalComponent,
     RequeteFinancementComponent,
     SchemaFinancementComponent,
     ProjectListComponent,
