@@ -16,6 +16,7 @@ public class RegisterRequest {
     private String discovery;
     private String activation;
     private Role role; // facultatif si toujours CLIENT
+
 }
 
 

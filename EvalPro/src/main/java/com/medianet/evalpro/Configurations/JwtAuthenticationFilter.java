@@ -45,27 +45,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 List<SimpleGrantedAuthority> authorities = roles.stream()
                         .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+                        .toList();
 
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email); // 👈 nécessaire ici !
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    System.out.println("➡️ Email: " + email);
-                    System.out.println("➡️ Rôles extraits du token: " + roles); // ce que tu lis depuis `claims.get("authorities")`
-                    System.out.println("➡️ Authorities créées: " + authorities); // converties en SimpleGrantedAuthority
-
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-
-
                     System.out.println("✅ Utilisateur authentifié : " + email);
-                    System.out.println("🛡️ Autorité injectée : " + authorities);
+                    System.out.println("🛡️ Autorité injectée : " + userDetails.getAuthorities());
                 }
+
             }
         } catch (Exception e) {
             System.err.println("❌ Erreur dans JwtAuthenticationFilter: " + e.getMessage());

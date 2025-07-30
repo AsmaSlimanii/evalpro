@@ -51,7 +51,8 @@ public class AuthServiceImpl implements AuthService {
         // ou ROLE_ADMIN selon le rôle réel
         String token = jwtUtil.generateToken(user.getEmail(), roles);
 
-        return new AuthResponse(token, "Inscription réussie !");
+//        return new AuthResponse(token, "Inscription réussie !");
+        return new AuthResponse(token, "Connexion réussie !", user.getRole().name());
     }
 
     @Override
@@ -67,6 +68,7 @@ public class AuthServiceImpl implements AuthService {
         List<String> roles = List.of("ROLE_USER"); // ou récupérer depuis user.getRole()
         String token = jwtUtil.generateToken(user.getEmail(), roles);
 
-        return new AuthResponse(token, "Connexion réussie !");
+       // return new AuthResponse(token, "Connexion réussie !");
+        return new AuthResponse(token, "Connexion réussie !", user.getRole().name());
     }
 }

@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Repository;
 
 import com.medianet.evalpro.Entity.Option;
+import com.medianet.evalpro.Entity.Question;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,6 @@ public interface OptionRepository extends JpaRepository<Option, Long> {
 
     // Options d’une question
     List<Option> findByQuestionId(Long questionId);
+
+
 }

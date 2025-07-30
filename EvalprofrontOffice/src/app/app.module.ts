@@ -31,6 +31,9 @@ import { LayoutComponent } from './layout/layout.component';
 import { PilierEconomiqueComponent } from './features/projects/create-project/auto-evaluation/pilier-economique/pilier-economique.component';
 import { PilierSocioComponent } from './features/projects/create-project/auto-evaluation/pilier-socio/pilier-socio.component';
 import { PilierEnvironnementalComponent } from './features/projects/create-project/auto-evaluation/pilier-environnemental/pilier-environnemental.component';
+import { ProfilComponent } from './features/projects/create-project/requete-financement/profil/profil.component';
+import { EntrepriseComponent } from './features/projects/create-project/requete-financement/entreprise/entreprise.component';
+import { ProjetComponent } from './features/projects/create-project/requete-financement/projet/projet.component';
 
 
 
@@ -55,6 +58,7 @@ import { PilierEnvironnementalComponent } from './features/projects/create-proje
     PilierSocioComponent,
     PilierEnvironnementalComponent,
     RequeteFinancementComponent,
+    ProfilComponent,
     SchemaFinancementComponent,
     ProjectListComponent,
     TimeAgoPipe,
@@ -70,10 +74,13 @@ import { PilierEnvironnementalComponent } from './features/projects/create-proje
     ReactiveFormsModule,
     CommonModule,
     RouterModule,
-   // RecaptchaModule,
-   //RecaptchaFormsModule,
+    // RecaptchaModule,
+    //RecaptchaFormsModule,
     BrowserAnimationsModule,
     MatSnackBarModule,
+
+    EntrepriseComponent,
+    ProjetComponent,
 
     
     ReactiveFormsModule,

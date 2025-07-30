@@ -1,0 +1,100 @@
+<div class="form-container">
+    <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
+
+        <!-- ✅ En-tête -->
+        <div class="form-header text-center">
+            <h2 class="form-title">{{ formMetadata?.title }}</h2>
+        </div>
+
+        <div class="form-subtitle-box">
+            Merci de renseigner votre profil en remplissant les champs suivants.
+        </div>
+        <!-- ✅ Questions dynamiques -->
+        <div formArrayName="responses">
+            <ng-container *ngFor="let q of allQuestions; let i = index; trackBy: trackByQuestionId">
+                <div [formGroupName]="i">
+              <ng-container *ngIf="shouldDisplayQuestion(q) && !q.isHidden">
+
+                        <!-- SECTION_TITLE -->
+                        <div *ngIf="q.type === 'SECTION_TITLE'" class="section-title-block">
+                            <h3 class="text-primary mb-3">{{ q.text }}</h3>
+                        </div>
+
+                        <!-- Autres types -->
+                        <div *ngIf="q.type !== 'SECTION_TITLE'" class="form-section">
+
+                            <!-- TEXTE / NUMERIQUE -->
+                            <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
+                                <label class="label">
+                                    {{ q.text }}
+                                    <span *ngIf="q.required" class="required-asterisk">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <input [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'" class="input"
+                                        formControlName="value" [placeholder]="q.placeholder || 'Votre réponse'"
+                                        [class.invalid]="showError(i)" (blur)="onFieldBlur(i)" />
+                                </div>
+                                <div class="error-text" *ngIf="showError(i)">Ce champ est requis</div>
+                            </div>
+
+                            <!-- CHOIXMULTIPLE -->
+                            <div *ngIf="q.type === 'CHOIXMULTIPLE'" class="option-group">
+                                <label class="label">
+                                    {{ q.text }}
+                                    <span *ngIf="q.required" class="required-asterisk">*</span>
+                                </label>
+                                <div *ngFor="let opt of q.options" class="checkbox-container">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" class="checkbox-input" [value]="opt.id"
+                                            [checked]="isOptionChecked(i, opt.id)"
+                                            (change)="onCheckboxToggle(i, opt.id, $event)" />
+                                        <span class="checkbox-custom"></span>
+                                        <span class="checkbox-text">{{ opt.value }}</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- RADIO -->
+                            <div *ngIf="q.type === 'RADIO'" class="option-group">
+                                <label class="label">
+                                    {{ q.text }}
+                                    <span *ngIf="q.required" class="required-asterisk">*</span>
+                                </label>
+                                <div *ngFor="let opt of q.options" class="radio-container">
+                                    <label class="radio-label">
+                                        <input type="radio" [value]="opt.id" [checked]="isRadioSelected(i, opt.id)"
+                                            (change)="onRadioChange(i, opt.id)" name="radio-{{i}}" />
+                                        <span class="radio-text">{{ opt.value }}</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- UPLOAD -->
+                            <div *ngIf="q.type === 'UPLOAD'" class="input-container">
+                                <label class="label">
+                                    {{ q.text }}
+                                    <span *ngIf="q.required" class="required-asterisk">*</span>
+                                </label>
+                                <input type="file" (change)="onFileChange($event, i)" class="input" />
+                                <div class="uploaded-file" *ngIf="uploadedFiles[i]">{{ uploadedFiles[i].name }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </ng-container>
+                </div>
+            </ng-container>
+        </div>
+
+            <!-- ✅ Bouton -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Valider →</button>
+            </div>
+
+    </form>
+
+    <div class="loading-spinner" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Chargement en cours...</p>
+    </div>
+</div>

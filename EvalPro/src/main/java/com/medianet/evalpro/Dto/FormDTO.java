@@ -16,5 +16,6 @@ public class FormDTO {
     private String title;
     private String description;
     private List<QuestionDTO> questions;
-    private List<ResponseDTO> responses; // ✅ Ajoute ce champ
+    private List<ResponseDTO> responses;// ✅ Ajoute ce champ
+    private String comment;
 }

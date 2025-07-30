@@ -56,7 +56,7 @@ public class User implements UserDetails {
 
 
     public enum Role {
-        ADMIN, EXPERT, CLIENT
+        ADMIN, CLIENT
     }
 
 

@@ -1,0 +1,249 @@
+/* === REQUÊTE DE FINANCEMENT === */
+
+.requete-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.requete-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 0 2rem;
+  background-color: #f8fafc;
+}
+
+.requete-card {
+  background-color: #fff;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 27px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 1160px;
+  margin-top: 5rem;
+  padding-bottom: 9rem;
+  position: relative;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.header-section .main-title {
+  font-size: 1.8rem;
+  color: #10386a;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.header-section .subtitle {
+  font-size: 1.25rem;
+  color: #6b7280;
+  line-height: 1.6;
+  max-width: 650px;
+  margin: 4rem auto 0 auto;
+}
+
+.pillars-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.pillar-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border-left: 5px solid;
+}
+
+.pillar-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.pillar-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.1);
+  margin-right: 1.5rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.pillar-content {
+  flex: 1;
+}
+
+.pillar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.pillar-description {
+  color: #7f8c8d;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.progress-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #7f8c8d;
+  min-width: 40px;
+}
+
+.pillar-icon {
+  margin-left: 1.5rem;
+  font-size: 1.8rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* === Section Mon Profil === */
+.pillar-card.profil {
+  border-left-color: #8e44ad;
+  background: linear-gradient(135deg, #f9f0ff 0%, #f3e5f5 100%);
+}
+.pillar-card.profil .progress-fill {
+  background: linear-gradient(to right, #8e44ad, #ba68c8);
+}
+.pillar-card.profil .pillar-icon {
+  background-color: #8e44ad;
+}
+
+/* === Section Mon Entreprise === */
+.pillar-card.entreprise {
+  border-left-color: #2980b9;
+  background: linear-gradient(135deg, #eaf6fb 0%, #d0eafc 100%);
+}
+.pillar-card.entreprise .progress-fill {
+  background: linear-gradient(to right, #2980b9, #5dade2);
+}
+.pillar-card.entreprise .pillar-icon {
+  background-color: #2980b9;
+}
+
+/* === Section Mon Projet === */
+.pillar-card.projet {
+  border-left-color: #f39c12;
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+}
+.pillar-card.projet .progress-fill {
+  background: linear-gradient(to right, #f39c12, #fbc02d);
+}
+.pillar-card.projet .pillar-icon {
+  background-color: #f39c12;
+}
+
+/* === Bouton bas gauche === */
+.bottom-left-button {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 2rem;
+}
+
+.bottom-left-button button {
+  background-color: #c4dbf5;
+  color: #070707;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  font-size: 1.20rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease;
+}
+
+.bottom-left-button button:hover {
+  background-color: #0b2c55;
+}
+
+/* === Bouton droite === */
+.right-button {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+  padding: 0 20px;
+}
+.right-button button {
+  background-color: #0c559e;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.right-button button:hover {
+  background-color: #005599;
+  transform: scale(1.03);
+}
+
+/* === Messages de succès / erreur === */
+.alert {
+  padding: 1rem 1.5rem;
+  border-radius: 5px;
+  margin-bottom: 2.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  width: 90%;
+  line-height: 1.4;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.alert-success {
+  background-color: #adecbe;
+  color: #197e30;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}

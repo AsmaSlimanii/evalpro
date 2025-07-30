@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,19 +29,19 @@ public class ResponseController {
     private DossierService dossierService;
 
 
-    // 🔹 CREATE
+    // 🔹 CREATE :  Crée une nouvelle réponse (Response) générique (non liée à une étape spécifique ou à un dossier).
     @PostMapping
     public ResponseEntity<Response> createResponse(@RequestBody Response response) {
         return ResponseEntity.ok(responseService.save(response));
     }
 
-    // 🔹 READ ALL
+    // 🔹 READ ALL : Récupère toutes les réponses existantes dans la base.
     @GetMapping
     public ResponseEntity<List<Response>> getAllResponses() {
         return ResponseEntity.ok(responseService.findAll());
     }
 
-    // 🔹 READ ONE BY ID
+    // 🔹 READ ONE BY ID : Récupère une seule réponse par son ID.
     @GetMapping("/{id}")
     public ResponseEntity<Response> getResponseById(@PathVariable Long id) {
         return responseService.findById(id)
@@ -47,7 +49,7 @@ public class ResponseController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 🔹 UPDATE
+    // 🔹 UPDATE :  Met à jour une réponse existante identifiée par son ID.
     @PutMapping("/{id}")
     public ResponseEntity<Response> updateResponse(@PathVariable Long id, @RequestBody Response response) {
         try {
@@ -58,7 +60,7 @@ public class ResponseController {
         }
     }
 
-    // 🔹 DELETE
+    // 🔹 DELETE : Supprime une réponse identifiée par son ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteResponse(@PathVariable Long id) {
         try {
@@ -82,7 +84,17 @@ public class ResponseController {
 //        return ResponseEntity.ok(responseService.findByUserId(userId));
 //    }
 
-    // 🔹 SEARCH + PAGINATION
+    // 🔹 SEARCH + PAGINATION : Recherche paginée de réponses avec un filtre texte q
+    //page : numéro de page
+    //
+    //per_page : nombre d’éléments par page
+    //
+    //q : texte à rechercher
+    //Retourne : Un objet contenant :
+    //
+    //data : liste des réponses
+    //
+    //page, per_page, total : infos de pagination
     @GetMapping("/search")
     public ResponseEntity<Map<String,Object>> searchResponses(
             @RequestParam(defaultValue = "0") int page,
@@ -99,7 +111,7 @@ public class ResponseController {
         return ResponseEntity.ok(resp);
     }
 
-    //1. Création (sans dossier)
+    //1. Création (sans dossier) : Sauvegarde les réponses d’un utilisateur à une étape (step) sans dossier existant.
     @PostMapping("/step{step_id}")
     public ResponseEntity<?> saveStepWithoutDossier(@RequestBody ResponseRequestDTO dto,
                                                     @PathVariable String step_id,
@@ -113,24 +125,66 @@ public class ResponseController {
         return ResponseEntity.ok(Map.of("dossierId", dossier.getId()));
     }
 
-    //2. Mise à jour (avec dossier existant)
-    @PostMapping("/step{step_id}/{dossier_id}")
-    public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto,
-                                      @PathVariable String step_id,
-                                      @PathVariable String dossier_id,
-                                      @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(403).body("Utilisateur non authentifié !");
-        }
+////   // 2. Mise à jour (avec dossier existant)
+//    @PostMapping("/step{step_id}/{dossier_id}")
+//    public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto,
+//                                      @PathVariable String step_id,
+//                                      @PathVariable String dossier_id,
+//                                      @AuthenticationPrincipal UserDetails userDetails) {
+//        if (userDetails == null) {
+//            return ResponseEntity.status(403).body("Utilisateur non authentifié !");
+//        }
+//
+//        dto.setStepId(Long.valueOf(step_id));
+//        dto.setDossierId(Long.valueOf(dossier_id));
+//
+//        // ✅ AJOUTE CE LOG POUR DEBUG
+//        System.out.println("📥 DTO reçu : step=" + dto.getStepId() + " | dossier=" + dto.getDossierId() + " | pillar=" + dto.getPillar());
+//        responseService.saveStepResponses(dto, userDetails.getUsername());
+//        return ResponseEntity.ok(Map.of("dossierId", dossier_id));
+//    }
 
-        dto.setStepId(Long.valueOf(step_id));
-        dto.setDossierId(Long.valueOf(dossier_id));
 
-        // ✅ AJOUTE CE LOG POUR DEBUG
-        System.out.println("📥 DTO reçu : step=" + dto.getStepId() + " | dossier=" + dto.getDossierId() + " | pillar=" + dto.getPillar());
-        responseService.saveStepResponses(dto, userDetails.getUsername());
-        return ResponseEntity.ok(Map.of("dossierId", dossier_id));
+//But : Sauvegarde les réponses pour une étape spécifique et un dossier déjà existant.
+//Logique :
+//
+//Récupère l’utilisateur via @AuthenticationPrincipal
+//
+//Enregistre les réponses via responseService.saveStepResponses
+//
+//Si l’utilisateur est ROLE_ADMIN et fournit un commentaire (dto.getComment()),
+// alors le commentaire est aussi sauvegardé dans une table spéciale pour les commentaires admin.
+//Retourne : L’ID du dossier traité.
+@PostMapping("/step{step_id}/{dossier_id}")
+public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto,
+                                  @PathVariable String step_id,
+                                  @PathVariable String dossier_id,
+                                  @AuthenticationPrincipal UserDetails userDetails) {
+
+    if (userDetails == null) {
+        return ResponseEntity.status(403).body("Utilisateur non authentifié !");
     }
+
+    dto.setStepId(Long.valueOf(step_id));
+    dto.setDossierId(Long.valueOf(dossier_id));
+
+    responseService.saveStepResponses(dto, userDetails.getUsername());
+
+    boolean isAdmin = userDetails.getAuthorities().stream()
+            .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+    if (isAdmin && dto.getComment() != null && !dto.getComment().isBlank()) {
+        responseService.saveAdminComment(
+                dto.getDossierId(),
+                dto.getStepId(),
+                dto.getComment(),
+                userDetails.getUsername()
+        );
+    }
+
+    return ResponseEntity.ok(Map.of("dossierId", dossier_id));
+}
+
 
     @GetMapping("/step3-progress/{dossierId}")
     public ResponseEntity<Map<String, Boolean>> getStep3Progress(@PathVariable Long dossierId) {
@@ -142,11 +196,31 @@ public class ResponseController {
     }
 
 
+
+    //But : Vérifie si chaque pilier de l’étape 3 (auto-évaluation) est complété.
+    //Logique :
+    //
+    //Appelle isPillarCompleted pour economique, socio, environnemental.
+    //Retourne : Un objet JSON avec { economique: true/false, socio: ..., environnemental: ... }.
     @GetMapping("/step3-score/{dossierId}")
     public ResponseEntity<?> getPillarScores(@PathVariable Long dossierId) {
         Map<String, Object> scores = responseService.calculatePillarScores(dossierId);
         return ResponseEntity.ok(scores);
     }
+
+
+
+
+
+//    @PostMapping("/admin-comment")
+//    public ResponseEntity<?> saveAdminComment(@RequestParam Long dossierId,
+//                                              @RequestParam Long stepId,
+//                                              @RequestParam String comment,
+//                                              @AuthenticationPrincipal UserDetails userDetails) {
+//
+//        responseService.saveAdminComment(dossierId, stepId, comment, userDetails.getUsername());
+//        return ResponseEntity.ok("✅ Commentaire enregistré avec succès !");
+//    }
 
 
 

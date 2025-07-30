@@ -32,7 +32,8 @@ export class InscriptionComponent {
       discovery: [''],
       activation: [''],
       terms: [false, Validators.requiredTrue],
-      privacy: [false, Validators.requiredTrue]
+      privacy: [false, Validators.requiredTrue],
+      role: ['ADMIN'] // 👈 ajouté ici pour forcer le rôle ADMIN (ou CLIENT)
     }, { validators: this.passwordMatchValidator });
   }
 
@@ -47,27 +48,27 @@ export class InscriptionComponent {
   }
 
   onSubmit(): void {
-  if (this.form.valid) {
-    this.http.post('http://localhost:8080/api/auth/register', this.form.value).subscribe({
-      next: () => {
-        this.emailExists = false;
-        this.successMessage = '✅ Inscription réussie ! Redirection vers la connexion...';
-        setTimeout(() => {
-          this.router.navigate(['/connexion']);
-        }, 2000);
-      },
-      error: (err) => {
-        if (err.status === 409) { // ⚠️ Ton backend doit renvoyer un code 409 si email existe
-          this.emailExists = true;
-        } else {
+    if (this.form.valid) {
+      this.http.post('http://localhost:8080/api/auth/register', this.form.value).subscribe({
+        next: () => {
           this.emailExists = false;
-          console.error(err);
+          this.successMessage = '✅ Inscription réussie ! Redirection vers la connexion...';
+          setTimeout(() => {
+            this.router.navigate(['/connexion']);
+          }, 2000);
+        },
+        error: (err) => {
+          if (err.status === 409) { // ⚠️ Ton backend doit renvoyer un code 409 si email existe
+            this.emailExists = true;
+          } else {
+            this.emailExists = false;
+            console.error(err);
+          }
         }
-      }
-    });
-  } else {
-    this.form.markAllAsTouched();
+      });
+    } else {
+      this.form.markAllAsTouched();
+    }
   }
-}
 
 }

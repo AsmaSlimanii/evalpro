@@ -15,16 +15,20 @@
     <h2>Inscription</h2>
 
     <div class="form-group">
-      <input type="text" placeholder="Nom" formControlName="name" [ngClass]="{ 'is-invalid': f['name'].touched && f['name'].invalid }" />
+      <input type="text" placeholder="Nom" formControlName="name"
+        [ngClass]="{ 'is-invalid': f['name'].touched && f['name'].invalid }" />
       <div *ngIf="f['name'].touched && f['name'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
 
-      <input type="text" placeholder="Prénom" formControlName="prenom" [ngClass]="{ 'is-invalid': f['prenom'].touched && f['prenom'].invalid }" />
+      <input type="text" placeholder="Prénom" formControlName="prenom"
+        [ngClass]="{ 'is-invalid': f['prenom'].touched && f['prenom'].invalid }" />
       <div *ngIf="f['prenom'].touched && f['prenom'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
     </div>
 
     <div class="form-group">
-      <input type="date" placeholder="Date de naissance" formControlName="birthdate" [ngClass]="{ 'is-invalid': f['birthdate'].touched && f['birthdate'].invalid }" />
-      <div *ngIf="f['birthdate'].touched && f['birthdate'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
+      <input type="date" placeholder="Date de naissance" formControlName="birthdate"
+        [ngClass]="{ 'is-invalid': f['birthdate'].touched && f['birthdate'].invalid }" />
+      <div *ngIf="f['birthdate'].touched && f['birthdate'].errors?.['required']" class="error">Ce champ est obligatoire.
+      </div>
 
       <select formControlName="gender" [ngClass]="{ 'is-invalid': f['gender'].touched && f['gender'].invalid }">
         <option value="">-- Sexe --</option>
@@ -35,21 +39,27 @@
     </div>
 
     <div class="form-group">
-      <input type="email" placeholder="Email" formControlName="email" [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].invalid || emailExists }" />
+      <input type="email" placeholder="Email" formControlName="email"
+        [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].invalid || emailExists }" />
       <div *ngIf="f['email'].touched && f['email'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
       <div *ngIf="f['email'].touched && f['email'].errors?.['email']" class="error">Format d’email invalide.</div>
       <div *ngIf="emailExists" class="error">Cet email est déjà utilisé.</div>
 
-      <input type="tel" placeholder="Téléphone" formControlName="phone" [ngClass]="{ 'is-invalid': f['phone'].touched && f['phone'].invalid }" />
+      <input type="tel" placeholder="Téléphone" formControlName="phone"
+        [ngClass]="{ 'is-invalid': f['phone'].touched && f['phone'].invalid }" />
       <div *ngIf="f['phone'].touched && f['phone'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
     </div>
 
     <div class="form-group">
-      <input type="password" placeholder="Mot de passe" formControlName="password" [ngClass]="{ 'is-invalid': f['password'].touched && f['password'].invalid }" />
-      <div *ngIf="f['password'].touched && f['password'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
+      <input type="password" placeholder="Mot de passe" formControlName="password"
+        [ngClass]="{ 'is-invalid': f['password'].touched && f['password'].invalid }" />
+      <div *ngIf="f['password'].touched && f['password'].errors?.['required']" class="error">Ce champ est obligatoire.
+      </div>
 
-      <input type="password" placeholder="Confirmation" formControlName="confirmPassword" [ngClass]="{ 'is-invalid': f['confirmPassword'].touched && f['confirmPassword'].invalid }" />
-      <div *ngIf="f['confirmPassword'].touched && f['confirmPassword'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
+      <input type="password" placeholder="Confirmation" formControlName="confirmPassword"
+        [ngClass]="{ 'is-invalid': f['confirmPassword'].touched && f['confirmPassword'].invalid }" />
+      <div *ngIf="f['confirmPassword'].touched && f['confirmPassword'].errors?.['required']" class="error">Ce champ est
+        obligatoire.</div>
 
       <div *ngIf="form.errors?.['passwordMismatch'] && f['confirmPassword'].touched" class="error">
         Les mots de passe ne correspondent pas.
@@ -57,25 +67,29 @@
     </div>
 
     <div class="form-group-column">
-  <div class="form-item">
-    <select formControlName="discovery" [ngClass]="{ 'is-invalid': f['discovery'].touched && f['discovery'].invalid }">
-      <option value="">Comment avez-vous connu la plateforme ?</option>
-      <option value="internet">Internet</option>
-      <option value="amis">Amis</option>
-      <option value="reseaux">Réseaux sociaux</option>
-    </select>
-    <div *ngIf="f['discovery'].touched && f['discovery'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
-  </div>
+      <div class="form-item">
+        <select formControlName="discovery"
+          [ngClass]="{ 'is-invalid': f['discovery'].touched && f['discovery'].invalid }">
+          <option value="">Comment avez-vous connu la plateforme ?</option>
+          <option value="internet">Internet</option>
+          <option value="amis">Amis</option>
+          <option value="reseaux">Réseaux sociaux</option>
+        </select>
+        <div *ngIf="f['discovery'].touched && f['discovery'].errors?.['required']" class="error">Ce champ est
+          obligatoire.</div>
+      </div>
 
-  <div class="form-item">
-    <select formControlName="activation" [ngClass]="{ 'is-invalid': f['activation'].touched && f['activation'].invalid }">
-      <option value="">Comment souhaitez-vous activer votre compte ?</option>
-      <option value="email">Email</option>
-      <option value="sms">SMS</option>
-    </select>
-    <div *ngIf="f['activation'].touched && f['activation'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
-  </div>
-</div>
+      <div class="form-item">
+        <select formControlName="activation"
+          [ngClass]="{ 'is-invalid': f['activation'].touched && f['activation'].invalid }">
+          <option value="">Comment souhaitez-vous activer votre compte ?</option>
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+        </select>
+        <div *ngIf="f['activation'].touched && f['activation'].errors?.['required']" class="error">Ce champ est
+          obligatoire.</div>
+      </div>
+    </div>
     <div class="checkboxes">
       <label>
         <input type="checkbox" formControlName="terms" />
@@ -87,8 +101,10 @@
         <input type="checkbox" formControlName="privacy" />
         J'accepte la politique de confidentialité
       </label>
-      <div *ngIf="f['privacy'].touched && f['privacy'].errors?.['required']" class="error">Ce champ est obligatoire.</div>
+      <div *ngIf="f['privacy'].touched && f['privacy'].errors?.['required']" class="error">Ce champ est obligatoire.
+      </div>
     </div>
+    <input type="hidden" formControlName="role" value="ADMIN" />
 
     <button type="submit" class="btn-submit">Inscription</button>
 
@@ -97,8 +113,8 @@
       <a routerLink="/connexion">Déjà inscrit ? Connexion</a>
     </div>
     <div *ngIf="successMessage" class="success-message">
-  {{ successMessage }}
-</div>
+      {{ successMessage }}
+    </div>
   </form>
 
   <footer class="footer">

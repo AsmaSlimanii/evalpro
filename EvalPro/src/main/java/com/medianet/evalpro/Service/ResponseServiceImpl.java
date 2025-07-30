@@ -28,27 +28,36 @@ public class ResponseServiceImpl implements ResponseService {
     @Autowired private OptionRepository optionRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private StepRepository stepRepository;
+    @Autowired private  ResponseAdminRepository responseAdminRepository;
 
 
     public ResponseServiceImpl(ResponseRepository responseRepository) {
         this.responseRepository = responseRepository;
     }
 
+
+    //But : Sauvegarde une réponse simple dans la base.
+    //Utilisé par : le contrôleur lors de la création générique (POST /api/responses).
     @Override
     public Response save(Response response) {
         return responseRepository.save(response);
     }
 
+    //But : Récupère toutes les réponses en base.
+    //Utilisé pour : affichage ou admin/debug.
     @Override
     public List<Response> findAll() {
         return responseRepository.findAll();
     }
 
+    //But : Récupère une réponse par son ID.
     @Override
     public Optional<Response> findById(Long id) {
         return responseRepository.findById(id);
     }
 
+    //But : Met à jour une réponse existante.
+    //Validation : Vérifie d’abord que l’ID existe. Sinon, une exception est levée.
     @Override
     public Response update(Long id, Response response) {
         if (!responseRepository.existsById(id)) {
@@ -57,7 +66,7 @@ public class ResponseServiceImpl implements ResponseService {
         response.setId(id);
         return responseRepository.save(response);
     }
-
+    //But : Supprime une réponse si elle existe, sinon lève une erreur.
     @Override
     public void deleteById(Long id) {
         if (!responseRepository.existsById(id)) {
@@ -66,7 +75,7 @@ public class ResponseServiceImpl implements ResponseService {
         responseRepository.deleteById(id);
     }
 
-
+    //But : Recherche paginée de réponses contenant le texte q dans leur value.
     @Override
     public Page<Response> searchResponses(String q, int page, int perPage) {
         Pageable pageable = PageRequest.of(page, perPage, Sort.by("id").ascending());
@@ -78,7 +87,27 @@ public class ResponseServiceImpl implements ResponseService {
 
 
 //cette Service pour enregistrer les réponses dynamiques et lier au dossier
-
+//But : Sauvegarde toutes les réponses d’un utilisateur pour une étape donnée.
+//
+//Étapes de traitement :
+//
+//Vérifie la présence de responses, formId, questionId, etc.
+//
+//Récupère l’utilisateur, le dossier, l’étape
+//
+//Vérifie si l’utilisateur est bien le propriétaire du dossier
+//
+//Supprime les anciennes réponses de cette étape (évite les doublons)
+//
+//Sauvegarde les nouvelles réponses :
+//
+//Choix multiples → optionIds
+//
+//Réponses texte/numériques → value
+//
+//Enregistre la pillar si présent
+//
+//(optionnel) Gère le champ UPLOAD pour les fichiers
     @Override
     public void saveStepResponses(ResponseRequestDTO dto, String userEmail) {
         System.out.println("📩 Enregistrement des réponses pour l'utilisateur : " + userEmail);
@@ -114,14 +143,16 @@ public class ResponseServiceImpl implements ResponseService {
         System.out.println("✅✅ Réponses enregistrées pour le dossier ID = " + dossier.getId());
 
 // ✅ AJOUTE CETTE VÉRIFICATION :
-        if (!dossier.getUser().getEmail().equals(userEmail)) {
+        if (!dossier.getUser().getEmail().equals(userEmail)
+                && !user.getRole().equals(User.Role.ADMIN)) {
             throw new AccessDeniedException("⚠️ Vous n'avez pas accès à ce dossier !");
         }
 
 
+
         // ❌ Supprimer les anciennes réponses (pour éviter les doublons)
 
-      //  responseRepository.deleteByFormIdAndDossierIdAndPillar(dto.getFormId(), dossier.getId(), dto.getPillar());
+        //  responseRepository.deleteByFormIdAndDossierIdAndPillar(dto.getFormId(), dossier.getId(), dto.getPillar());
         if (dto.getStepId() == 3L && dto.getPillar() != null) {
             responseRepository.deleteByFormIdAndDossierIdAndPillarAndStepId(dto.getFormId(), dossier.getId(), dto.getPillar(), step.getId());
 
@@ -164,7 +195,8 @@ public class ResponseServiceImpl implements ResponseService {
             }
 
             // ✅ Réponse texte/numérique
-            if (r.getValue() != null && !r.getValue().isBlank()) {
+            if ((r.getValue() != null && !r.getValue().isBlank()) ||
+                    ("UPLOAD".equalsIgnoreCase(question.getType().name()) && r.getValue() != null)) {
                 Response response = Response.builder()
                         .user(user)
                         .form(Form.builder().id(dto.getFormId()).build())
@@ -180,9 +212,17 @@ public class ResponseServiceImpl implements ResponseService {
                 System.out.println("✅ Réponse texte enregistrée : questionId=" + r.getQuestionId() + " | valeur='" + r.getValue() + "'");
             }
         }
+        // 💬 Enregistrement du commentaire admin si fourni
+        if (dto.getComment() != null && !dto.getComment().isBlank()) {
+            saveAdminComment(dossier.getId(), step.getId(), dto.getComment(), userEmail);
+        }
 
         System.out.println("✅✅ Toutes les réponses ont été enregistrées.");
+
+
+
     }
+    //But : Vérifie si le pilier donné (economique, socio, etc.) contient des réponses pour l'étape 3.
     @Override
     public boolean isPillarCompleted(Long dossierId, String pillar) {
         // Supposons que le nom du champ "step" correspond à "step3" pour Auto-Eval
@@ -190,10 +230,17 @@ public class ResponseServiceImpl implements ResponseService {
         return responses != null && !responses.isEmpty();
     }
 
-
-
-
-
+    //But : Calcule le score de chaque pilier pour un dossier donné.
+    //
+    //Logique :
+    //
+    //Récupère toutes les réponses
+    //
+    //Regroupe les scores par pilier :
+    //
+    //Si réponse = option, récupère option.score
+    //
+    //Si texte/numérique, attribue un score
     @Override
     public Map<String, Object> calculatePillarScores(Long dossierId) {
         List<Response> responses = responseRepository.findByDossierId(dossierId);
@@ -244,12 +291,65 @@ public class ResponseServiceImpl implements ResponseService {
         return result;
     }
 
+    //But : Permet à un administrateur de sauvegarder un commentaire sur un dossier à une étape spécifique.
+    //
+    //Étapes :
+    //
+    //Vérifie que l’utilisateur est un administrateur
+    //
+    //Vérifie l’existence du dossier et de l’étape
+    //
+    //Enregistre un objet ResponseAdmin avec le commentaire
+    @Override
+    public void saveAdminComment(Long dossierId, Long stepId, String comment, String adminEmail) {
+        User admin = userRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new RuntimeException("Admin introuvable"));
 
+        if (admin.getRole() != User.Role.ADMIN) {
+            throw new AccessDeniedException("⚠️ Seuls les administrateurs peuvent enregistrer un commentaire.");
+        }
+
+        Dossier dossier = dossierRepository.findById(dossierId)
+                .orElseThrow(() -> new RuntimeException("Dossier introuvable"));
+
+        Step step = stepRepository.findById(stepId)
+                .orElseThrow(() -> new RuntimeException("Étape introuvable"));
+
+        // 🔁 Récupérer tous les commentaires existants pour ce dossier + étape
+        List<ResponseAdmin> existingComments = responseAdminRepository.findByDossierIdAndStepId(dossierId, stepId);
+
+        if (!existingComments.isEmpty()) {
+            // ✏️ Mettre à jour le premier commentaire existant
+            ResponseAdmin existingComment = existingComments.get(0);
+            existingComment.setComment(comment);
+            existingComment.setAdmin(admin); // Optionnel : mettre à jour l’auteur aussi
+            responseAdminRepository.save(existingComment);
+            System.out.println("✏️ Commentaire admin mis à jour pour le dossier ID=" + dossierId + ", étape ID=" + stepId);
+        } else {
+            // ➕ Créer un nouveau commentaire si aucun n’existe
+            ResponseAdmin newComment = ResponseAdmin.builder()
+                    .dossier(dossier)
+                    .step(step)
+                    .admin(admin)
+                    .comment(comment)
+                    .build();
+            responseAdminRepository.save(newComment);
+            System.out.println("✅ Commentaire admin créé pour le dossier ID=" + dossierId + ", étape ID=" + stepId);
+        }
+    }
 
 }
 
 
-
+//Cette classe implémente l'interface ResponseService. Elle contient la logique métier permettant de :
+//
+//créer, modifier et supprimer des réponses,
+//
+//gérer les réponses par étapes,
+//
+//calculer les scores,
+//
+//et enregistrer des commentaires administrateur.
 
 
 
@@ -262,4 +362,3 @@ public class ResponseServiceImpl implements ResponseService {
 //    public List<Response> findByUserId(Long userId) {
 //        return responseRepository.findByUserId(userId);
 //    }
-

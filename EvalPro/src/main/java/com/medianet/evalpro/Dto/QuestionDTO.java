@@ -20,6 +20,7 @@ public class QuestionDTO {
     private List<OptionDTO> options;
     private String pillar;
     private List<Long> optionIds;
-
+    private Long parentQuestionId;
+    private Long parentOptionId;
 }
 

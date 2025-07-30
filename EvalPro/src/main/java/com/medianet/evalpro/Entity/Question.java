@@ -40,8 +40,15 @@ public class Question {
     @ManyToOne
     private Step step;
 
+    // ✅ Champs de dépendance (parent)
+    @Column(name = "parent_question_id")
+    private Long parentQuestionId;
+
+    @Column(name = "parent_option_id")
+    private Long parentOptionId;
+
 
     public enum QuestionType {
-        TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE,SELECT
+        TEXTE, CHOIXMULTIPLE, NUMERIQUE ,  RADIO, SECTION_TITLE,SELECT , UPLOAD
     }
 }

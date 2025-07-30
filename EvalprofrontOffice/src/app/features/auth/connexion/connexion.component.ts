@@ -45,6 +45,7 @@ export class ConnexionComponent {
         next: (response: any) => {
           localStorage.setItem('token', response.token);
           localStorage.setItem('userName', response.userName); 
+           localStorage.setItem('role', response.role); // ✅ AJOUT ICI
           this.router.navigate(['/home-authenticated']);
         },
         error: (err) => {

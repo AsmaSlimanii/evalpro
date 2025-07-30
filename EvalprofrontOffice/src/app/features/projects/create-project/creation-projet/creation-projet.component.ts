@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FormService } from '../../../../core/services/form.service';
+import { AuthService } from '../../../../core/services/auth.service';
+
 
 @Component({
   selector: 'app-creation-projet',
@@ -21,13 +23,16 @@ export class CreationProjetComponent implements OnInit {
   filteredOptions11: any[] = [];
   filteredOptions12: any[] = [];
   autresCtrl: any;
+  isAdmin = false;
 
   constructor(
     private fb: FormBuilder,
     private formService: FormService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authService: AuthService  // ⬅️ Ajoute ceci
   ) { }
+
 
   ngOnInit(): void {
     this.setupRouteListener();
@@ -51,8 +56,20 @@ export class CreationProjetComponent implements OnInit {
 
     this.initForm();
     this.loadForm();
-  }
 
+    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
+
+  }
+  setReadOnlyMode() {
+    const responsesArray = this.formGroup.get('responses') as FormArray;
+    responsesArray.controls.forEach(control => {
+      control.get('value')?.disable();
+      control.get('optionIds')?.disable();
+    });
+
+    // Optionnel : désactiver le champ de commentaire si nécessaire
+    // this.formGroup.get('adminComment')?.disable();
+  }
   private setupRouteListener(): void {
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((event) => {
       const url = (event as NavigationEnd).urlAfterRedirects;
@@ -65,7 +82,8 @@ export class CreationProjetComponent implements OnInit {
 
   private initForm(): void {
     this.formGroup = this.fb.group({
-      responses: this.fb.array([])
+      responses: this.fb.array([]),
+      comment: ['']
     });
   }
 
@@ -80,19 +98,23 @@ export class CreationProjetComponent implements OnInit {
     const onFormLoad = (form: any) => {
       this.formMetadata = form;
       this.questions = form.questions;
+      // ❗❗❗ Tu dois ajouter ceci :
+      this.formGroup.patchValue({
+        comment: form.comment || ''
+      });
 
       // 🔧 Ajout des parent_option_id pour Q11
       this.questions.forEach((q) => {
         if (q.id === 11) {
           q.options.forEach((opt: any) => {
             const optId = Number(opt.id);
-                // 🔧 Sous-secteurs pour APII (option ID 15)
+            // 🔧 Sous-secteurs pour APII (option ID 15)
             if ([65, 66, 67, 68, 69].includes(opt.id)) opt.parent_option_id = 15;
 
-       
-             // 🔧 Sous-secteurs pour APIA (option ID 14)
-            if ([17, 18, 19].includes(opt.id)) opt.parent_option_id = 14; 
-        
+
+            // 🔧 Sous-secteurs pour APIA (option ID 14)
+            if ([17, 18, 19].includes(opt.id)) opt.parent_option_id = 14;
+
           });
         }
       });
@@ -102,15 +124,15 @@ export class CreationProjetComponent implements OnInit {
         if (q.id === 12) {
           q.options.forEach((opt: any) => {
             const optId = Number(opt.id);
-            if ([20, 21, 22, 23, 24,25, 26, 27, 28].includes(optId)) opt.parent_option_id = 17; 
-            if ([29, 30, 31, 32, 33, 34, 35, 36, 37, 38,39,40,41,42,43, 44].includes(optId)) opt.parent_option_id = 18;
-            if ([45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64].includes(optId)) opt.parent_option_id = 19;
-            if ([70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96, 97].includes(optId)) opt.parent_option_id = 65;
-            if ([98,99,100, 101, 102, 103, 104, 105].includes(optId)) opt.parent_option_id = 66;
-            if ([106, 107, 108, 109, 110, 111, 112,113].includes(optId)) opt.parent_option_id = 67;
-            if ([114, 115, 116, 117, 118, 119, 120, 121,122].includes(optId)) opt.parent_option_id = 68;
-            if ([123, 124, 125,126, 127, 128, 129, 130, 131, 132, 133].includes(optId)) opt.parent_option_id = 69;
-          
+            if ([20, 21, 22, 23, 24, 25, 26, 27, 28].includes(optId)) opt.parent_option_id = 17;
+            if ([29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44].includes(optId)) opt.parent_option_id = 18;
+            if ([45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64].includes(optId)) opt.parent_option_id = 19;
+            if ([70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97].includes(optId)) opt.parent_option_id = 65;
+            if ([98, 99, 100, 101, 102, 103, 104, 105].includes(optId)) opt.parent_option_id = 66;
+            if ([106, 107, 108, 109, 110, 111, 112, 113].includes(optId)) opt.parent_option_id = 67;
+            if ([114, 115, 116, 117, 118, 119, 120, 121, 122].includes(optId)) opt.parent_option_id = 68;
+            if ([123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133].includes(optId)) opt.parent_option_id = 69;
+
           });
         }
       });
@@ -175,10 +197,6 @@ export class CreationProjetComponent implements OnInit {
     console.log('🧾 Tous parent_option_id disponibles dans q12 =', question12.options.map((o: { parent_option_id: any; }) => o.parent_option_id));
 
   }
-
-
-
-
 
   shouldShowQuestion11(): boolean {
     const selected = this.responses.at(0)?.get('value')?.value;
@@ -290,7 +308,7 @@ export class CreationProjetComponent implements OnInit {
     const optionIdsControl = this.responses.at(questionIndex).get('optionIds') as FormArray;
     return optionIdsControl?.value.includes(optionId);
   }
-  
+
 
   goBack(): void {
     if (this.dossierId) {
@@ -338,8 +356,13 @@ export class CreationProjetComponent implements OnInit {
     const payload = {
       formId: this.formMetadata.id,
       stepId: stepId,
-      responses: cleanedResponses
+      dossierId: this.dossierId,         // ✅ ajoute ça
+      responses: cleanedResponses,
+      comment: this.formGroup.get('comment')?.value || ''
     };
+
+    console.log('📩 Commentaire envoyé :', this.formGroup.get('comment')?.value);
+
 
     const dossierIdToSend: number | null = this.dossierId ? Number(this.dossierId) : null;
     const onSuccess = (res: any): void => {
@@ -370,6 +393,7 @@ export class CreationProjetComponent implements OnInit {
     }
   }
 
+
   onSelectChange(questionId: number, event: Event): void {
     const selectedValue = Number((event.target as HTMLSelectElement).value);
     const ctrl = this.responses.controls.find(c => c.value.questionId === questionId);
@@ -384,7 +408,6 @@ export class CreationProjetComponent implements OnInit {
       this.updateOptionsForQuestion12(selectedValue);
     }
   }
-
 
   private scrollToFirstInvalidField(): void {
     setTimeout(() => {

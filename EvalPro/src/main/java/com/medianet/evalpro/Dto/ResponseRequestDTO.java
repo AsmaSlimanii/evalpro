@@ -11,6 +11,8 @@ public class ResponseRequestDTO {
     private List<SingleResponseDTO> responses;
     private Long stepId;
     private String pillar;
+    private String comment;
+
 
 
 }

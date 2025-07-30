@@ -39,4 +39,13 @@ export class AuthService {
     localStorage.removeItem('token');
     window.location.href = '/connexion'; // ajuste si le path est différent
   }
+
+  getCurrentUserRole(): string | null {
+  return localStorage.getItem('role');
+}
+
+isAdmin(): boolean {
+  return this.getCurrentUserRole() === 'ADMIN';
+}
+
 }

@@ -4,15 +4,10 @@ import com.medianet.evalpro.Dto.FormDTO;
 import com.medianet.evalpro.Dto.FormProgressDTO;
 import com.medianet.evalpro.Dto.OptionDTO;
 import com.medianet.evalpro.Dto.QuestionDTO;
-import com.medianet.evalpro.Entity.Form;
-import com.medianet.evalpro.Entity.Question;
-import com.medianet.evalpro.Entity.Response;
-import com.medianet.evalpro.Entity.Step;
+import com.medianet.evalpro.Entity.*;
+import com.medianet.evalpro.Mapper.QuestionMapper;
 import com.medianet.evalpro.Mapper.ResponseMapper;
-import com.medianet.evalpro.Repository.FormRepository;
-import com.medianet.evalpro.Repository.QuestionRepository;
-import com.medianet.evalpro.Repository.ResponseRepository;
-import com.medianet.evalpro.Repository.StepRepository;
+import com.medianet.evalpro.Repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -32,6 +27,10 @@ public class FormServiceImpl implements FormService {
     private final ResponseRepository responseRepository;
     private final StepRepository stepRepository;
     private final ResponseMapper responseMapper;
+    private final QuestionMapper questionMapper;
+    private final ResponseAdminRepository responseAdminRepository;
+
+
 
     @Override
     public Form save(Form form) {
@@ -79,16 +78,10 @@ public class FormServiceImpl implements FormService {
         Form form = step.getForms().stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("Aucun formulaire trouvé pour cette étape"));
 
-        List<QuestionDTO> questionDTOs = form.getQuestions().stream().map(q -> QuestionDTO.builder()
-                .id(q.getId())
-                .text(q.getText())
-                .type(q.getType().name())
-                .isRequired(q.isRequired())
-                .options(q.getOptions().stream().map(o -> OptionDTO.builder()
-                        .id(o.getId())
-                        .value(o.getValue())
-                        .build()).collect(Collectors.toList()))
-                .build()).collect(Collectors.toList());
+        List<QuestionDTO> questionDTOs = form.getQuestions().stream()
+                .map(questionMapper::toDTO)
+                .collect(Collectors.toList());
+
 
         return FormDTO.builder()
                 .id(form.getId())
@@ -104,19 +97,16 @@ public class FormServiceImpl implements FormService {
         Form form = (Form) formRepository.findByStepName(step)
                 .orElseThrow(() -> new RuntimeException("Form not found"));
 
-        List<Question> questions = questionRepository.findByFormsId(form.getId());
+        Long stepId = form.getStep().getId(); // 🔴 tu récupères l'ID de l'étape
+
+        List<Question> questions = questionRepository.findAllByStepId(stepId);
+
         List<Response> responses = responseRepository.findByFormIdAndDossierId(form.getId(), dossierId);
 
         List<QuestionDTO> questionDTOs = questions.stream().map(q -> {
-            QuestionDTO qDto = QuestionDTO.builder()
-                    .id(q.getId())
-                    .text(q.getText())
-                    .type(q.getType().name())
-                    .isRequired(q.isRequired())
-                    .pillar(q.getPillar())
-                    .build();
+            QuestionDTO qDto = questionMapper.toDTO(q); // ✅ utilise le mapper avec parentQuestionId etc.
 
-            // injecter la valeur
+            // injecter la réponse texte/numérique
             qDto.setValue(
                     responses.stream()
                             .filter(r -> r.getQuestion().getId().equals(q.getId()) && r.getValue() != null)
@@ -125,6 +115,7 @@ public class FormServiceImpl implements FormService {
                             .orElse(null)
             );
 
+            // injecter les options sélectionnées
             qDto.setOptionIds(
                     responses.stream()
                             .filter(r -> r.getQuestion().getId().equals(q.getId()) && r.getOption() != null)
@@ -132,13 +123,14 @@ public class FormServiceImpl implements FormService {
                             .collect(Collectors.toList())
             );
 
-
+            // injecter les options avec selected = true
             if (q.getOptions() != null) {
                 List<OptionDTO> optionDTOs = q.getOptions().stream().map(o -> {
                     boolean isSelected = responses.stream().anyMatch(r ->
                             r.getQuestion().getId().equals(q.getId()) &&
                                     r.getOption() != null &&
-                                    r.getOption().getId().equals(o.getId()));
+                                    r.getOption().getId().equals(o.getId())
+                    );
                     return OptionDTO.builder()
                             .id(o.getId())
                             .value(o.getValue())
@@ -152,14 +144,21 @@ public class FormServiceImpl implements FormService {
             return qDto;
         }).collect(Collectors.toList());
 
+
+
+       List<ResponseAdmin> adminComment = responseAdminRepository.findByDossierIdAndStepId(dossierId, form.getStep().getId());
+
+
+
         return FormDTO.builder()
                 .id(form.getId())
                 .title(form.getTitle())
                 .description(form.getDescription())
                 .questions(questionDTOs)
+                .comment(adminComment.isEmpty() ? null : adminComment.get(0).getComment())
                 .responses(responses.stream()
                         .map(responseMapper::toDto)
-                        .collect(Collectors.toList())) // ✅ ici tu ajoutes les réponses !
+                        .collect(Collectors.toList()))
                 .build();
     }
 

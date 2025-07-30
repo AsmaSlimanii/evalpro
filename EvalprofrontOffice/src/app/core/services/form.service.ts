@@ -67,19 +67,25 @@ export class FormService {
   //   { headers: this.getAuthHeaders() }
   // );
   // }
-getStep3PillarProgress(dossierId: number): Observable<{ [key: string]: number }> {
-  // ✅ URL correcte vers FormController
-return this.http.get<{ [key: string]: number }>(
-  `${this.formApiUrl}/step3-pillar-progress/${dossierId}`,
-  { headers: this.getAuthHeaders() }
-);
+  getStep3PillarProgress(dossierId: number): Observable<{ [key: string]: number }> {
+    // ✅ URL correcte vers FormController
+    return this.http.get<{ [key: string]: number }>(
+      `${this.formApiUrl}/step3-pillar-progress/${dossierId}`,
+      { headers: this.getAuthHeaders() }
+    );
 
-}
+  }
 
 
   getPillarScores(dossierId: number): Observable<any> {
     return this.http.get(`${this.responseApiUrl}/step3-score/${dossierId}`, {
       headers: this.getAuthHeaders()
     });
+  }
+
+
+  uploadFile(formData: FormData): Observable<{ url: string }> {
+    const uploadUrl = `${this.responseApiUrl}/upload`;
+    return this.http.post<{ url: string }>(uploadUrl, formData);
   }
 }

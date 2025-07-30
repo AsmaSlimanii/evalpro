@@ -39,4 +39,5 @@ public class AuthRequest {
 
 
 
+
 //Les DTOs pour login, register et la réponse.

@@ -1,1 +1,67 @@
-<p>requete-financement works!</p>
+<div class="requete-wrapper">
+  <div class="requete-card">
+    <!-- ✅ Titre et description -->
+    <div class="header-section">
+      <h1 class="main-title">Requête de financement</h1>
+      <p class="subtitle">
+        Dans les trois formulaires qui suivent, vous devrez fournir des informations précises et des pièces justificatives sur vous-même (porteur de projet), votre entreprise et votre projet.
+      </p>
+    </div>
+
+    <!-- ✅ Cartes de navigation vers chaque formulaire -->
+    <div class="pillars-section">
+      <!-- 🧍 Mon Profil -->
+      <div class="pillar-card profil" (click)="navigateTo('profil')">
+        <div class="pillar-number">1</div>
+        <div class="pillar-content">
+          <h3 class="pillar-title">Mon Profil</h3>
+          <p class="pillar-description">Données personnelles et justificatifs du porteur de projet.</p>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="progress.profil"></div>
+            </div>
+            <span class="progress-value">{{ progress.profil }}%</span>
+          </div>
+        </div>
+        <div class="pillar-icon"><i class="fas fa-id-card"></i></div>
+      </div>
+
+      <!-- 🏢 Mon Entreprise -->
+      <div class="pillar-card entreprise" (click)="navigateTo('entreprise')">
+        <div class="pillar-number">2</div>
+        <div class="pillar-content">
+          <h3 class="pillar-title">Mon Entreprise</h3>
+          <p class="pillar-description">Informations juridiques et économiques de votre structure.</p>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="progress.entreprise"></div>
+            </div>
+            <span class="progress-value">{{ progress.entreprise }}%</span>
+          </div>
+        </div>
+        <div class="pillar-icon"><i class="fas fa-building"></i></div>
+      </div>
+
+      <!-- 💡 Mon Projet -->
+      <div class="pillar-card projet" (click)="navigateTo('projet')">
+        <div class="pillar-number">3</div>
+        <div class="pillar-content">
+          <h3 class="pillar-title">Mon Projet</h3>
+          <p class="pillar-description">Objectifs, localisation et justification du besoin de financement.</p>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="progress.projet"></div>
+            </div>
+            <span class="progress-value">{{ progress.projet }}%</span>
+          </div>
+        </div>
+        <div class="pillar-icon"><i class="fas fa-lightbulb"></i></div>
+      </div>
+    </div>
+
+    <!-- 🔙 Bouton retour vers l'accueil des projets -->
+    <div class="bottom-left-button">
+      <button (click)="goBack()">← Précédent</button>
+    </div>
+  </div>
+</div>

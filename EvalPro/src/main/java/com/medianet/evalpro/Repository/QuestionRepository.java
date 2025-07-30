@@ -17,12 +17,13 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     // 2) Liste brute des questions d’un Form
     List<Question> findByFormsId(Long formId);
-//    List<Question> findByStepAndPillar(Step step, String pillar);
+   // List<Question> findByStepAndPillar(Step step, String pillar);
 
     //une méthode pour compter les questions par pilier
     @Query("SELECT COUNT(q) FROM Question q WHERE q.pillar = :pillar AND q.step.id = :stepId")
     Long countQuestionsByPillarAndStep(@Param("pillar") String pillar, @Param("stepId") Long stepId);
 
+    List<Question> findAllByStepId(Long stepId);
 
     //  List<Question> findByFormId(Long id);
 }

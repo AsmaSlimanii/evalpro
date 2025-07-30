@@ -30,6 +30,9 @@ import { LayoutComponent } from './layout/layout.component';
 import { PilierEconomiqueComponent } from './features/projects/create-project/auto-evaluation/pilier-economique/pilier-economique.component';
 import { PilierSocioComponent } from './features/projects/create-project/auto-evaluation/pilier-socio/pilier-socio.component';
 import { PilierEnvironnementalComponent } from './features/projects/create-project/auto-evaluation/pilier-environnemental/pilier-environnemental.component';
+import { ProfilComponent } from './features/projects/create-project/requete-financement/profil/profil.component';
+import { EntrepriseComponent } from './features/projects/create-project/requete-financement/entreprise/entreprise.component';
+import { ProjetComponent } from './features/projects/create-project/requete-financement/projet/projet.component';
 
 
 const routes: Routes = [
@@ -60,6 +63,10 @@ const routes: Routes = [
       { path: 'projects/edit/:id/step3/environnemental', component: PilierEnvironnementalComponent },
 
       { path: 'projects/edit/:id/step4', component: RequeteFinancementComponent },
+      { path: 'projects/edit/:id/step4/profil', component: ProfilComponent },
+      { path: 'projects/edit/:id/step4/entreprise', component: EntrepriseComponent },
+      { path: 'projects/edit/:id/step4/projet', component: ProjetComponent },
+
       { path: 'projects/edit/:id/step5', component: SchemaFinancementComponent },
       { path: 'projects/edit/:id', component: CreateProjectComponent },
 

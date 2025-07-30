@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/forms/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
-                        .requestMatchers("/api/responses/**").permitAll()
+                        .requestMatchers("/api/responses/**").authenticated()
                         .requestMatchers("/api/responses/progress/**").permitAll()
                         .requestMatchers("/api/responses/step3-pillar-progress/**").permitAll()
                         .anyRequest().authenticated()

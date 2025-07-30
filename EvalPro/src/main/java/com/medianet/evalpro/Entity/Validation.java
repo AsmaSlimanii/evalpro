@@ -27,9 +27,9 @@ public class Validation {
     @JoinColumn(name = "response_id")
     private Response reponse;
 
-    @ManyToOne
-    @JoinColumn(name = "validator_id")
-    private Admin validator;
+   // @ManyToOne
+  //  @JoinColumn(name = "validator_id")
+  //  private Admin validator;
 
 
 
