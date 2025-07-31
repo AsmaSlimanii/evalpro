@@ -147,6 +147,11 @@ public class ResponseServiceImpl implements ResponseService {
                 && !user.getRole().equals(User.Role.ADMIN)) {
             throw new AccessDeniedException("⚠️ Vous n'avez pas accès à ce dossier !");
         }
+//        // 🚫 Bloquer les admins pour la modification des réponses
+//        if (user.getRole() == User.Role.ADMIN && dto.getResponses() != null && !dto.getResponses().isEmpty()) {
+//            throw new AccessDeniedException("Les administrateurs ne peuvent pas modifier les réponses.");
+//        }
+
 
 
 

@@ -41,7 +41,7 @@ export class ProfilComponent implements OnInit {
   initForm(): void {
     this.formGroup = this.fb.group({
       responses: this.fb.array([]),
-      comment: ['']
+     
     });
   }
   trackByQuestionId(index: number, question: any): number {
@@ -136,7 +136,7 @@ export class ProfilComponent implements OnInit {
     };
 
     this.formService.submitStep(payload, this.stepId, Number(this.dossierId)).subscribe(res => {
-      this.router.navigate([`/projects/edit/${res.dossierId}/step4`]);
+        this.router.navigate([`/projects/edit/${this.dossierId}/step3`]);
     });
   }
 

@@ -62,14 +62,25 @@ export class CreationProjetComponent implements OnInit {
   }
   setReadOnlyMode() {
     const responsesArray = this.formGroup.get('responses') as FormArray;
-    responsesArray.controls.forEach(control => {
-      control.get('value')?.disable();
-      control.get('optionIds')?.disable();
+
+    responsesArray.controls.forEach((control) => {
+      const valueControl = control.get('value');
+      const optionIdsControl = control.get('optionIds');
+
+      if (valueControl) {
+        valueControl.disable({ emitEvent: false });
+      }
+
+      if (optionIdsControl && optionIdsControl instanceof FormArray) {
+        optionIdsControl.controls.forEach(opt => opt.disable({ emitEvent: false }));
+      }
     });
 
-    // Optionnel : désactiver le champ de commentaire si nécessaire
-    // this.formGroup.get('adminComment')?.disable();
+    // 🟢 Reactiver le champ commentaire pour l’admin
+    this.formGroup.get('comment')?.enable({ emitEvent: false });
   }
+
+
   private setupRouteListener(): void {
     this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((event) => {
       const url = (event as NavigationEnd).urlAfterRedirects;
@@ -98,7 +109,6 @@ export class CreationProjetComponent implements OnInit {
     const onFormLoad = (form: any) => {
       this.formMetadata = form;
       this.questions = form.questions;
-      // ❗❗❗ Tu dois ajouter ceci :
       this.formGroup.patchValue({
         comment: form.comment || ''
       });
@@ -140,6 +150,11 @@ export class CreationProjetComponent implements OnInit {
       // 🧱 On construit les contrôles de formulaire
       this.buildFormControlsWithData(form.responses || []);
 
+      // ✅ Désactiver les champs si admin (après construction du formulaire)
+      if (this.isAdmin) {
+        this.setReadOnlyMode();
+      }
+
       // 🎯 Trouver la valeur sélectionnée de la Q10 (Catégorie investissement)
       const categoryCtrl = this.responses.at(0)?.get('value');
       if (categoryCtrl) {
@@ -173,6 +188,11 @@ export class CreationProjetComponent implements OnInit {
         error: () => this.isLoading = false
       });
     }
+  }
+
+  isFieldDisabled(qId: number): boolean {
+    // Tous les champs sont désactivés si admin SAUF Q11 et Q12
+    return this.isAdmin && qId !== 11 && qId !== 12;
   }
 
 
@@ -228,17 +248,22 @@ export class CreationProjetComponent implements OnInit {
         .map(r => r.optionId);
 
       let selectedValue = questionResponses.find(r => r.value !== null)?.value || '';
+
+      // ✅ Injecter optionId[0] si pas de value
+      if (!selectedValue && selectedOptionIds.length > 0) {
+        selectedValue = selectedOptionIds[0];
+      }
+
       if (typeof selectedValue === 'string' && question.type === 'SELECT') {
         selectedValue = Number(selectedValue);
       }
 
-      console.log('✅ filteredOptions11 =', this.filteredOptions11);
-
       const group = this.fb.group({
         questionId: [question.id],
-        value: [selectedValue, question.isRequired ? Validators.required : null],
-        optionIds: this.fb.array(selectedOptionIds.map(id => this.fb.control(id)))
-
+        value: [{ value: selectedValue, disabled: this.isAdmin }, question.isRequired ? Validators.required : null],
+        optionIds: this.fb.array(
+          selectedOptionIds.map(id => this.fb.control({ value: id, disabled: this.isAdmin }))
+        )
       });
 
       this.responses.push(group);
@@ -252,9 +277,8 @@ export class CreationProjetComponent implements OnInit {
         this.formGroup.addControl('autres', this.autresCtrl);
       }
 
-      // Pour la question 10 → mise à jour dynamique des options Q11
+      // 🔄 Q10 → Q11
       if (question.id === 10) {
-        // On attend que toutes les questions soient ajoutées (car Q11 est après)
         setTimeout(() => {
           const val = Number(selectedValue);
           this.updateOptionsForQuestion11(val);
@@ -265,8 +289,7 @@ export class CreationProjetComponent implements OnInit {
         });
       }
 
-      // Pour la question 11 → mise à jour dynamique des options Q12
-      // Pour la question 11 → mise à jour dynamique des options Q12
+      // 🔄 Q11 → Q12
       if (question.id === 11) {
         setTimeout(() => {
           const val = typeof selectedValue === 'object' ? selectedValue?.id : selectedValue;
@@ -278,10 +301,9 @@ export class CreationProjetComponent implements OnInit {
           this.updateOptionsForQuestion12(Number(optionId));
         });
       }
-
-
     });
   }
+
 
   onFieldBlur(index: number): void {
     this.fieldStates[index].touched = true;
@@ -356,10 +378,11 @@ export class CreationProjetComponent implements OnInit {
     const payload = {
       formId: this.formMetadata.id,
       stepId: stepId,
-      dossierId: this.dossierId,         // ✅ ajoute ça
-      responses: cleanedResponses,
+      dossierId: this.dossierId,
+      responses: this.isAdmin ? [] : cleanedResponses,
       comment: this.formGroup.get('comment')?.value || ''
     };
+
 
     console.log('📩 Commentaire envoyé :', this.formGroup.get('comment')?.value);
 

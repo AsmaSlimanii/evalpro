@@ -31,8 +31,8 @@
           <label class="label">{{ q.text }}<span *ngIf="q.is_required" class="required-asterisk">*</span></label>
           <div class="input-wrapper">
             <input class="input" [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'" formControlName="value"
-              [placeholder]="q.placeholder || 'Saisissez votre réponse'" [readonly]="isAdmin" (blur)="onFieldBlur(i)"
-              [class.invalid]="showError(i)" />
+              [placeholder]="q.placeholder || 'Saisissez votre réponse'" [readonly]="isAdmin" [disabled]="isAdmin"
+              (blur)="onFieldBlur(i)" [class.invalid]="showError(i)" />
 
             <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
               fill="currentColor">
@@ -70,8 +70,10 @@
         <ng-container *ngIf="(q.type === 'RADIO' || q.type === 'SELECT') && q.options?.length">
           <label class="label">{{ q.text }}<span *ngIf="q.is_required" class="required-asterisk">*</span></label>
           <div class="input-wrapper">
-            <select class="input" formControlName="value" (change)="onSelectChange(q.id, $event)" [disabled]="isAdmin"
-              (blur)="onFieldBlur(i)">
+            <select class="input" formControlName="value" (change)="onSelectChange(q.id, $event)"
+              [disabled]="isFieldDisabled(q.id)" (blur)="onFieldBlur(i)">
+
+
 
               <option value="">-- Sélectionnez une option --</option>
               <option
@@ -95,7 +97,8 @@
         <div *ngIf="shouldShowAutresTextField()" class="input-container mt-3">
           <label class="label">Merci de préciser si "Autres"</label>
           <div class="input-wrapper">
-            <input type="text" class="input" [formControl]="autresCtrl" placeholder="Détaillez ici..." />
+            <input type="text" class="input" [formControl]="autresCtrl" placeholder="Détaillez ici..."
+              [readonly]="isAdmin" [disabled]="isAdmin" />
             <svg *ngIf="autresCtrl.invalid && isSubmitted" class="input-error-icon" xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd"
@@ -112,16 +115,14 @@
 
     </div>
 
-       <div class="input-container mt-5" *ngIf="isAdmin">
-        <label class="label">Commentaire de l’administrateur</label>
-        <div class="input-wrapper">
-          <textarea formControlName="comment"
-          class="input textarea"
-          placeholder="Saisissez un commentaire ou une note complémentaire..."
-          rows="5"></textarea>
+    <div class="input-container mt-5" *ngIf="isAdmin">
+      <label class="label">Commentaire de l’administrateur</label>
+      <div class="input-wrapper">
+        <textarea formControlName="comment" class="input textarea"
+          placeholder="Saisissez un commentaire ou une note complémentaire..." rows="5"></textarea>
 
-        </div>
       </div>
+    </div>
 
     <div class="form-actions">
       <button type="button" class="btn-secondary" (click)="goBack()">

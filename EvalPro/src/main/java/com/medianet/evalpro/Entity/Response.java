@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 
         private String value;
         private boolean isValid;
-        private String comment;
+//        private String comment;
 
         @ManyToOne
         @JoinColumn(name = "user_id")
