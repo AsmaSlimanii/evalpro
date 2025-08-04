@@ -341,6 +341,8 @@ export class CreationProjetComponent implements OnInit {
   }
 
   submit(): void {
+    this.formGroup.markAllAsTouched(); // 🔥 FORCERA l’affichage des erreurs !
+
     this.isSubmitted = true;
 
     Object.keys(this.fieldStates).forEach(key => {

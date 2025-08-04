@@ -64,7 +64,7 @@ const routes: Routes = [
 
       { path: 'projects/edit/:id/step4', component: RequeteFinancementComponent },
       { path: 'projects/edit/:id/step4/profil', component: ProfilComponent },
-      { path: 'projects/edit/:id/step4/entreprise', component: EntrepriseComponent },
+     { path: 'projects/edit/:id/step4/entreprise', component: EntrepriseComponent },
       { path: 'projects/edit/:id/step4/projet', component: ProjetComponent },
 
       { path: 'projects/edit/:id/step5', component: SchemaFinancementComponent },

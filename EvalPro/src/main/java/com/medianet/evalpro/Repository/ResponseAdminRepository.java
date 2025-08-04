@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface ResponseAdminRepository extends JpaRepository<ResponseAdmin, Long> {
 
     List<ResponseAdmin> findByDossierIdAndStepId(Long dossierId, Long stepId);
+    void deleteByDossierId(Long dossierId);
 
 }

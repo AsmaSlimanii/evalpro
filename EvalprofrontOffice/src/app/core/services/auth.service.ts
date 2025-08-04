@@ -4,9 +4,13 @@ import { catchError, map, Observable, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+ 
   private readonly apiUrl = 'http://localhost:8080/api'; // adapte si besoin
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) 
+  
+  {}
+
 
   isAuthenticated(): boolean {
     return !!this.getToken();
@@ -47,5 +51,25 @@ export class AuthService {
 isAdmin(): boolean {
   return this.getCurrentUserRole() === 'ADMIN';
 }
+
+ getUserEmail(): string | null {
+    try {
+      const userData = localStorage.getItem('user');
+      if (!userData) return null;
+
+      const user = JSON.parse(userData);
+      if (typeof user.email === 'string' && user.email.includes('@')) {
+        return user.email;
+      }
+
+      return null;
+    } catch (e) {
+      console.error('Erreur de parsing dans getUserEmail:', e);
+      return null;
+    }
+  }
+
+
+
 
 }

@@ -26,6 +26,9 @@ public class Dossier {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+    private Integer getLastCompletedStep;
+
+
 
 
     @ManyToOne
@@ -36,6 +39,8 @@ public class Dossier {
     @OneToMany(mappedBy = "dossier" , cascade = CascadeType.ALL)
     private List<Step> steps;
     private String nomOfficielProjet;
+    private String categorie;
+
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

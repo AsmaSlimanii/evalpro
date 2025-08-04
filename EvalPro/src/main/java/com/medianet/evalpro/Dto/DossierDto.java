@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @Data
@@ -19,7 +20,12 @@ public class DossierDto {
     private String statusLabel;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<StepDto> steps;
+//    private List<StepDto> steps;
+    private Map<String, Integer> steps;
+    private int lastCompletedStep;
+    private String categorie;
+
+
 }
 
 

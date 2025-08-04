@@ -61,6 +61,7 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
     ProfilComponent,
     SchemaFinancementComponent,
     ProjectListComponent,
+    EntrepriseComponent,
     TimeAgoPipe,
 
 
@@ -79,7 +80,7 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
     BrowserAnimationsModule,
     MatSnackBarModule,
 
-    EntrepriseComponent,
+
     ProjetComponent,
 
     

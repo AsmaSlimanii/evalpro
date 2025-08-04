@@ -66,7 +66,7 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
     Long countResponsesByDossierIdAndPillar(@Param("dossierId") Long dossierId, @Param("pillar") String pillar);
 
 
-
+    void deleteByDossierId(Long dossierId);
 
 }
 

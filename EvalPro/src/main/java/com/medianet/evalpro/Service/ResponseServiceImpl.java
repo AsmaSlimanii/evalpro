@@ -111,6 +111,7 @@ public class ResponseServiceImpl implements ResponseService {
     @Override
     public void saveStepResponses(ResponseRequestDTO dto, String userEmail) {
         System.out.println("📩 Enregistrement des réponses pour l'utilisateur : " + userEmail);
+       // System.out.println("👤 Utilisateur connecté : " + userEmail);
 
         // 🔐 Vérifications essentielles
         if (dto.getResponses() == null || dto.getResponses().isEmpty()) {
@@ -143,10 +144,19 @@ public class ResponseServiceImpl implements ResponseService {
         System.out.println("✅✅ Réponses enregistrées pour le dossier ID = " + dossier.getId());
 
 // ✅ AJOUTE CETTE VÉRIFICATION :
-        if (!dossier.getUser().getEmail().equals(userEmail)
-                && !user.getRole().equals(User.Role.ADMIN)) {
-            throw new AccessDeniedException("⚠️ Vous n'avez pas accès à ce dossier !");
+        // 🚫 Si l'utilisateur est admin, il peut uniquement enregistrer un commentaire
+        if (user.getRole() == User.Role.ADMIN) {
+            // 💬 Uniquement le commentaire admin autorisé
+            if (dto.getComment() != null && !dto.getComment().isBlank()) {
+                saveAdminComment(dossier.getId(), step.getId(), dto.getComment(), userEmail);
+                System.out.println("✅ Commentaire admin enregistré.");
+            } else {
+                System.out.println("ℹ️ Admin sans commentaire : aucune réponse enregistrée.");
+            }
+            return; // ⛔ Stopper ici, ne pas enregistrer les réponses !
         }
+
+
 //        // 🚫 Bloquer les admins pour la modification des réponses
 //        if (user.getRole() == User.Role.ADMIN && dto.getResponses() != null && !dto.getResponses().isEmpty()) {
 //            throw new AccessDeniedException("Les administrateurs ne peuvent pas modifier les réponses.");

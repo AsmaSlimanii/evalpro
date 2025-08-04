@@ -31,4 +31,7 @@ public interface DossierService {
     // Dans ton service interface (DossierService.java)
     List<DossierDto> getUserDossiers(String email);
 
+    void deleteDossierIfOwnedByUser(Long id, String email);
+
+
 }

@@ -9,8 +9,12 @@ import com.medianet.evalpro.Dto.StepDto;
 import com.medianet.evalpro.Entity.Dossier;
 import com.medianet.evalpro.Entity.User;
 import com.medianet.evalpro.Repository.DossierRepository;
+import com.medianet.evalpro.Repository.ResponseAdminRepository;
+import com.medianet.evalpro.Repository.ResponseRepository;
 import com.medianet.evalpro.Repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,9 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +30,11 @@ public class DossierServiceImpl implements DossierService {
 
     private final DossierRepository dossierRepository;
     private final UserRepository userRepository;
+    @Autowired
+    private ResponseAdminRepository responseAdminRepository;
+    @Autowired
+    private ResponseRepository responseRepository;
+
 
     public DossierServiceImpl(DossierRepository dossierRepository, UserRepository userRepository) {
         this.dossierRepository = dossierRepository;
@@ -110,7 +117,7 @@ public class DossierServiceImpl implements DossierService {
 
         return dossierRepository.save(dossier);
     }
-
+    @Override
     public List<DossierDto> getUserDossiers(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
@@ -119,27 +126,77 @@ public class DossierServiceImpl implements DossierService {
 
         return dossiers.stream()
                 .map(d -> {
+                    // ✅ Logs de debug pour vérifier les données
+                    System.out.println(">> ID: " + d.getId());
+                    System.out.println(">> Nom: " + d.getNomOfficielProjet());
+                    System.out.println(">> CreatedAt: " + d.getCreatedAt());
+                    System.out.println(">> UpdatedAt: " + d.getUpdatedAt());
+
                     return DossierDto.builder()
                             .id(d.getId())
                             .code("Pr-" + d.getId())
-                            .nomOfficielProjet(d.getNomOfficielProjet())
+                            // ✅ Titre par défaut si null
+                            .nomOfficielProjet(
+                                    d.getNomOfficielProjet() != null ? d.getNomOfficielProjet() : "Titre manquant"
+                            )
                             .statusLabel("Dossier en cours de préparation")
                             .createdAt(d.getCreatedAt())
-                            .updatedAt(d.getUpdatedAt())
+                            // ✅ fallback si updatedAt est null
+                            .updatedAt(d.getUpdatedAt() != null ? d.getUpdatedAt() : d.getCreatedAt())
                             .steps(generateStepProgress(d))
+                            .lastCompletedStep(d.getLastCompletedStep() + 1)
+                            .categorie(d.getCategorie() != null ? d.getCategorie() : "-")
                             .build();
                 })
                 .collect(Collectors.toList());
     }
+    @Transactional
+    public void deleteDossierIfOwnedByUser(Long dossierId, String email) {
+        Dossier dossier = dossierRepository.findById(dossierId)
+                .orElseThrow(() -> new RuntimeException("Dossier non trouvé"));
 
-    private List<StepDto> generateStepProgress(Dossier dossier) {
-        List<StepDto> steps = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            new StepDto(i, i <= dossier.getLastCompletedStep())
-            ;
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // Vérifie si l'utilisateur est propriétaire ou admin
+        if (!dossier.getUser().getId().equals(user.getId()) && !user.getRole().equals("ADMIN")) {
+            throw new RuntimeException("Suppression non autorisée.");
         }
-        return steps;
+
+        // ⚠️ Supprimer d'abord les réponses associées
+        responseRepository.deleteByDossierId(dossierId);
+        responseAdminRepository.deleteByDossierId(dossierId);
+
+        // Ensuite, supprimer le dossier
+        dossierRepository.delete(dossier);
     }
+
+
+
+
+
+
+
+    //    private List<StepDto> generateStepProgress(Dossier dossier) {
+//        List<StepDto> steps = new ArrayList<>();
+//        for (int i = 1; i <= 5; i++) {
+//            new StepDto(i, i <= dossier.getLastCompletedStep())
+//            ;
+//        }
+//        return steps;
+//    }
+
+private Map<String, Integer> generateStepProgress(Dossier dossier) {
+    Map<String, Integer> steps = new LinkedHashMap<>();
+    int lastStep = Optional.of(dossier.getLastCompletedStep()).orElse(0);
+
+    for (int i = 1; i <= 5; i++) {
+        String stepName = "Step " + i;
+        int progress = (i <= lastStep) ? 100 : 0;
+        steps.put(stepName, progress);
+    }
+    return steps;
+}
 
 
 

@@ -62,15 +62,30 @@ public class DossierController {
     }
 
     // 🔹 DELETE
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteDossier(@PathVariable Long id) {
+//        try {
+//            dossierService.deleteById(id);
+//            return ResponseEntity.noContent().build();
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDossier(@PathVariable Long id) {
+    public ResponseEntity<?> deleteDossier(@RequestHeader("Authorization") String token, @PathVariable Long id) {
+        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        System.out.println("Email from token = " + email); // 🔍 debug
+
         try {
-            dossierService.deleteById(id);
+            dossierService.deleteDossierIfOwnedByUser(id, email);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            System.out.println("❌ Erreur de suppression : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         }
     }
+
+
 
 //    // 🔹 READ ALL BY USER
 //    @GetMapping("/user/{userId}")

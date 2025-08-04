@@ -44,7 +44,8 @@ export class ConnexionComponent {
       this.http.post('http://localhost:8080/api/auth/login', payload).subscribe({
         next: (response: any) => {
           localStorage.setItem('token', response.token);
-          localStorage.setItem('userName', response.userName); 
+        //  localStorage.setItem('userName', response.userName); 
+           localStorage.setItem('user', JSON.stringify({ email: response.email })); // 👈 Correction ici
            localStorage.setItem('role', response.role); // ✅ AJOUT ICI
           this.router.navigate(['/home-authenticated']);
         },

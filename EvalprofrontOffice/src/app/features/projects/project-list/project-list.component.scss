@@ -1,16 +1,25 @@
+.project-list-container {
+  margin: 95px 40px; /* plus d'espace autour */
+  width: 100%;
+  max-width: 95%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+   margin-left: 100px;
+}
+
 .project-table {
-   width: 95%;
-  margin-left: auto; /* ✅ Aligne la table à droite */
-  border-collapse: separate;
-  border-spacing: 0;
-  top: 190px;
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16.5px; /* ✅ texte plus grand */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   overflow: hidden;
+  background-color: white;
+  border: 1px solid #ddd;
 
   th, td {
-    padding: 12px 10px;
+    padding: 16px 12px; /* ✅ plus d'espace intérieur */
     text-align: center;
     vertical-align: middle;
   }
@@ -32,17 +41,18 @@
   .project-title {
     font-weight: 600;
     color: #003b71;
+    font-size: 17px;
   }
 
   .step {
-    margin: 0 2px;
-    padding: 5px 9px;
+    margin: 0 3px;
+    padding: 7px 12px;
     border-radius: 50%;
     background: #cfd8dc;
     color: #003b71;
     font-weight: bold;
     display: inline-block;
-    min-width: 28px;
+    min-width: 32px;
 
     &.done {
       background: #00cc99;
@@ -67,19 +77,19 @@
 }
 
 .pagination {
-  margin: 20px 0;
+  margin: 30px 0;
   text-align: center;
 
   button {
-    margin: 0 25px;
-    padding: 6px 12px;
+    margin: 0 8px;
+    padding: 8px 14px;
     border: 1px solid #003b71;
     border-radius: 50%;
     background-color: white;
     color: #003b71;
     font-weight: 500;
     cursor: pointer;
-    min-width: 35px;
+    min-width: 38px;
 
     &.active {
       background-color: #003b71;

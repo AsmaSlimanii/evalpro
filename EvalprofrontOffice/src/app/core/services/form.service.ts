@@ -6,9 +6,12 @@ import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class FormService {
+
+
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly formApiUrl = `${this.baseUrl}/api/forms`;
   private readonly responseApiUrl = `${this.baseUrl}/api/responses`;
+  private readonly dossierApiUrl = `${this.baseUrl}/api/dossiers`; // 👈 ajout pour clarté
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
@@ -82,10 +85,25 @@ export class FormService {
       headers: this.getAuthHeaders()
     });
   }
-
-
   uploadFile(formData: FormData): Observable<{ url: string }> {
     const uploadUrl = `${this.responseApiUrl}/upload`;
     return this.http.post<{ url: string }>(uploadUrl, formData);
   }
+  getUserDossiers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.dossierApiUrl}/user`, {
+      headers: this.getAuthHeaders()
+    });
+  }
+  deleteDossier(id: number): Observable<any> {
+    const token = localStorage.getItem('token'); // ou via ton AuthService
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.delete(`${this.dossierApiUrl}/${id}`, { headers });
+  }
+
+
+
+
 }
