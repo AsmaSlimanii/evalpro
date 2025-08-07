@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FormController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Controller</a> &gt; <span class="el_source">FormController.java</span></div><h1>FormController.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Controller;
+
+//import com.medianet.evalpro.Dto.FormDto;
+import com.medianet.evalpro.Dto.FormDTO;
+import com.medianet.evalpro.Dto.FormProgressDTO;
+import com.medianet.evalpro.Entity.Form;
+import com.medianet.evalpro.Service.FormService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping(&quot;/api/forms&quot;)
+@RequiredArgsConstructor
+public class FormController {
+
+    private final FormService formService;
+
+    // 🔹 CREATE
+    @PostMapping
+    public ResponseEntity&lt;Form&gt; createUser(@RequestBody Form form) {
+<span class="nc" id="L27">        return ResponseEntity.ok(formService.save(form));</span>
+    }
+
+    // 🔹 READ ALL
+    @GetMapping
+    public ResponseEntity&lt;List&lt;Form&gt;&gt; getAllForms() {
+<span class="nc" id="L33">        return ResponseEntity.ok(formService.findAll());</span>
+    }
+
+    // 🔹 READ ONE BY ID
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Form&gt; getFormById(@PathVariable Long id) {
+<span class="nc" id="L39">        return formService.findById(id)</span>
+<span class="nc" id="L40">                .map(ResponseEntity::ok)</span>
+<span class="nc" id="L41">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    // 🔹 UPDATE
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Form&gt; updateForm(@PathVariable Long id, @RequestBody Form form) {
+        try {
+<span class="nc" id="L48">            Form updatedForm = formService.update(id, form);</span>
+<span class="nc" id="L49">            return ResponseEntity.ok(updatedForm);</span>
+<span class="nc" id="L50">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L51">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    // 🔹 DELETE
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteForm(@PathVariable Long id) {
+        try {
+<span class="nc" id="L59">            formService.deleteById(id);</span>
+<span class="nc" id="L60">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L61">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L62">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    // 🔹 SEARCH + PAGINATION
+    @GetMapping(&quot;/search&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; searchForms(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(name = &quot;per_page&quot;, defaultValue = &quot;10&quot;) int perPage,
+            @RequestParam(name = &quot;q&quot;, defaultValue = &quot;&quot;) String query
+    ) {
+<span class="nc" id="L73">        Page&lt;Form&gt; result = formService.searchForms(query, page, perPage);</span>
+
+<span class="nc" id="L75">        Map&lt;String, Object&gt; resp = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L76">        resp.put(&quot;data&quot;, result.getContent());</span>
+<span class="nc" id="L77">        resp.put(&quot;page&quot;, result.getNumber());</span>
+<span class="nc" id="L78">        resp.put(&quot;per_page&quot;, result.getSize());</span>
+<span class="nc" id="L79">        resp.put(&quot;total&quot;, result.getTotalElements());</span>
+
+<span class="nc" id="L81">        return ResponseEntity.ok(resp);</span>
+    }
+
+
+    @GetMapping(&quot;/by-step/{stepName}&quot;)
+    public ResponseEntity&lt;FormDTO&gt; getFormByStep(@PathVariable String stepName) {
+<span class="nc" id="L87">        return ResponseEntity.ok(formService.getFormByStep(stepName));</span>
+    }
+
+
+    @GetMapping(&quot;/{step}/dossier/{dossierId}&quot;)
+    public ResponseEntity&lt;FormDTO&gt; getFormWithResponses(
+            @PathVariable String step,
+            @PathVariable Long dossierId,
+            @RequestParam(required = false) String pillar) {
+
+<span class="nc" id="L97">        FormDTO formDTO = formService.getFormWithResponses(step, dossierId );</span>
+<span class="nc" id="L98">        return ResponseEntity.ok(formDTO);</span>
+    }
+
+
+    // ✅ Correction ici : mapping bien formé avec PathVariable
+    @GetMapping(&quot;/step3-pillar-progress/{dossierId}&quot;)
+    public ResponseEntity&lt;Map&lt;String, Integer&gt;&gt; getPillarProgressPercentage(@PathVariable Long dossierId) {
+<span class="nc" id="L105">        return ResponseEntity.ok(formService.getPillarProgressPercentage(dossierId));</span>
+    }
+
+
+
+//getformbystepandbydossierid
+
+
+
+
+
+
+
+
+
+
+
+//    // 🔹 GET BY STEP ID (numeric)
+//    @GetMapping(&quot;/step/id/{stepId}&quot;)
+//    public ResponseEntity&lt;List&lt;Form&gt;&gt; getByStep(@PathVariable Long stepId) {
+//        return ResponseEntity.ok(formService.findByStepId(stepId));
+//    }
+//
+//    // 🔹 GET FORM STRUCTURE BY STEP NAME (string like &quot;creation-projet&quot;)
+//    @GetMapping(&quot;/structure/{stepName}&quot;)
+//    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getFormByStep(@PathVariable String stepName) {
+//        return ResponseEntity.ok(formService.getFormByStep(stepName));
+//    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

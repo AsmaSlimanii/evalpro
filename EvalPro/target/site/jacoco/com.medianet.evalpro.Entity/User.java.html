@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Entity</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Entity;
+
+
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+
+@Entity
+@Table(name = &quot;user&quot;)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User implements UserDetails {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String prenom;
+    private String birthdate;
+    private String gender;
+    private String phone;
+    private String discovery;
+    private String activation;
+
+    @Column(unique = true)
+    private String email;
+    private String password;
+    private String confirmPassword;
+    @Column(name = &quot;reset_token&quot;)
+    private String resetToken;
+    @Column(unique = true)
+    private String username;
+
+    @Column(name = &quot;reset_token_expiry&quot;)
+    private LocalDateTime resetTokenExpiry;
+    @JsonProperty(&quot;role&quot;)
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Role role = Role.CLIENT; // Valeur par défaut
+
+    @OneToMany(mappedBy = &quot;user&quot;, cascade = CascadeType.ALL)
+    @JsonManagedReference //pour éviter les boucles infinies :
+    // Le champ dossiers sera bien présent en base de données,Mais il ne sera pas visible dans la réponse JSON envoyée à Postman ou Angular lors d’un GET.
+    private List&lt;Dossier&gt; dossiers;
+
+
+<span class="nc" id="L58">    public enum Role {</span>
+<span class="nc" id="L59">        ADMIN, CLIENT</span>
+    }
+
+
+
+// Implémentation des méthodes requises par UserDetails
+
+    @Override
+    public Collection&lt;? extends GrantedAuthority&gt; getAuthorities() {
+<span class="nc" id="L68">        return List.of(new SimpleGrantedAuthority(&quot;ROLE_&quot; + role.name()));</span>
+    }
+
+
+    @Override
+    public String getUsername() {
+<span class="nc" id="L74">        return email; // Dans Spring Security, le username est généralement l'email</span>
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+<span class="nc" id="L79">        return true;</span>
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+<span class="nc" id="L84">        return true;</span>
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+<span class="nc" id="L89">        return true;</span>
+    }
+
+    @Override
+    public boolean isEnabled() {
+<span class="nc" id="L94">        return true;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

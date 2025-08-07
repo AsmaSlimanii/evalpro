@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Util</a> &gt; <span class="el_source">JwtUtil.java</span></div><h1>JwtUtil.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Util;
+
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+import java.util.List;
+
+@Component
+<span class="nc" id="L12">public class JwtUtil {</span>
+
+    //Déclaration de la clé secrète et de l’expiration
+<span class="nc" id="L15">    private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);</span>
+  //  private final long EXPIRATION = 86400000; // durée de vie du token, ici 1 jour en millisecondes (86400000 ms).
+     private static final long EXPIRATION = 1000L * 60 * 60 * 24 * 30; // 30 days
+
+    //Méthode pour générer un token JWT
+    //Cette méthode crée un JWT signé, basé sur l’adresse e-mail de l’utilisateur
+    public String generateToken(String email, List&lt;String&gt; roles) {
+<span class="nc" id="L22">        return Jwts.builder()</span>
+<span class="nc" id="L23">                .setSubject(email)</span>
+<span class="nc" id="L24">                .claim(&quot;authorities&quot;, roles) // ✅ AJOUT ICI</span>
+<span class="nc" id="L25">                .setIssuedAt(new Date())</span>
+<span class="nc" id="L26">                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))</span>
+<span class="nc" id="L27">                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)</span>
+<span class="nc" id="L28">                .compact();</span>
+
+    }
+
+
+
+    //Méthode pour extraire l'email depuis un token
+    //Cette méthode décode le token et récupère le subject, qui est l’email stocké dans le token
+    public String extractEmail(String token) {
+<span class="nc" id="L37">        return Jwts.parserBuilder()</span>
+<span class="nc" id="L38">                .setSigningKey(SECRET_KEY)</span>
+<span class="nc" id="L39">                .build()</span>
+<span class="nc" id="L40">                .parseClaimsJws(token)</span>
+<span class="nc" id="L41">                .getBody()</span>
+<span class="nc" id="L42">                .getSubject();</span>
+    }
+
+    // Méthode pour valider un token
+    // Cette méthode vérifie que le token est : Bien signé avec la bonne clé ,Pas expiré et Correctement formé
+    public boolean validateToken(String token) {
+        try {
+<span class="nc" id="L49">            Jwts.parserBuilder()</span>
+<span class="nc" id="L50">                    .setSigningKey(SECRET_KEY)</span>
+<span class="nc" id="L51">                    .build()</span>
+<span class="nc" id="L52">                    .parseClaimsJws(token);</span>
+<span class="nc" id="L53">            return true;</span>
+<span class="nc" id="L54">        } catch (JwtException | IllegalArgumentException e) {</span>
+<span class="nc" id="L55">            return false;</span>
+        }
+    }
+
+    public List&lt;String&gt; extractRoles(String token) {
+<span class="nc" id="L60">        Claims claims = Jwts.parserBuilder()</span>
+<span class="nc" id="L61">                .setSigningKey(SECRET_KEY)</span>
+<span class="nc" id="L62">                .build()</span>
+<span class="nc" id="L63">                .parseClaimsJws(token)</span>
+<span class="nc" id="L64">                .getBody();</span>
+
+<span class="nc" id="L66">        Object authorities = claims.get(&quot;authorities&quot;);</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (authorities instanceof List&lt;?&gt;) {</span>
+<span class="nc" id="L68">            return ((List&lt;?&gt;) authorities).stream()</span>
+<span class="nc" id="L69">                    .map(Object::toString)</span>
+<span class="nc" id="L70">                    .toList();</span>
+        }
+<span class="nc" id="L72">        return List.of();</span>
+    }
+
+}
+
+//classe JwtUtil, qui est une classe utilitaire pour gérer les tokens JWT (JSON Web Token) dans Mon backend Spring Boot.
+// Elle est utilisée dans le cadre de l'authentification sécurisée,
+// pour générer, valider et extraire des informations des tokens.
+
+
+
+//Objectif global de la classe JwtUtil
+//Cette classe sert à :
+//
+// Générer un JWT lors de l’authentification (generateToken)
+//
+// Extraire l’email (ou autre info) du token (extractEmail)
+//
+// Valider un token reçu dans une requête (validateToken)
+//
+//Elle est indispensable dans une authentification par JWT, car elle gère toute la logique autour des tokens.
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

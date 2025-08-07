@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QuestionMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Mapper</a> &gt; <span class="el_source">QuestionMapper.java</span></div><h1>QuestionMapper.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Mapper;
+
+import com.medianet.evalpro.Dto.OptionDTO;
+import com.medianet.evalpro.Dto.QuestionDTO;
+import com.medianet.evalpro.Entity.Option;
+import com.medianet.evalpro.Entity.Question;
+import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
+
+@Component
+<span class="nc" id="L12">public class QuestionMapper {</span>
+
+    public QuestionDTO toDTO(Question question) {
+<span class="nc" id="L15">        return QuestionDTO.builder()</span>
+<span class="nc" id="L16">                .id(question.getId())</span>
+<span class="nc" id="L17">                .text(question.getText())</span>
+<span class="nc" id="L18">                .type(question.getType().name())</span>
+<span class="nc" id="L19">                .isRequired(question.isRequired())</span>
+<span class="nc" id="L20">                .pillar(question.getPillar())</span>
+<span class="nc" id="L21">                .options(question.getOptions().stream()</span>
+<span class="nc" id="L22">                        .map(this::toOptionDTO)</span>
+<span class="nc" id="L23">                        .collect(Collectors.toList()))</span>
+<span class="nc" id="L24">                .parentQuestionId(question.getParentQuestionId())   // 👈 très important</span>
+<span class="nc" id="L25">                .parentOptionId(question.getParentOptionId())       // 👈 très important</span>
+<span class="nc" id="L26">                .build();</span>
+    }
+
+    public OptionDTO toOptionDTO(Option option) {
+<span class="nc" id="L30">        return OptionDTO.builder()</span>
+<span class="nc" id="L31">                .id(option.getId())</span>
+<span class="nc" id="L32">                .value(option.getValue())</span>
+<span class="nc" id="L33">                .build();</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

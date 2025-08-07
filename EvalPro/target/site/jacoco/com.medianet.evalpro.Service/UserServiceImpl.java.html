@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Service</a> &gt; <span class="el_source">UserServiceImpl.java</span></div><h1>UserServiceImpl.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Service;
+
+import com.medianet.evalpro.Entity.User;
+import com.medianet.evalpro.Repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+@Service
+
+public class UserServiceImpl implements UserService{
+    private final UserRepository userRepository;
+
+<span class="nc" id="L18">    public UserServiceImpl(UserRepository userRepository) {</span>
+<span class="nc" id="L19">        this.userRepository = userRepository;</span>
+<span class="nc" id="L20">    }</span>
+
+    @Override
+    public User save(User user) {
+<span class="nc" id="L24">        return userRepository.save(user);</span>
+    }
+
+    @Override
+    public List&lt;User&gt; findAll() {
+<span class="nc" id="L29">        return userRepository.findAll();</span>
+    }
+
+    @Override
+    public Optional&lt;User&gt; findById(Long id) {
+<span class="nc" id="L34">        return userRepository.findById(id);</span>
+    }
+
+    @Override
+    public User update(Long id, User user) {
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (!userRepository.existsById(id)) {</span>
+<span class="nc" id="L40">            throw new RuntimeException(&quot;Utilisateur non trouvé&quot;);</span>
+        }
+<span class="nc" id="L42">        user.setId(id);</span>
+<span class="nc" id="L43">        return userRepository.save(user);</span>
+    }
+
+    @Override
+    public void deleteById(Long id) {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (!userRepository.existsById(id)) {</span>
+<span class="nc" id="L49">            throw new RuntimeException(&quot;Utilisateur non trouvé&quot;);</span>
+        }
+<span class="nc" id="L51">        userRepository.deleteById(id);</span>
+<span class="nc" id="L52">    }</span>
+
+    // ← implémentation de la recherche paginée
+    @Override
+    public Page&lt;User&gt; searchUsers(String query, int page, int size) {
+<span class="nc" id="L57">        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;id&quot;).ascending());</span>
+<span class="nc" id="L58">        Page&lt;User&gt; userPage = userRepository.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(query, query, pageable);</span>
+
+        // Ajouter un filtrage pour détecter les users avec role = null
+<span class="nc" id="L61">        List&lt;User&gt; invalidUsers = userPage.getContent().stream()</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                .filter(user -&gt; user.getRole() == null)</span>
+<span class="nc" id="L63">                .toList();</span>
+
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (!invalidUsers.isEmpty()) {</span>
+<span class="nc" id="L66">            System.out.println(&quot; Attention : &quot; + invalidUsers.size() + &quot; utilisateurs ont un role NULL !&quot;);</span>
+            //  peux logger, ou même envoyer une alerte
+        }
+
+<span class="nc" id="L70">        return userPage;</span>
+    }
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

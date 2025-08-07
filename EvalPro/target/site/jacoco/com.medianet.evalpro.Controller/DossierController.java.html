@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DossierController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Controller</a> &gt; <span class="el_source">DossierController.java</span></div><h1>DossierController.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Controller;
+
+//import com.medianet.evalpro.Dto.DossierDto;
+import com.medianet.evalpro.Dto.DossierDto;
+import com.medianet.evalpro.Dto.DossierIdResponse;
+import com.medianet.evalpro.Dto.PreIdentificationDto;
+import com.medianet.evalpro.Entity.Dossier;
+import com.medianet.evalpro.Entity.User;
+import com.medianet.evalpro.Repository.UserRepository;
+import com.medianet.evalpro.Service.DossierService;
+import com.medianet.evalpro.Util.JwtUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping(&quot;/api/dossiers&quot;)
+@RequiredArgsConstructor
+
+public class DossierController {
+
+    private final DossierService dossierService;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+
+
+    // 🔹 CREATE
+    @PostMapping
+    public ResponseEntity&lt;Dossier&gt; create(@RequestBody Dossier dossier) {
+<span class="nc" id="L36">        return ResponseEntity.ok(dossierService.save(dossier));</span>
+    }
+
+    // 🔹 READ ALL
+    @GetMapping
+    public ResponseEntity&lt;List&lt;Dossier&gt;&gt; getAllDossiers() {
+<span class="nc" id="L42">        return ResponseEntity.ok(dossierService.findAll());</span>
+    }
+
+    // 🔹 READ ONE BY ID
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Dossier&gt; getDossierById(@PathVariable Long id) {
+<span class="nc" id="L48">        return dossierService.findById(id)</span>
+<span class="nc" id="L49">                .map(ResponseEntity::ok)</span>
+<span class="nc" id="L50">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    // 🔹 UPDATE
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Dossier&gt; updateDossier(@PathVariable Long id, @RequestBody Dossier dossier) {
+        try {
+<span class="nc" id="L57">            Dossier updatedDossier = dossierService.update(id, dossier);</span>
+<span class="nc" id="L58">            return ResponseEntity.ok(updatedDossier);</span>
+<span class="nc" id="L59">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L60">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    // 🔹 DELETE
+//    @DeleteMapping(&quot;/{id}&quot;)
+//    public ResponseEntity&lt;Void&gt; deleteDossier(@PathVariable Long id) {
+//        try {
+//            dossierService.deleteById(id);
+//            return ResponseEntity.noContent().build();
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;?&gt; deleteDossier(@RequestHeader(&quot;Authorization&quot;) String token, @PathVariable Long id) {
+<span class="nc" id="L76">        String email = jwtUtil.extractEmail(token.replace(&quot;Bearer &quot;, &quot;&quot;));</span>
+<span class="nc" id="L77">        System.out.println(&quot;Email from token = &quot; + email); // 🔍 debug</span>
+
+        try {
+<span class="nc" id="L80">            dossierService.deleteDossierIfOwnedByUser(id, email);</span>
+<span class="nc" id="L81">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L82">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L83">            System.out.println(&quot;❌ Erreur de suppression : &quot; + e.getMessage());</span>
+<span class="nc" id="L84">            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());</span>
+        }
+    }
+
+
+
+//    // 🔹 READ ALL BY USER
+//    @GetMapping(&quot;/user/{userId}&quot;)
+//    public ResponseEntity&lt;List&lt;Dossier&gt;&gt; getByUser(@PathVariable Long userId) {
+//        return ResponseEntity.ok(dossierService.findByUserId(userId));
+//    }
+
+
+    // 🔹 SEARCH + PAGINATION
+    @GetMapping(&quot;/search&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; searchDossiers(
+            @RequestParam(defaultValue = &quot;1&quot;) int page,
+            @RequestParam(name = &quot;per_page&quot;, defaultValue = &quot;10&quot;) int perPage,
+            @RequestParam(name = &quot;q&quot;, defaultValue = &quot;&quot;) String query
+    ) {
+<span class="nc" id="L104">        Page&lt;Dossier&gt; result = dossierService.searchDossiers(query, page, perPage);</span>
+
+<span class="nc" id="L106">        Map&lt;String, Object&gt; resp = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L107">        resp.put(&quot;data&quot;, result.getContent());</span>
+<span class="nc" id="L108">        resp.put(&quot;page&quot;, result.getNumber());</span>
+<span class="nc" id="L109">        resp.put(&quot;per_page&quot;, result.getSize());</span>
+<span class="nc" id="L110">        resp.put(&quot;total&quot;, result.getTotalElements());</span>
+
+<span class="nc" id="L112">        return ResponseEntity.ok(resp);</span>
+    }
+    @PostMapping(&quot;/create-from-step1&quot;)
+    public ResponseEntity&lt;DossierIdResponse&gt; createFromStep1(
+            @RequestHeader(&quot;Authorization&quot;) String token,
+            @RequestBody PreIdentificationDto dto) {
+
+<span class="nc" id="L119">        String email = jwtUtil.extractEmail(token.replace(&quot;Bearer &quot;, &quot;&quot;));</span>
+<span class="nc" id="L120">        Dossier newDossier = dossierService.createDossier(dto, email);</span>
+
+<span class="nc" id="L122">        return ResponseEntity.status(HttpStatus.CREATED)</span>
+<span class="nc" id="L123">                .body(new DossierIdResponse(newDossier.getId()));</span>
+    }
+
+    @GetMapping(&quot;/user&quot;)
+    public ResponseEntity&lt;List&lt;DossierDto&gt;&gt; getUserDossiers(@RequestHeader(&quot;Authorization&quot;) String token) {
+<span class="nc" id="L128">        String email = jwtUtil.extractEmail(token.replace(&quot;Bearer &quot;, &quot;&quot;));</span>
+<span class="nc" id="L129">        List&lt;DossierDto&gt; dossiers = dossierService.getUserDossiers(email);</span>
+<span class="nc" id="L130">        return ResponseEntity.ok(dossiers);</span>
+    }
+
+
+
+
+
+
+
+
+
+
+//    //Il fournit une API sécurisée REST qui retourne tous les dossiers (projets) de l’utilisateur connecté.
+//    @GetMapping(&quot;/user&quot;)
+//    public List&lt;DossierDto&gt; getUserDossiers(@RequestHeader(&quot;Authorization&quot;) String token) {
+//        String email = jwtUtil.extractEmail(token.replace(&quot;Bearer &quot;, &quot;&quot;));
+//        User user = userRepository.findByEmail(email).orElseThrow();
+//
+//        return user.getDossiers().stream()
+//                .map(dossier -&gt; {
+//                    DossierDto dto = new DossierDto();
+//                    dto.setId(dossier.getId());
+//                    dto.setStatus(dossier.getStatus().name());
+//                    dto.setCreatedAt(dossier.getCreatedAt().toString());
+//                    return dto;
+//                })
+//                .toList();
+//    }
+
+
+
+    //🔁 Fonctionnement :
+    //Le client envoie un token JWT dans l’en-tête Authorization
+    //
+    //Le backend extrait l’email de l’utilisateur
+    //
+    //Il cherche cet utilisateur en base de données
+    //
+    //Il récupère sa liste de dossiers
+    //
+    //Il convertit chaque dossier en DossierDto
+    //
+    //Il retourne une liste JSON à Angular
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

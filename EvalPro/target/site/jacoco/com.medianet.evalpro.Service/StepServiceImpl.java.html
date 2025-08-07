@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StepServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Service</a> &gt; <span class="el_source">StepServiceImpl.java</span></div><h1>StepServiceImpl.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Service;
+
+import com.medianet.evalpro.Entity.Step;
+import com.medianet.evalpro.Repository.StepRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class StepServiceImpl implements StepService {
+
+    private final StepRepository stepRepository;
+
+<span class="nc" id="L19">    public StepServiceImpl(StepRepository stepRepository) {</span>
+<span class="nc" id="L20">        this.stepRepository = stepRepository;</span>
+<span class="nc" id="L21">    }</span>
+
+    @Override
+    public Step save(Step step) {
+<span class="nc" id="L25">        return stepRepository.save(step);</span>
+    }
+
+    @Override
+    public List&lt;Step&gt; findAll() {
+<span class="nc" id="L30">        return stepRepository.findAll();</span>
+    }
+
+    @Override
+    public Optional&lt;Step&gt; findById(Long id) {
+<span class="nc" id="L35">        return stepRepository.findById(id);</span>
+    }
+
+    @Override
+    public Step update(Long id, Step step) {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (!stepRepository.existsById(id)) {</span>
+<span class="nc" id="L41">            throw new RuntimeException(&quot;Utilisateur non trouvé&quot;);</span>
+        }
+<span class="nc" id="L43">        step.setId(id);</span>
+<span class="nc" id="L44">        return stepRepository.save(step);</span>
+    }
+
+    @Override
+    public void deleteById(Long id) {
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (!stepRepository.existsById(id)) {</span>
+<span class="nc" id="L50">            throw new RuntimeException(&quot;Utilisateur non trouvé&quot;);</span>
+        }
+<span class="nc" id="L52">        stepRepository.deleteById(id);</span>
+<span class="nc" id="L53">    }</span>
+
+
+
+    @Override
+    public Page&lt;Step&gt; searchSteps(String q, int page, int size) {
+<span class="nc" id="L59">        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;id&quot;).ascending());</span>
+<span class="nc" id="L60">        return stepRepository.findByNameContainingIgnoreCase(q, pageable);</span>
+
+    }
+
+    @Override
+    public List&lt;Step&gt; findByDossierId(Long dossierId) {
+<span class="nc" id="L66">        return stepRepository.findByDossierId(dossierId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QuestionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Controller</a> &gt; <span class="el_source">QuestionController.java</span></div><h1>QuestionController.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Controller;
+
+import com.medianet.evalpro.Entity.Question;
+import com.medianet.evalpro.Service.QuestionService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping(&quot;/api/questions&quot;)
+@RequiredArgsConstructor
+public class QuestionController {
+    private final QuestionService questionService;
+
+        // 🔹 CREATE
+        @PostMapping
+        public ResponseEntity&lt;Question&gt; createQuestion(@RequestBody Question question) {
+<span class="nc" id="L23">            return ResponseEntity.ok(questionService.save(question));</span>
+        }
+
+        // 🔹 READ ALL
+        @GetMapping
+        public ResponseEntity&lt;List&lt;Question&gt;&gt; getAllQuestions() {
+<span class="nc" id="L29">            return ResponseEntity.ok(questionService.findAll());</span>
+        }
+
+        // 🔹 READ ONE BY ID
+        @GetMapping(&quot;/{id}&quot;)
+        public ResponseEntity&lt;Question&gt; getQuestionById(@PathVariable Long id) {
+<span class="nc" id="L35">            return questionService.findById(id)</span>
+<span class="nc" id="L36">                    .map(ResponseEntity::ok)</span>
+<span class="nc" id="L37">                    .orElse(ResponseEntity.notFound().build());</span>
+        }
+
+        // 🔹 UPDATE
+        @PutMapping(&quot;/{id}&quot;)
+        public ResponseEntity&lt;Question&gt; updateQuestion(@PathVariable Long id, @RequestBody Question question) {
+            try {
+<span class="nc" id="L44">                Question updatedQuestion = questionService.update(id, question);</span>
+<span class="nc" id="L45">                return ResponseEntity.ok(updatedQuestion);</span>
+<span class="nc" id="L46">            } catch (RuntimeException e) {</span>
+<span class="nc" id="L47">                return ResponseEntity.notFound().build();</span>
+            }
+        }
+
+        // 🔹 DELETE
+        @DeleteMapping(&quot;/{id}&quot;)
+        public ResponseEntity&lt;Void&gt; deleteQuestion(@PathVariable Long id) {
+            try {
+<span class="nc" id="L55">                questionService.deleteById(id);</span>
+<span class="nc" id="L56">                return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L57">            } catch (RuntimeException e) {</span>
+<span class="nc" id="L58">                return ResponseEntity.notFound().build();</span>
+            }
+        }
+
+
+        // 🔹 READ ALL BY FORM
+        @GetMapping(&quot;/form/{formId}&quot;)
+        public ResponseEntity&lt;List&lt;Question&gt;&gt; getByForm(@PathVariable Long formId) {
+<span class="nc" id="L66">            return ResponseEntity.ok(questionService.findByFormId(formId));</span>
+        }
+
+    // 🔹 SEARCH + PAGINATION
+    @GetMapping(&quot;/search&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; searchQuestions(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(name = &quot;per_page&quot;, defaultValue = &quot;10&quot;) int perPage,
+            @RequestParam(name = &quot;q&quot;, defaultValue = &quot;&quot;) String query
+    ) {
+<span class="nc" id="L76">        Page&lt;Question&gt; result = questionService.searchQuestions(query, page, perPage);</span>
+
+<span class="nc" id="L78">        Map&lt;String, Object&gt; resp = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L79">        resp.put(&quot;data&quot;, result.getContent());</span>
+<span class="nc" id="L80">        resp.put(&quot;page&quot;, result.getNumber());</span>
+<span class="nc" id="L81">        resp.put(&quot;per_page&quot;, result.getSize());</span>
+<span class="nc" id="L82">        resp.put(&quot;total&quot;, result.getTotalElements());</span>
+
+<span class="nc" id="L84">        return ResponseEntity.ok(resp);</span>
+    }
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Service</a> &gt; <span class="el_source">AuthServiceImpl.java</span></div><h1>AuthServiceImpl.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Service;
+
+import com.medianet.evalpro.Dto.AuthRequest;
+import com.medianet.evalpro.Dto.AuthResponse;
+import com.medianet.evalpro.Dto.RegisterRequest;
+import com.medianet.evalpro.Entity.User;
+import com.medianet.evalpro.Repository.UserRepository;
+import com.medianet.evalpro.Util.JwtUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AuthServiceImpl implements AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+
+    @Override
+    public AuthResponse register(RegisterRequest request) {
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        if (!request.getPassword().equals(request.getConfirmPassword())) {</span>
+<span class="nc" id="L26">            throw new RuntimeException(&quot;Passwords do not match&quot;);</span>
+        }
+
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        if (userRepository.findByEmail(request.getEmail()).isPresent()) {</span>
+<span class="nc" id="L30">            throw new RuntimeException(&quot;Email already in use&quot;);</span>
+        }
+
+<span class="nc" id="L33">        User user = User.builder()</span>
+<span class="nc" id="L34">                .name(request.getName())</span>
+<span class="nc" id="L35">                .prenom(request.getPrenom())</span>
+<span class="nc" id="L36">                .email(request.getEmail())</span>
+<span class="nc" id="L37">                .password(passwordEncoder.encode(request.getPassword()))</span>
+<span class="nc" id="L38">                .birthdate(request.getBirthdate())</span>
+<span class="nc" id="L39">                .gender(request.getGender())</span>
+<span class="nc" id="L40">                .phone(request.getPhone())</span>
+<span class="nc" id="L41">                .discovery(request.getDiscovery())</span>
+<span class="nc" id="L42">                .activation(request.getActivation())</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">                .role(request.getRole() != null ? request.getRole() : User.Role.CLIENT)</span>
+<span class="nc" id="L44">                .build();</span>
+        //
+
+<span class="nc" id="L47">        userRepository.save(user);</span>
+
+        // 🔐 Ajout du rôle dans le token JWT
+<span class="nc" id="L50">        List&lt;String&gt; roles = List.of(&quot;ROLE_&quot; + user.getRole().name());</span>
+        // ou ROLE_ADMIN selon le rôle réel
+<span class="nc" id="L52">        String token = jwtUtil.generateToken(user.getEmail(), roles);</span>
+
+//        return new AuthResponse(token, &quot;Inscription réussie !&quot;);
+<span class="nc" id="L55">        return new AuthResponse(token, &quot;Connexion réussie !&quot;, user.getRole().name());</span>
+    }
+
+    @Override
+    public AuthResponse login(AuthRequest request) {
+<span class="nc" id="L60">        User user = userRepository.findByEmail(request.getEmail())</span>
+<span class="nc" id="L61">                .orElseThrow(() -&gt; new RuntimeException(&quot;Email non trouvé.&quot;));</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {</span>
+<span class="nc" id="L64">            throw new RuntimeException(&quot;Mot de passe invalide.&quot;);</span>
+        }
+
+        // 🔐 Ajout du rôle dans le token JWT
+<span class="nc" id="L68">        List&lt;String&gt; roles = List.of(&quot;ROLE_USER&quot;); // ou récupérer depuis user.getRole()</span>
+<span class="nc" id="L69">        String token = jwtUtil.generateToken(user.getEmail(), roles);</span>
+
+       // return new AuthResponse(token, &quot;Connexion réussie !&quot;);
+<span class="nc" id="L72">        return new AuthResponse(token, &quot;Connexion réussie !&quot;, user.getRole().name());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomUserDetailsService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Service.Auth</a> &gt; <span class="el_source">CustomUserDetailsService.java</span></div><h1>CustomUserDetailsService.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Service.Auth;
+
+import com.medianet.evalpro.Entity.User;
+import com.medianet.evalpro.Repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+
+@Service
+@RequiredArgsConstructor
+//RequiredArgsConstructor : pour créer automatiquement un constructeur avec tous les final.
+
+public class CustomUserDetailsService  implements UserDetailsService {
+
+    //Cela évite d’écrire manuellement un constructeur. Spring pourra injecter userRepository automatiquement.
+    private final UserRepository userRepository;
+
+    //UserDetailsService et UserDetails de Spring Security : c’est l’interface que Spring utilise pour charger les utilisateurs.
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+<span class="nc" id="L26">        User utilisateur = userRepository.findByEmail(email)</span>
+<span class="nc" id="L27">                .orElseThrow(() -&gt; new UsernameNotFoundException(&quot;Utilisateur non trouvé avec l'email: &quot; + email));</span>
+
+        // ✅ Correction ici : retourne &quot;ROLE_USER&quot; ou &quot;ROLE_ADMIN&quot;
+<span class="nc" id="L30">        String role = &quot;ROLE_&quot; + utilisateur.getRole().name(); // ← exemple: &quot;USER&quot; -&gt; &quot;ROLE_USER&quot;</span>
+
+<span class="nc" id="L32">        return new org.springframework.security.core.userdetails.User(</span>
+<span class="nc" id="L33">                utilisateur.getEmail(),</span>
+<span class="nc" id="L34">                utilisateur.getPassword(),</span>
+<span class="nc" id="L35">                Collections.singletonList(new SimpleGrantedAuthority(role))</span>
+        );
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+// Cette méthode loadUserByUsername est le cœur du service :
+//
+//Elle est appelée automatiquement par Spring Security quand un utilisateur tente de se connecter.
+//
+//Elle prend l’email (ou le username) comme paramètre.
+//
+//Elle appelle le UserRepository.findByEmail(email) pour trouver l’utilisateur dans la base de données.
+//
+//Si l’utilisateur est trouvé → il est retourné.
+//
+//Sinon → une exception UsernameNotFoundException est levée (Spring gère ça en renvoyant une erreur 401).
+
+
+
+
+
+// but de cette classe
+//classe CustomUserDetailsService, dans le cadre de l’authentification Spring Security.
+// Elle joue un rôle clé dans le processus de connexion : elle permet à Spring de retrouver les informations de l'utilisateur à partir de son email.
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

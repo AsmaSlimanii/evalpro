@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResponseController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Controller</a> &gt; <span class="el_source">ResponseController.java</span></div><h1>ResponseController.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Controller;
+
+import com.medianet.evalpro.Dto.DossierIdResponse;
+import com.medianet.evalpro.Dto.ResponseRequestDTO;
+import com.medianet.evalpro.Entity.Dossier;
+import com.medianet.evalpro.Entity.Response;
+import com.medianet.evalpro.Service.DossierService;
+import com.medianet.evalpro.Service.ResponseService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.*;
+
+@RestController
+@RequestMapping(&quot;/api/responses&quot;)
+@RequiredArgsConstructor
+public class ResponseController {
+
+    private final ResponseService responseService;
+    @Autowired
+    private DossierService dossierService;
+
+
+    // 🔹 CREATE :  Crée une nouvelle réponse (Response) générique (non liée à une étape spécifique ou à un dossier).
+    @PostMapping
+    public ResponseEntity&lt;Response&gt; createResponse(@RequestBody Response response) {
+<span class="nc" id="L35">        return ResponseEntity.ok(responseService.save(response));</span>
+    }
+
+    // 🔹 READ ALL : Récupère toutes les réponses existantes dans la base.
+    @GetMapping
+    public ResponseEntity&lt;List&lt;Response&gt;&gt; getAllResponses() {
+<span class="nc" id="L41">        return ResponseEntity.ok(responseService.findAll());</span>
+    }
+
+    // 🔹 READ ONE BY ID : Récupère une seule réponse par son ID.
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Response&gt; getResponseById(@PathVariable Long id) {
+<span class="nc" id="L47">        return responseService.findById(id)</span>
+<span class="nc" id="L48">                .map(ResponseEntity::ok)</span>
+<span class="nc" id="L49">                .orElse(ResponseEntity.notFound().build());</span>
+    }
+
+    // 🔹 UPDATE :  Met à jour une réponse existante identifiée par son ID.
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Response&gt; updateResponse(@PathVariable Long id, @RequestBody Response response) {
+        try {
+<span class="nc" id="L56">            Response updatedResponse = responseService.update(id, response);</span>
+<span class="nc" id="L57">            return ResponseEntity.ok(updatedResponse);</span>
+<span class="nc" id="L58">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L59">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    // 🔹 DELETE : Supprime une réponse identifiée par son ID
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteResponse(@PathVariable Long id) {
+        try {
+<span class="nc" id="L67">            responseService.deleteById(id);</span>
+<span class="nc" id="L68">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L69">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L70">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+
+//    // 🔹 READ ALL BY DOSSIER
+//    @GetMapping(&quot;/dossier/{dossierId}&quot;)
+//    public ResponseEntity&lt;List&lt;Response&gt;&gt; getByDossier(@PathVariable Long dossierId) {
+//        return ResponseEntity.ok(responseService.findByDossierId(dossierId));
+//    }
+//
+//    // 🔹 READ ALL BY USER
+//    @GetMapping(&quot;/user/{userId}&quot;)
+//    public ResponseEntity&lt;List&lt;Response&gt;&gt; getByUser(@PathVariable Long userId) {
+//        return ResponseEntity.ok(responseService.findByUserId(userId));
+//    }
+
+    // 🔹 SEARCH + PAGINATION : Recherche paginée de réponses avec un filtre texte q
+    //page : numéro de page
+    //
+    //per_page : nombre d’éléments par page
+    //
+    //q : texte à rechercher
+    //Retourne : Un objet contenant :
+    //
+    //data : liste des réponses
+    //
+    //page, per_page, total : infos de pagination
+    @GetMapping(&quot;/search&quot;)
+    public ResponseEntity&lt;Map&lt;String,Object&gt;&gt; searchResponses(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(name = &quot;per_page&quot;, defaultValue = &quot;10&quot;) int perPage,
+            @RequestParam(name = &quot;q&quot;, defaultValue = &quot;&quot;) String query) {
+
+<span class="nc" id="L104">        Page&lt;Response&gt; result = responseService.searchResponses(query, page, perPage);</span>
+<span class="nc" id="L105">        Map&lt;String,Object&gt; resp = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L106">        resp.put(&quot;data&quot;,      result.getContent());</span>
+<span class="nc" id="L107">        resp.put(&quot;page&quot;,      result.getNumber());</span>
+<span class="nc" id="L108">        resp.put(&quot;per_page&quot;,  result.getSize());</span>
+<span class="nc" id="L109">        resp.put(&quot;total&quot;,     result.getTotalElements());</span>
+
+<span class="nc" id="L111">        return ResponseEntity.ok(resp);</span>
+    }
+
+    //1. Création (sans dossier) : Sauvegarde les réponses d’un utilisateur à une étape (step) sans dossier existant.
+    @PostMapping(&quot;/step{step_id}&quot;)
+    public ResponseEntity&lt;?&gt; saveStepWithoutDossier(@RequestBody ResponseRequestDTO dto,
+                                                    @PathVariable String step_id,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
+<span class="nc" id="L119">        dto.setStepId(Long.valueOf(step_id));</span>
+<span class="nc" id="L120">        String email = userDetails.getUsername(); // &lt;- ici c’est OK</span>
+<span class="nc" id="L121">        Dossier dossier = dossierService.createNewDossierForUser(email);</span>
+<span class="nc" id="L122">        dto.setDossierId(dossier.getId());</span>
+
+<span class="nc" id="L124">        responseService.saveStepResponses(dto, email);</span>
+<span class="nc" id="L125">        return ResponseEntity.ok(Map.of(&quot;dossierId&quot;, dossier.getId()));</span>
+    }
+
+////   // 2. Mise à jour (avec dossier existant)
+//    @PostMapping(&quot;/step{step_id}/{dossier_id}&quot;)
+//    public ResponseEntity&lt;?&gt; saveStep(@RequestBody ResponseRequestDTO dto,
+//                                      @PathVariable String step_id,
+//                                      @PathVariable String dossier_id,
+//                                      @AuthenticationPrincipal UserDetails userDetails) {
+//        if (userDetails == null) {
+//            return ResponseEntity.status(403).body(&quot;Utilisateur non authentifié !&quot;);
+//        }
+//
+//        dto.setStepId(Long.valueOf(step_id));
+//        dto.setDossierId(Long.valueOf(dossier_id));
+//
+//        // ✅ AJOUTE CE LOG POUR DEBUG
+//        System.out.println(&quot;📥 DTO reçu : step=&quot; + dto.getStepId() + &quot; | dossier=&quot; + dto.getDossierId() + &quot; | pillar=&quot; + dto.getPillar());
+//        responseService.saveStepResponses(dto, userDetails.getUsername());
+//        return ResponseEntity.ok(Map.of(&quot;dossierId&quot;, dossier_id));
+//    }
+
+
+//But : Sauvegarde les réponses pour une étape spécifique et un dossier déjà existant.
+//Logique :
+//
+//Récupère l’utilisateur via @AuthenticationPrincipal
+//
+//Enregistre les réponses via responseService.saveStepResponses
+//
+//Si l’utilisateur est ROLE_ADMIN et fournit un commentaire (dto.getComment()),
+// alors le commentaire est aussi sauvegardé dans une table spéciale pour les commentaires admin.
+//Retourne : L’ID du dossier traité.
+@PostMapping(&quot;/step{step_id}/{dossier_id}&quot;)
+public ResponseEntity&lt;?&gt; saveStep(@RequestBody ResponseRequestDTO dto,
+                                  @PathVariable String step_id,
+                                  @PathVariable String dossier_id,
+                                  @AuthenticationPrincipal UserDetails userDetails) {
+
+<span class="nc bnc" id="L164" title="All 2 branches missed.">    if (userDetails == null) {</span>
+<span class="nc" id="L165">        return ResponseEntity.status(403).body(&quot;Utilisateur non authentifié !&quot;);</span>
+    }
+
+<span class="nc" id="L168">    dto.setStepId(Long.valueOf(step_id));</span>
+<span class="nc" id="L169">    dto.setDossierId(Long.valueOf(dossier_id));</span>
+
+<span class="nc" id="L171">    responseService.saveStepResponses(dto, userDetails.getUsername());</span>
+
+<span class="nc" id="L173">    boolean isAdmin = userDetails.getAuthorities().stream()</span>
+<span class="nc" id="L174">            .anyMatch(auth -&gt; auth.getAuthority().equals(&quot;ROLE_ADMIN&quot;));</span>
+
+<span class="nc bnc" id="L176" title="All 6 branches missed.">    if (isAdmin &amp;&amp; dto.getComment() != null &amp;&amp; !dto.getComment().isBlank()) {</span>
+<span class="nc" id="L177">        responseService.saveAdminComment(</span>
+<span class="nc" id="L178">                dto.getDossierId(),</span>
+<span class="nc" id="L179">                dto.getStepId(),</span>
+<span class="nc" id="L180">                dto.getComment(),</span>
+<span class="nc" id="L181">                userDetails.getUsername()</span>
+        );
+    }
+
+<span class="nc" id="L185">    return ResponseEntity.ok(Map.of(&quot;dossierId&quot;, dossier_id));</span>
+}
+
+
+    @GetMapping(&quot;/step3-progress/{dossierId}&quot;)
+    public ResponseEntity&lt;Map&lt;String, Boolean&gt;&gt; getStep3Progress(@PathVariable Long dossierId) {
+<span class="nc" id="L191">        Map&lt;String, Boolean&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L192">        result.put(&quot;economique&quot;, responseService.isPillarCompleted(dossierId, &quot;economique&quot;));</span>
+<span class="nc" id="L193">        result.put(&quot;socio&quot;, responseService.isPillarCompleted(dossierId, &quot;socio&quot;));</span>
+<span class="nc" id="L194">        result.put(&quot;environnemental&quot;, responseService.isPillarCompleted(dossierId, &quot;environnemental&quot;));</span>
+<span class="nc" id="L195">        return ResponseEntity.ok(result);</span>
+    }
+
+
+
+    //But : Vérifie si chaque pilier de l’étape 3 (auto-évaluation) est complété.
+    //Logique :
+    //
+    //Appelle isPillarCompleted pour economique, socio, environnemental.
+    //Retourne : Un objet JSON avec { economique: true/false, socio: ..., environnemental: ... }.
+    @GetMapping(&quot;/step3-score/{dossierId}&quot;)
+    public ResponseEntity&lt;?&gt; getPillarScores(@PathVariable Long dossierId) {
+<span class="nc" id="L207">        Map&lt;String, Object&gt; scores = responseService.calculatePillarScores(dossierId);</span>
+<span class="nc" id="L208">        return ResponseEntity.ok(scores);</span>
+    }
+
+
+
+
+
+//    @PostMapping(&quot;/admin-comment&quot;)
+//    public ResponseEntity&lt;?&gt; saveAdminComment(@RequestParam Long dossierId,
+//                                              @RequestParam Long stepId,
+//                                              @RequestParam String comment,
+//                                              @AuthenticationPrincipal UserDetails userDetails) {
+//
+//        responseService.saveAdminComment(dossierId, stepId, comment, userDetails.getUsername());
+//        return ResponseEntity.ok(&quot;✅ Commentaire enregistré avec succès !&quot;);
+//    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

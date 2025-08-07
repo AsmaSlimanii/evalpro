@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DossierServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Service</a> &gt; <span class="el_source">DossierServiceImpl.java</span></div><h1>DossierServiceImpl.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Service;
+
+//import com.medianet.evalpro.Dto.OptionDto;
+//import com.medianet.evalpro.Dto.PreIdentificationDto;
+//import com.medianet.evalpro.Dto.QuestionDto;
+import com.medianet.evalpro.Dto.DossierDto;
+import com.medianet.evalpro.Dto.PreIdentificationDto;
+import com.medianet.evalpro.Dto.StepDto;
+import com.medianet.evalpro.Entity.Dossier;
+import com.medianet.evalpro.Entity.User;
+import com.medianet.evalpro.Repository.DossierRepository;
+import com.medianet.evalpro.Repository.ResponseAdminRepository;
+import com.medianet.evalpro.Repository.ResponseRepository;
+import com.medianet.evalpro.Repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+public class DossierServiceImpl implements DossierService {
+
+    private final DossierRepository dossierRepository;
+    private final UserRepository userRepository;
+    @Autowired
+    private ResponseAdminRepository responseAdminRepository;
+    @Autowired
+    private ResponseRepository responseRepository;
+
+
+<span class="nc" id="L39">    public DossierServiceImpl(DossierRepository dossierRepository, UserRepository userRepository) {</span>
+<span class="nc" id="L40">        this.dossierRepository = dossierRepository;</span>
+<span class="nc" id="L41">        this.userRepository = userRepository;</span>
+<span class="nc" id="L42">    }</span>
+
+    @Override
+    public Dossier save(Dossier dossier) {
+<span class="nc" id="L46">        return dossierRepository.save(dossier);</span>
+    }
+
+    @Override
+    public List&lt;Dossier&gt; findAll() {
+<span class="nc" id="L51">        return dossierRepository.findAll();</span>
+    }
+
+    @Override
+    public Optional&lt;Dossier&gt; findById(Long id) {
+<span class="nc" id="L56">        return dossierRepository.findById(id);</span>
+    }
+
+    @Override
+    public Dossier update(Long id, Dossier dossier) {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (!dossierRepository.existsById(id)) {</span>
+<span class="nc" id="L62">            throw new RuntimeException(&quot;Dossier non trouvé&quot;);</span>
+        }
+<span class="nc" id="L64">        dossier.setId(id);</span>
+<span class="nc" id="L65">        return dossierRepository.save(dossier);</span>
+    }
+
+    @Override
+    public void deleteById(Long id) {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        if (!dossierRepository.existsById(id)) {</span>
+<span class="nc" id="L71">            throw new RuntimeException(&quot;Dossier non trouvé&quot;);</span>
+        }
+<span class="nc" id="L73">        dossierRepository.deleteById(id);</span>
+<span class="nc" id="L74">    }</span>
+//
+//    @Override
+//    public List&lt;Dossier&gt; findByUserId(Long userId) {
+//        return dossierRepository.findByUserId(userId);
+//    }
+
+    @Override
+    public Page&lt;Dossier&gt; searchDossiers(String query, int page, int size) {
+<span class="nc" id="L83">        Pageable pageable = PageRequest.of(page, size, Sort.by(&quot;id&quot;).descending());</span>
+<span class="nc" id="L84">        return dossierRepository.findByStatusContainingIgnoreCase(query, pageable);</span>
+    }
+
+
+
+
+
+//Service pour créer un Dossier après la soumission du Step 1
+
+    public Dossier createNewDossierForUser(String email) {
+<span class="nc" id="L94">        User user = userRepository.findByEmail(email)</span>
+<span class="nc" id="L95">                .orElseThrow(() -&gt; new RuntimeException(&quot;User not found&quot;));</span>
+
+<span class="nc" id="L97">        Dossier dossier = Dossier.builder()</span>
+<span class="nc" id="L98">                .user(user)</span>
+<span class="nc" id="L99">                .createdAt(LocalDateTime.now())</span>
+<span class="nc" id="L100">                .status(Dossier.Status.EN_COURS)</span>
+<span class="nc" id="L101">                .build();</span>
+
+<span class="nc" id="L103">        return dossierRepository.save(dossier);</span>
+    }
+
+
+    public Dossier createDossier(PreIdentificationDto dto, String email)  {
+<span class="nc" id="L108">        User user = userRepository.findByEmail(email)</span>
+<span class="nc" id="L109">                .orElseThrow(() -&gt; new RuntimeException(&quot;Utilisateur introuvable&quot;));</span>
+
+<span class="nc" id="L111">        Dossier dossier = Dossier.builder()</span>
+<span class="nc" id="L112">                .user(user)</span>
+<span class="nc" id="L113">                .createdAt(LocalDateTime.now())</span>
+<span class="nc" id="L114">                .status(Dossier.Status.EN_COURS)</span>
+<span class="nc" id="L115">                .nomOfficielProjet(dto.getNomOfficielProjet())  // maintenant ça fonctionne</span>
+<span class="nc" id="L116">                .build();</span>
+
+<span class="nc" id="L118">        return dossierRepository.save(dossier);</span>
+    }
+    @Override
+    public List&lt;DossierDto&gt; getUserDossiers(String email) {
+<span class="nc" id="L122">        User user = userRepository.findByEmail(email)</span>
+<span class="nc" id="L123">                .orElseThrow(() -&gt; new RuntimeException(&quot;Utilisateur non trouvé&quot;));</span>
+
+<span class="nc" id="L125">        List&lt;Dossier&gt; dossiers = dossierRepository.findByUserId(user.getId());</span>
+
+<span class="nc" id="L127">        return dossiers.stream()</span>
+<span class="nc" id="L128">                .map(d -&gt; {</span>
+                    // ✅ Logs de debug pour vérifier les données
+<span class="nc" id="L130">                    System.out.println(&quot;&gt;&gt; ID: &quot; + d.getId());</span>
+<span class="nc" id="L131">                    System.out.println(&quot;&gt;&gt; Nom: &quot; + d.getNomOfficielProjet());</span>
+<span class="nc" id="L132">                    System.out.println(&quot;&gt;&gt; CreatedAt: &quot; + d.getCreatedAt());</span>
+<span class="nc" id="L133">                    System.out.println(&quot;&gt;&gt; UpdatedAt: &quot; + d.getUpdatedAt());</span>
+
+<span class="nc" id="L135">                    return DossierDto.builder()</span>
+<span class="nc" id="L136">                            .id(d.getId())</span>
+<span class="nc" id="L137">                            .code(&quot;Pr-&quot; + d.getId())</span>
+                            // ✅ Titre par défaut si null
+<span class="nc" id="L139">                            .nomOfficielProjet(</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">                                    d.getNomOfficielProjet() != null ? d.getNomOfficielProjet() : &quot;Titre manquant&quot;</span>
+                            )
+<span class="nc" id="L142">                            .statusLabel(&quot;Dossier en cours de préparation&quot;)</span>
+<span class="nc" id="L143">                            .createdAt(d.getCreatedAt())</span>
+                            // ✅ fallback si updatedAt est null
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                            .updatedAt(d.getUpdatedAt() != null ? d.getUpdatedAt() : d.getCreatedAt())</span>
+<span class="nc" id="L146">                            .steps(generateStepProgress(d))</span>
+<span class="nc" id="L147">                            .lastCompletedStep(d.getLastCompletedStep() + 1)</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                            .categorie(d.getCategorie() != null ? d.getCategorie() : &quot;-&quot;)</span>
+<span class="nc" id="L149">                            .build();</span>
+                })
+<span class="nc" id="L151">                .collect(Collectors.toList());</span>
+    }
+    @Transactional
+    public void deleteDossierIfOwnedByUser(Long dossierId, String email) {
+<span class="nc" id="L155">        Dossier dossier = dossierRepository.findById(dossierId)</span>
+<span class="nc" id="L156">                .orElseThrow(() -&gt; new RuntimeException(&quot;Dossier non trouvé&quot;));</span>
+
+<span class="nc" id="L158">        User user = userRepository.findByEmail(email)</span>
+<span class="nc" id="L159">                .orElseThrow(() -&gt; new RuntimeException(&quot;Utilisateur non trouvé&quot;));</span>
+
+        // Vérifie si l'utilisateur est propriétaire ou admin
+<span class="nc bnc" id="L162" title="All 4 branches missed.">        if (!dossier.getUser().getId().equals(user.getId()) &amp;&amp; !user.getRole().equals(&quot;ADMIN&quot;)) {</span>
+<span class="nc" id="L163">            throw new RuntimeException(&quot;Suppression non autorisée.&quot;);</span>
+        }
+
+        // ⚠️ Supprimer d'abord les réponses associées
+<span class="nc" id="L167">        responseRepository.deleteByDossierId(dossierId);</span>
+<span class="nc" id="L168">        responseAdminRepository.deleteByDossierId(dossierId);</span>
+
+        // Ensuite, supprimer le dossier
+<span class="nc" id="L171">        dossierRepository.delete(dossier);</span>
+<span class="nc" id="L172">    }</span>
+
+
+
+
+
+
+
+    //    private List&lt;StepDto&gt; generateStepProgress(Dossier dossier) {
+//        List&lt;StepDto&gt; steps = new ArrayList&lt;&gt;();
+//        for (int i = 1; i &lt;= 5; i++) {
+//            new StepDto(i, i &lt;= dossier.getLastCompletedStep())
+//            ;
+//        }
+//        return steps;
+//    }
+
+private Map&lt;String, Integer&gt; generateStepProgress(Dossier dossier) {
+<span class="nc" id="L190">    Map&lt;String, Integer&gt; steps = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L191">    int lastStep = Optional.of(dossier.getLastCompletedStep()).orElse(0);</span>
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">    for (int i = 1; i &lt;= 5; i++) {</span>
+<span class="nc" id="L194">        String stepName = &quot;Step &quot; + i;</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">        int progress = (i &lt;= lastStep) ? 100 : 0;</span>
+<span class="nc" id="L196">        steps.put(stepName, progress);</span>
+    }
+<span class="nc" id="L198">    return steps;</span>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    @Override
+//    @Transactional
+//    public void saveStep1(Long userId, PreIdentificationDto dto) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -&gt; new EntityNotFoundException(&quot;Utilisateur non trouvé avec l'ID: &quot; + userId));
+
+        // ❌ À supprimer : cast dangereux
+        // Dossier dossier = (Dossier) dossierRepository.findByUserId(userId);
+
+        // ✅ À utiliser à la place :
+//        Dossier dossier = dossierRepository.findTopByUserIdOrderByIdDesc(userId)
+//                .orElseGet(() -&gt; {
+//                    Dossier d = new Dossier();
+//                    d.setUser(user);
+//                    d.setStatus(Dossier.Status.EN_COURS);
+//                    return dossierRepository.save(d);
+//                });
+
+//        Step1PreIdentification step1 = Step1PreIdentification.builder()
+//                .situation(dto.getSituation())
+//                .nomEntreprise(dto.getNomEntreprise())
+//                .secteur(dto.getSecteur())
+//                .production(dto.isProduction())
+//                .collecte(dto.isCollecte())
+//                .transformation(dto.isTransformation())
+//                .services(dto.isServices())
+//                .transitionComment(dto.getTransitionComment())
+//                .dossier(dossier)
+//                .build();
+//
+//        dossier.setStep1PreIdentification(step1);
+//        dossierRepository.save(dossier);
+//    }
+
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

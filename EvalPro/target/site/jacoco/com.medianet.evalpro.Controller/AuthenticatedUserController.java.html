@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthenticatedUserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Controller</a> &gt; <span class="el_source">AuthenticatedUserController.java</span></div><h1>AuthenticatedUserController.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Controller;
+import com.medianet.evalpro.Entity.User;
+import com.medianet.evalpro.Repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+    @RestController
+    @RequestMapping(&quot;/api&quot;)
+    @RequiredArgsConstructor
+    public class AuthenticatedUserController {
+
+        private final UserRepository userRepository;
+
+        @GetMapping(&quot;/current-user&quot;)
+        public ResponseEntity&lt;?&gt; getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+<span class="nc bnc" id="L21" title="All 2 branches missed.">            if (userDetails == null) {</span>
+<span class="nc" id="L22">                return ResponseEntity.status(401).body(&quot;Non authentifié&quot;);</span>
+            }
+
+<span class="nc" id="L25">            Optional&lt;User&gt; userOpt = userRepository.findByEmail(userDetails.getUsername());</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">            if (userOpt.isEmpty()) {</span>
+<span class="nc" id="L27">                return ResponseEntity.status(404).body(&quot;Utilisateur introuvable&quot;);</span>
+            }
+
+<span class="nc" id="L30">            return ResponseEntity.ok().body(new Object() {</span>
+<span class="nc" id="L31">                public final Long id = userOpt.get().getId();</span>
+            });
+        }
+    }
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResponseServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">EvalPro</a> &gt; <a href="index.source.html" class="el_package">com.medianet.evalpro.Service</a> &gt; <span class="el_source">ResponseServiceImpl.java</span></div><h1>ResponseServiceImpl.java</h1><pre class="source lang-java linenums">package com.medianet.evalpro.Service;
+
+
+import com.medianet.evalpro.Dto.ResponseRequestDTO;
+import com.medianet.evalpro.Dto.SingleResponseDTO;
+import com.medianet.evalpro.Entity.*;
+import com.medianet.evalpro.Repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+
+@Service
+@Transactional
+public class ResponseServiceImpl implements ResponseService {
+
+
+    @Autowired
+    private ResponseRepository responseRepository;
+    @Autowired private DossierRepository dossierRepository;
+    @Autowired private QuestionRepository questionRepository;
+    @Autowired private OptionRepository optionRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private StepRepository stepRepository;
+    @Autowired private  ResponseAdminRepository responseAdminRepository;
+
+
+<span class="nc" id="L34">    public ResponseServiceImpl(ResponseRepository responseRepository) {</span>
+<span class="nc" id="L35">        this.responseRepository = responseRepository;</span>
+<span class="nc" id="L36">    }</span>
+
+
+    //But : Sauvegarde une réponse simple dans la base.
+    //Utilisé par : le contrôleur lors de la création générique (POST /api/responses).
+    @Override
+    public Response save(Response response) {
+<span class="nc" id="L43">        return responseRepository.save(response);</span>
+    }
+
+    //But : Récupère toutes les réponses en base.
+    //Utilisé pour : affichage ou admin/debug.
+    @Override
+    public List&lt;Response&gt; findAll() {
+<span class="nc" id="L50">        return responseRepository.findAll();</span>
+    }
+
+    //But : Récupère une réponse par son ID.
+    @Override
+    public Optional&lt;Response&gt; findById(Long id) {
+<span class="nc" id="L56">        return responseRepository.findById(id);</span>
+    }
+
+    //But : Met à jour une réponse existante.
+    //Validation : Vérifie d’abord que l’ID existe. Sinon, une exception est levée.
+    @Override
+    public Response update(Long id, Response response) {
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (!responseRepository.existsById(id)) {</span>
+<span class="nc" id="L64">            throw new RuntimeException(&quot;Utilisateur non trouvé&quot;);</span>
+        }
+<span class="nc" id="L66">        response.setId(id);</span>
+<span class="nc" id="L67">        return responseRepository.save(response);</span>
+    }
+    //But : Supprime une réponse si elle existe, sinon lève une erreur.
+    @Override
+    public void deleteById(Long id) {
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (!responseRepository.existsById(id)) {</span>
+<span class="nc" id="L73">            throw new RuntimeException(&quot;Utilisateur non trouvé&quot;);</span>
+        }
+<span class="nc" id="L75">        responseRepository.deleteById(id);</span>
+<span class="nc" id="L76">    }</span>
+
+    //But : Recherche paginée de réponses contenant le texte q dans leur value.
+    @Override
+    public Page&lt;Response&gt; searchResponses(String q, int page, int perPage) {
+<span class="nc" id="L81">        Pageable pageable = PageRequest.of(page, perPage, Sort.by(&quot;id&quot;).ascending());</span>
+<span class="nc" id="L82">        return responseRepository.findByValueContainingIgnoreCase(q, pageable);</span>
+    }
+
+
+
+
+
+//cette Service pour enregistrer les réponses dynamiques et lier au dossier
+//But : Sauvegarde toutes les réponses d’un utilisateur pour une étape donnée.
+//
+//Étapes de traitement :
+//
+//Vérifie la présence de responses, formId, questionId, etc.
+//
+//Récupère l’utilisateur, le dossier, l’étape
+//
+//Vérifie si l’utilisateur est bien le propriétaire du dossier
+//
+//Supprime les anciennes réponses de cette étape (évite les doublons)
+//
+//Sauvegarde les nouvelles réponses :
+//
+//Choix multiples → optionIds
+//
+//Réponses texte/numériques → value
+//
+//Enregistre la pillar si présent
+//
+//(optionnel) Gère le champ UPLOAD pour les fichiers
+    @Override
+    public void saveStepResponses(ResponseRequestDTO dto, String userEmail) {
+<span class="nc" id="L113">        System.out.println(&quot;📩 Enregistrement des réponses pour l'utilisateur : &quot; + userEmail);</span>
+       // System.out.println(&quot;👤 Utilisateur connecté : &quot; + userEmail);
+
+        // 🔐 Vérifications essentielles
+<span class="nc bnc" id="L117" title="All 4 branches missed.">        if (dto.getResponses() == null || dto.getResponses().isEmpty()) {</span>
+<span class="nc" id="L118">            System.out.println(&quot;⚠️ Aucune réponse reçue dans le payload.&quot;);</span>
+<span class="nc" id="L119">            return;</span>
+        }
+<span class="nc bnc" id="L121" title="All 2 branches missed.">        if (dto.getFormId() == null) {</span>
+<span class="nc" id="L122">            throw new RuntimeException(&quot;❌ formId manquant dans le payload.&quot;);</span>
+        }
+        // ✅✅ AJOUTE CETTE VÉRIFICATION ICI
+<span class="nc bnc" id="L125" title="All 2 branches missed.">        for (SingleResponseDTO r : dto.getResponses()) {</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">            if (r.getQuestionId() == null) {</span>
+<span class="nc" id="L127">                throw new RuntimeException(&quot;❌ questionId est null dans une des réponses !&quot;);</span>
+            }
+
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            if (r.getOptionIds() != null) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">                for (Long optId : r.getOptionIds()) {</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">                    if (optId == null) {</span>
+<span class="nc" id="L133">                        throw new RuntimeException(&quot;❌ optionId est null !&quot;);</span>
+                    }
+<span class="nc" id="L135">                }</span>
+            }
+<span class="nc" id="L137">        }</span>
+
+
+<span class="nc" id="L140">        User user = userRepository.findByEmail(userEmail).orElseThrow(() -&gt; new RuntimeException(&quot;Utilisateur introuvable&quot;));</span>
+<span class="nc" id="L141">        Dossier dossier = dossierRepository.findByIdWithUser(dto.getDossierId()).orElseThrow(() -&gt; new RuntimeException(&quot;Dossier introuvable&quot;));</span>
+
+<span class="nc" id="L143">        Step step = stepRepository.findById(dto.getStepId()).orElseThrow(() -&gt; new RuntimeException(&quot;Étape introuvable&quot;));</span>
+<span class="nc" id="L144">        System.out.println(&quot;✅✅ Réponses enregistrées pour le dossier ID = &quot; + dossier.getId());</span>
+
+// ✅ AJOUTE CETTE VÉRIFICATION :
+        // 🚫 Si l'utilisateur est admin, il peut uniquement enregistrer un commentaire
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (user.getRole() == User.Role.ADMIN) {</span>
+            // 💬 Uniquement le commentaire admin autorisé
+<span class="nc bnc" id="L150" title="All 4 branches missed.">            if (dto.getComment() != null &amp;&amp; !dto.getComment().isBlank()) {</span>
+<span class="nc" id="L151">                saveAdminComment(dossier.getId(), step.getId(), dto.getComment(), userEmail);</span>
+<span class="nc" id="L152">                System.out.println(&quot;✅ Commentaire admin enregistré.&quot;);</span>
+            } else {
+<span class="nc" id="L154">                System.out.println(&quot;ℹ️ Admin sans commentaire : aucune réponse enregistrée.&quot;);</span>
+            }
+<span class="nc" id="L156">            return; // ⛔ Stopper ici, ne pas enregistrer les réponses !</span>
+        }
+
+
+//        // 🚫 Bloquer les admins pour la modification des réponses
+//        if (user.getRole() == User.Role.ADMIN &amp;&amp; dto.getResponses() != null &amp;&amp; !dto.getResponses().isEmpty()) {
+//            throw new AccessDeniedException(&quot;Les administrateurs ne peuvent pas modifier les réponses.&quot;);
+//        }
+
+
+
+
+        // ❌ Supprimer les anciennes réponses (pour éviter les doublons)
+
+        //  responseRepository.deleteByFormIdAndDossierIdAndPillar(dto.getFormId(), dossier.getId(), dto.getPillar());
+<span class="nc bnc" id="L171" title="All 4 branches missed.">        if (dto.getStepId() == 3L &amp;&amp; dto.getPillar() != null) {</span>
+<span class="nc" id="L172">            responseRepository.deleteByFormIdAndDossierIdAndPillarAndStepId(dto.getFormId(), dossier.getId(), dto.getPillar(), step.getId());</span>
+
+        } else {
+<span class="nc" id="L175">            responseRepository.deleteByFormIdAndDossierIdAndStepId(dto.getFormId(), dossier.getId(), dto.getStepId());</span>
+        }
+
+<span class="nc" id="L178">        System.out.println(&quot;🧹 Anciennes réponses supprimées pour le dossier &quot; + dossier.getId());</span>
+
+
+
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        for (SingleResponseDTO r : dto.getResponses()) {</span>
+<span class="nc" id="L183">            System.out.println(&quot;🟡 Traitement de la question ID = &quot; + r.getQuestionId());</span>
+
+<span class="nc" id="L185">            Question question = questionRepository.findById(r.getQuestionId()).orElseThrow(() -&gt;</span>
+<span class="nc" id="L186">                    new RuntimeException(&quot;Question introuvable ID=&quot; + r.getQuestionId()));</span>
+
+            // ✅ Réponse à choix multiple
+<span class="nc bnc" id="L189" title="All 4 branches missed.">            if (r.getOptionIds() != null &amp;&amp; !r.getOptionIds().isEmpty()) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                for (Long optId : r.getOptionIds()) {</span>
+<span class="nc" id="L191">                    Option opt = optionRepository.findById(optId).orElse(null);</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                    if (opt != null) {</span>
+<span class="nc" id="L193">                        Response response = Response.builder()</span>
+<span class="nc" id="L194">                                .user(user)</span>
+<span class="nc" id="L195">                                .form(Form.builder().id(dto.getFormId()).build())</span>
+<span class="nc" id="L196">                                .dossier(dossier)</span>
+<span class="nc" id="L197">                                .step(step)</span>
+<span class="nc" id="L198">                                .question(question)</span>
+<span class="nc" id="L199">                                .option(opt)</span>
+<span class="nc" id="L200">                                .value(null)</span>
+<span class="nc" id="L201">                                .isValid(false)</span>
+<span class="nc" id="L202">                                .pillar(dto.getPillar())</span>
+<span class="nc" id="L203">                                .build();</span>
+<span class="nc" id="L204">                        responseRepository.save(response);</span>
+<span class="nc" id="L205">                        System.out.println(&quot;✅ Réponse multiple enregistrée : questionId=&quot; + r.getQuestionId() + &quot; | optionId=&quot; + optId);</span>
+<span class="nc" id="L206">                    } else {</span>
+<span class="nc" id="L207">                        System.out.println(&quot;⚠️ Option introuvable ID=&quot; + optId);</span>
+                    }
+<span class="nc" id="L209">                }</span>
+            }
+
+            // ✅ Réponse texte/numérique
+<span class="nc bnc" id="L213" title="All 4 branches missed.">            if ((r.getValue() != null &amp;&amp; !r.getValue().isBlank()) ||</span>
+<span class="nc bnc" id="L214" title="All 4 branches missed.">                    (&quot;UPLOAD&quot;.equalsIgnoreCase(question.getType().name()) &amp;&amp; r.getValue() != null)) {</span>
+<span class="nc" id="L215">                Response response = Response.builder()</span>
+<span class="nc" id="L216">                        .user(user)</span>
+<span class="nc" id="L217">                        .form(Form.builder().id(dto.getFormId()).build())</span>
+<span class="nc" id="L218">                        .dossier(dossier)</span>
+<span class="nc" id="L219">                        .step(step)</span>
+<span class="nc" id="L220">                        .question(question)</span>
+<span class="nc" id="L221">                        .value(r.getValue())</span>
+<span class="nc" id="L222">                        .option(null)</span>
+<span class="nc" id="L223">                        .isValid(false)</span>
+<span class="nc" id="L224">                        .pillar(dto.getPillar())</span>
+<span class="nc" id="L225">                        .build();</span>
+<span class="nc" id="L226">                responseRepository.save(response);</span>
+<span class="nc" id="L227">                System.out.println(&quot;✅ Réponse texte enregistrée : questionId=&quot; + r.getQuestionId() + &quot; | valeur='&quot; + r.getValue() + &quot;'&quot;);</span>
+            }
+<span class="nc" id="L229">        }</span>
+        // 💬 Enregistrement du commentaire admin si fourni
+<span class="nc bnc" id="L231" title="All 4 branches missed.">        if (dto.getComment() != null &amp;&amp; !dto.getComment().isBlank()) {</span>
+<span class="nc" id="L232">            saveAdminComment(dossier.getId(), step.getId(), dto.getComment(), userEmail);</span>
+        }
+
+<span class="nc" id="L235">        System.out.println(&quot;✅✅ Toutes les réponses ont été enregistrées.&quot;);</span>
+
+
+
+<span class="nc" id="L239">    }</span>
+    //But : Vérifie si le pilier donné (economique, socio, etc.) contient des réponses pour l'étape 3.
+    @Override
+    public boolean isPillarCompleted(Long dossierId, String pillar) {
+        // Supposons que le nom du champ &quot;step&quot; correspond à &quot;step3&quot; pour Auto-Eval
+<span class="nc" id="L244">        List&lt;Response&gt; responses = responseRepository.findByDossierIdAndStepAndPillar(dossierId, &quot;step3&quot;, pillar);</span>
+<span class="nc bnc" id="L245" title="All 4 branches missed.">        return responses != null &amp;&amp; !responses.isEmpty();</span>
+    }
+
+    //But : Calcule le score de chaque pilier pour un dossier donné.
+    //
+    //Logique :
+    //
+    //Récupère toutes les réponses
+    //
+    //Regroupe les scores par pilier :
+    //
+    //Si réponse = option, récupère option.score
+    //
+    //Si texte/numérique, attribue un score
+    @Override
+    public Map&lt;String, Object&gt; calculatePillarScores(Long dossierId) {
+<span class="nc" id="L261">        List&lt;Response&gt; responses = responseRepository.findByDossierId(dossierId);</span>
+
+<span class="nc" id="L263">        Map&lt;String, Integer&gt; scoreMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L264">        Map&lt;String, Integer&gt; maxScoreMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L265">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+
+<span class="nc bnc" id="L267" title="All 2 branches missed.">        for (Response r : responses) {</span>
+<span class="nc" id="L268">            String pillar = r.getPillar();</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">            if (pillar == null) continue;</span>
+
+<span class="nc" id="L271">            int score = 0;</span>
+
+<span class="nc bnc" id="L273" title="All 4 branches missed.">            if (r.getOption() != null &amp;&amp; r.getOption().getScore() != null) {</span>
+                // Cas des options (RADIO, CHOIXMULTIPLE...)
+<span class="nc" id="L275">                score = r.getOption().getScore();</span>
+<span class="nc bnc" id="L276" title="All 6 branches missed.">            }else if (r.getQuestion() != null &amp;&amp; r.getValue() != null &amp;&amp; !r.getValue().isEmpty()) {</span>
+<span class="nc" id="L277">                String type = r.getQuestion().getType().name();</span>
+
+<span class="nc bnc" id="L279" title="All 2 branches missed.">                if (&quot;TEXTE&quot;.equalsIgnoreCase(type)) {</span>
+<span class="nc" id="L280">                    score = 1;</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">                } else if (&quot;NUMERIQUE&quot;.equalsIgnoreCase(type)) {</span>
+                    try {
+<span class="nc" id="L283">                        score = Integer.parseInt(r.getValue());</span>
+<span class="nc" id="L284">                    } catch (NumberFormatException e) {</span>
+<span class="nc" id="L285">                        score = 0;</span>
+<span class="nc" id="L286">                    }</span>
+                }
+            }
+
+
+<span class="nc" id="L291">            scoreMap.merge(pillar, score, Integer::sum);</span>
+
+            // TODO : à améliorer avec vrai max dynamique plus tard
+<span class="nc" id="L294">            maxScoreMap.put(pillar, 15);</span>
+<span class="nc" id="L295">        }</span>
+
+        // ⚠️ Tu avais oublié cette partie ! Elle remplit le `result`
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        for (String p : scoreMap.keySet()) {</span>
+<span class="nc" id="L299">            Map&lt;String, Integer&gt; pData = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L300">            pData.put(&quot;score&quot;, scoreMap.get(p));</span>
+<span class="nc" id="L301">            pData.put(&quot;max&quot;, maxScoreMap.getOrDefault(p, 15));</span>
+<span class="nc" id="L302">            pData.put(&quot;threshold&quot;, 9); // seuil fixe (à adapter si nécessaire)</span>
+<span class="nc" id="L303">            result.put(p.toLowerCase(), pData);</span>
+<span class="nc" id="L304">        }</span>
+
+<span class="nc" id="L306">        return result;</span>
+    }
+
+    //But : Permet à un administrateur de sauvegarder un commentaire sur un dossier à une étape spécifique.
+    //
+    //Étapes :
+    //
+    //Vérifie que l’utilisateur est un administrateur
+    //
+    //Vérifie l’existence du dossier et de l’étape
+    //
+    //Enregistre un objet ResponseAdmin avec le commentaire
+    @Override
+    public void saveAdminComment(Long dossierId, Long stepId, String comment, String adminEmail) {
+<span class="nc" id="L320">        User admin = userRepository.findByEmail(adminEmail)</span>
+<span class="nc" id="L321">                .orElseThrow(() -&gt; new RuntimeException(&quot;Admin introuvable&quot;));</span>
+
+<span class="nc bnc" id="L323" title="All 2 branches missed.">        if (admin.getRole() != User.Role.ADMIN) {</span>
+<span class="nc" id="L324">            throw new AccessDeniedException(&quot;⚠️ Seuls les administrateurs peuvent enregistrer un commentaire.&quot;);</span>
+        }
+
+<span class="nc" id="L327">        Dossier dossier = dossierRepository.findById(dossierId)</span>
+<span class="nc" id="L328">                .orElseThrow(() -&gt; new RuntimeException(&quot;Dossier introuvable&quot;));</span>
+
+<span class="nc" id="L330">        Step step = stepRepository.findById(stepId)</span>
+<span class="nc" id="L331">                .orElseThrow(() -&gt; new RuntimeException(&quot;Étape introuvable&quot;));</span>
+
+        // 🔁 Récupérer tous les commentaires existants pour ce dossier + étape
+<span class="nc" id="L334">        List&lt;ResponseAdmin&gt; existingComments = responseAdminRepository.findByDossierIdAndStepId(dossierId, stepId);</span>
+
+<span class="nc bnc" id="L336" title="All 2 branches missed.">        if (!existingComments.isEmpty()) {</span>
+            // ✏️ Mettre à jour le premier commentaire existant
+<span class="nc" id="L338">            ResponseAdmin existingComment = existingComments.get(0);</span>
+<span class="nc" id="L339">            existingComment.setComment(comment);</span>
+<span class="nc" id="L340">            existingComment.setAdmin(admin); // Optionnel : mettre à jour l’auteur aussi</span>
+<span class="nc" id="L341">            responseAdminRepository.save(existingComment);</span>
+<span class="nc" id="L342">            System.out.println(&quot;✏️ Commentaire admin mis à jour pour le dossier ID=&quot; + dossierId + &quot;, étape ID=&quot; + stepId);</span>
+<span class="nc" id="L343">        } else {</span>
+            // ➕ Créer un nouveau commentaire si aucun n’existe
+<span class="nc" id="L345">            ResponseAdmin newComment = ResponseAdmin.builder()</span>
+<span class="nc" id="L346">                    .dossier(dossier)</span>
+<span class="nc" id="L347">                    .step(step)</span>
+<span class="nc" id="L348">                    .admin(admin)</span>
+<span class="nc" id="L349">                    .comment(comment)</span>
+<span class="nc" id="L350">                    .build();</span>
+<span class="nc" id="L351">            responseAdminRepository.save(newComment);</span>
+<span class="nc" id="L352">            System.out.println(&quot;✅ Commentaire admin créé pour le dossier ID=&quot; + dossierId + &quot;, étape ID=&quot; + stepId);</span>
+        }
+<span class="nc" id="L354">    }</span>
+
+}
+
+
+//Cette classe implémente l'interface ResponseService. Elle contient la logique métier permettant de :
+//
+//créer, modifier et supprimer des réponses,
+//
+//gérer les réponses par étapes,
+//
+//calculer les scores,
+//
+//et enregistrer des commentaires administrateur.
+
+
+
+//    @Override
+//    public List&lt;Response&gt; findByDossierId(Long dossierId) {
+//        return responseRepository.findByDossierId(dossierId);
+//    }
+//
+//    @Override
+//    public List&lt;Response&gt; findByUserId(Long userId) {
+//        return responseRepository.findByUserId(userId);
+//    }
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
