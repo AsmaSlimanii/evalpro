@@ -4,9 +4,11 @@
 *.iml
 
 # Angular / Node
-/frontend/node_modules/
-/frontend/dist/
-/frontend/.angular/cache
+# Angular / Node
+/EvalprofrontOffice/node_modules/
+/EvalprofrontOffice/dist/
+/EvalprofrontOffice/.angular/cache
+
 
 # OS / IDE
 .DS_Store
