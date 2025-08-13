@@ -163,6 +163,12 @@
                 </executions>
             </plugin>
 
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>4.0.0.4121</version> <!-- Fonctionne avec Maven 3.6.3 et Java 17 -->
+            </plugin>
+
 
         </plugins>
     </build>
