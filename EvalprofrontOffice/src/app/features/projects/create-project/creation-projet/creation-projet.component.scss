@@ -344,3 +344,43 @@ textarea:disabled {
   color: #888;
   cursor: not-allowed;
 }
+
+/* --- RADIO --- */
+.radio-input:disabled ~ .radio-custom {
+  border-color: #9ca3af;          /* gris */
+  background: #f3f4f6;            /* fond clair quand non cochée */
+  cursor: not-allowed;
+}
+
+.radio-input:checked:disabled ~ .radio-custom {
+  background: #4b5563;            /* gris foncé quand cochée */
+  border-color: #4b5563;
+}
+
+.radio-input:disabled ~ .radio-text {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* --- CHECKBOX --- */
+.checkbox-input:disabled ~ .checkbox-custom {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.checkbox-input:checked:disabled ~ .checkbox-custom {
+  background: #4b5563;            /* gris foncé quand cochée */
+  border-color: #4b5563;
+}
+
+.checkbox-input:disabled ~ .checkbox-text {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* (optionnel) si le navigateur montre encore la couleur native */
+input[type="radio"]:disabled,
+input[type="checkbox"]:disabled {
+  accent-color: #4b5563;          /* gris foncé */
+}

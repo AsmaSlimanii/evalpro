@@ -1,6 +1,6 @@
 <div class="create-project-container">
-   <div class="create-project-wrapper">
-     <!-- Nouveau message de succès -->
+  <div class="create-project-wrapper">
+    <!-- Nouveau message de succès -->
     <div *ngIf="message" class="success-message-container">
       <div class="success-message">
         <i class="fas fa-check-circle"></i>
@@ -31,7 +31,7 @@
         </div>
         <h3 class="step-label">1-Pré-Identification</h3>
         <p class="step-description">Définissez les bases de votre projet</p>
-        
+
       </div>
 
       <!-- Étape 2 -->
@@ -74,25 +74,24 @@
         <p class="step-description">Finalisez le plan financier</p>
       </div>
     </div>
-    
+
 
     <div class="action-buttons">
-  <button class="btn-outline" (click)="saveDraft()" [disabled]="isSaving">
-    <i class="fas fa-save"></i> 
-    <span *ngIf="!isSaving">Sauvegarder le brouillon</span>
-    <span *ngIf="isSaving">Sauvegarde en cours...</span>
-  </button>
-  
-  <button class="btn-primary" [disabled]="!canSubmit || isSubmitting" (click)="submitDossier()">
-    <i class="fas fa-paper-plane"></i> 
-    <span *ngIf="!isSubmitting">Soumettre mon dossier</span>
-    <span *ngIf="isSubmitting">Soumission en cours...</span>
-  </button>
-</div>
+      <button class="btn-outline" (click)="saveDraft()" [disabled]="isSaving">
+        <i class="fas fa-save"></i>
+        <span *ngIf="!isSaving">Sauvegarder le brouillon</span>
+        <span *ngIf="isSaving">Sauvegarde en cours...</span>
+      </button>
+
+      <button class="btn-primary" [disabled]="!canSubmit || isSubmitting" (click)="submitDossier()">
+        <i class="fas fa-paper-plane"></i>
+        <span *ngIf="!isSubmitting">Soumettre mon dossier</span>
+        <span *ngIf="isSubmitting">Soumission en cours...</span>
+      </button>
+    </div>
     <!-- create-project.component.html -->
 
   </div>
 
 
 </div>
-

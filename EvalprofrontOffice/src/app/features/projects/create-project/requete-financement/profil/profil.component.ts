@@ -21,7 +21,7 @@ export class ProfilComponent implements OnInit {
 
   readonly step = 'requete-financement';
   readonly stepId = 4;
-  readonly pillar = 'profil';
+  readonly pillar = 'PROFIL';
 
   constructor(
     private fb: FormBuilder,
@@ -41,7 +41,7 @@ export class ProfilComponent implements OnInit {
   initForm(): void {
     this.formGroup = this.fb.group({
       responses: this.fb.array([]),
-     
+
     });
   }
   trackByQuestionId(index: number, question: any): number {
@@ -51,59 +51,113 @@ export class ProfilComponent implements OnInit {
   get responses(): FormArray {
     return this.formGroup.get('responses') as FormArray;
   }
+  private applyVisibilityState(): void {
+    this.allQuestions.forEach((q, i) => {
+      const group = this.responses.at(i) as FormGroup;
+      const visible = this.shouldDisplayQuestion(q);
 
-  loadForm(): void {
+      if (visible) {
+        // Réactive la question
+        group.enable({ emitEvent: false });
+
+        // Remet les bons validateurs uniquement pour TEXTE/NUMERIQUE
+        const valueCtrl = group.get('value');
+        if (valueCtrl) {
+          if ((q.type === 'TEXTE' || q.type === 'NUMERIQUE') && q.required) {
+            valueCtrl.setValidators([Validators.required]);
+          } else {
+            valueCtrl.clearValidators();
+          }
+          valueCtrl.updateValueAndValidity({ emitEvent: false });
+        }
+      } else {
+        // Réinitialise et désactive (elle ne comptera plus dans la validité)
+        const opts = group.get('optionIds') as FormArray;
+        while (opts && opts.length) opts.removeAt(0);
+
+        group.get('value')?.setValue('');
+        group.disable({ emitEvent: false });
+      }
+    });
+  }
+
+
+  private loadForm(): void {
     const callback = (form: any) => {
-      console.log('🔍 Form reçu depuis l’API:', form);
       this.formMetadata = form;
       this.formId = form.id;
-      this.allQuestions = form.questions;
 
-      this.buildFormControlsWithData(form.responses || []);
+      // ✅ normaliser la casse/espaces pour être robuste ('profil', ' PROFIL ', etc.)
+      const norm = (v: any) => (v ?? '').toString().trim().toUpperCase();
+
+      // ✅ ne garder que les questions du pilier PROFIL
+      const all: any[] = Array.isArray(form?.questions) ? form.questions : [];
+      this.allQuestions = all.filter(q => norm(q.pillar) === this.pillar);
+
+      // (optionnel) log si rien n'est trouvé
+      if (this.allQuestions.length === 0) {
+        console.warn('[Profil] Aucune question pour le pilier', this.pillar,
+          'Exemples de pillars:', all.slice(0, 5).map(q => q.pillar));
+      }
+
+      // ✅ ne garder que les réponses liées aux questions filtrées
+      const ids = new Set(this.allQuestions.map(q => q.id));
+      const existing = (form.responses || []).filter((r: any) => ids.has(r.questionId));
+
+      this.buildFormControlsWithData(existing);
       this.isLoading = false;
 
-      // ✅ 🔁 Ajout ICI — Abonnement aux changements de checkbox/radio
-      this.responses.controls.forEach((ctrl, i) => {
-        const optionIdsControl = ctrl.get('optionIds');
-        if (optionIdsControl instanceof FormArray) {
-          optionIdsControl.valueChanges.subscribe(() => {
-            this.cdRef.detectChanges(); // ✅ pour déclencher shouldDisplayQuestion
-          });
+      // ⬇⬇⬇ AJOUT
+      this.applyVisibilityState();
+
+      // Abonnements
+      this.responses.controls.forEach(ctrl => {
+        const fa = ctrl.get('optionIds');
+        if (fa instanceof FormArray) {
+          fa.valueChanges.subscribe(() => this.applyVisibilityState());
         }
       });
 
+
+      // abonnements
+      this.responses.controls.forEach(ctrl => {
+        const fa = ctrl.get('optionIds');
+        if (fa instanceof FormArray) fa.valueChanges.subscribe(() => this.cdRef.detectChanges());
+      });
     };
 
-    if (this.isEditMode && this.dossierId) {
-      this.formService.getFormWithResponses(this.step, this.dossierId).subscribe({ next: callback });
-    } else {
-      this.formService.getFormByStep(this.step).subscribe({ next: callback });
-    }
+    (this.isEditMode && this.dossierId
+      ? this.formService.getFormWithResponses(this.step, this.dossierId)
+      : this.formService.getFormByStep(this.step)
+    ).subscribe({ next: callback, error: _ => this.isLoading = false });
   }
 
 
-  buildFormControlsWithData(existingResponses: any[]): void {
+
+
+  private buildFormControlsWithData(existingResponses: any[]): void {
     while (this.responses.length) this.responses.removeAt(0);
 
     this.allQuestions.forEach((q, index) => {
-      const matching = existingResponses.filter(r => r.questionId === q.id);
-      const value = matching.find(r => r.value !== undefined)?.value || '';
-      const optionIds = matching.map(r => r.optionId).filter(Boolean);
+      const matches = existingResponses.filter(r => r.questionId === q.id);
+      const value = matches.find(r => r.value !== undefined && r.value !== null)?.value ?? '';
+      const optionIds = matches
+        .map(r => r.optionId)
+        .filter((id: any) => id !== null && id !== undefined);
 
       this.uploadedFiles[index] = null!;
 
-      const group = this.fb.group({
+      this.responses.push(this.fb.group({
         questionId: [q.id],
-        value: [value, ['TEXTE', 'NUMERIQUE'].includes(q.type) && q.required ? Validators.required : null],
-        optionIds: this.fb.array(optionIds.map(id => this.fb.control(id)))
-      });
-
-      this.responses.push(group);
-      console.log(`📥 Question ${q.id} → value:`, value, '| options:', optionIds);
-
+        value: [
+          value,
+          (q.type === 'TEXTE' || q.type === 'NUMERIQUE') && q.required ? Validators.required : null
+        ],
+        optionIds: this.fb.array(optionIds.map((id: any) => this.fb.control(id)))
+      }));
     });
-
   }
+
   shouldDisplayQuestion(q: any): boolean {
     if (q.type === 'SECTION_TITLE') return true;
 
@@ -123,43 +177,85 @@ export class ProfilComponent implements OnInit {
   }
 
   submit(): void {
-    this.isSubmitted = true;
+  this.isSubmitted = true;
+  if (!this.formMetadata) return;
 
-    if (this.formGroup.invalid || !this.formMetadata) return;
-
-    const payload = {
-      formId: this.formId,
-      stepId: this.stepId,
-      pillar: this.pillar,
-      dossierId: this.dossierId,
-      responses: this.responses.value
-    };
-
-    this.formService.submitStep(payload, this.stepId, Number(this.dossierId)).subscribe(res => {
-        this.router.navigate([`/projects/edit/${this.dossierId}/step3`]);
-    });
+  if (this.formGroup.invalid) {
+    const invalid = this.responses.controls
+      .map((g, i) => ({ i, g, q: this.allQuestions[i] }))
+      .filter(x => x.g.enabled && x.g.invalid);
+    console.warn('Form invalide :', invalid.map(x => ({ id: x.q.id, text: x.q.text, type: x.q.type })));
+    return;
   }
 
-  onFileChange(event: Event, index: number): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
+  // ⬅⬅⬅ prend toutes les valeurs (même si un champ a été désactivé puis réactivé)
+  const raw: Array<{questionId:number, value:any, optionIds:any[]}> = this.responses.getRawValue();
 
-    const file = input.files[0];
-    this.uploadedFiles[index] = file;
+  const ids = new Set(this.allQuestions.map(q => q.id));
+  const onlyProfilResponses = raw
+    .filter(r => ids.has(r.questionId))
+    .map(r => ({
+      questionId: r.questionId,
+      value: (typeof r.value === 'string' && r.value.trim() === '') ? null : r.value,
+      optionIds: Array.isArray(r.optionIds) ? r.optionIds.filter(v => v != null) : []
+    }))
+    // ⬇ garde aussi les UPLOAD même si value = URL (pas vide)
+    .filter(r => r.value !== null || (r.optionIds && r.optionIds.length));
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('questionId', this.responses.at(index).value.questionId);
+  const payload = {
+    formId: this.formId,
+    stepId: this.stepId,
+    pillar: this.pillar,
+    dossierId: this.dossierId,
+    responses: onlyProfilResponses
+  };
 
-    this.formService.uploadFile(formData).subscribe({
-      next: (res) => {
-        this.responses.at(index).get('value')?.setValue(res.url);
-      },
-      error: (err) => {
-        console.error('Erreur upload', err);
+  console.log('🚀 Payload envoyé', payload); // tu dois y voir la question UPLOAD avec value = URL
+
+  this.formService.submitStep(payload, this.stepId, Number(this.dossierId))
+    .subscribe({
+      next: () => this.router.navigate([`/projects/edit/${this.dossierId}/step4`]),
+      error: err => console.error('submit error', err)
+    });
+}
+
+onFileChange(event: Event, index: number): void {
+  const input = event.target as HTMLInputElement;
+  const file = input?.files?.[0];
+  if (!file) return;
+
+  // Facultatif mais utile côté serveur pour ranger le fichier
+  const qid = String(this.responses.at(index).get('questionId')?.value);
+  const did = this.dossierId ? String(this.dossierId) : '';
+
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+  formData.append('questionId', qid);
+  if (did) formData.append('dossierId', did);
+
+  this.formService.uploadFile(formData).subscribe({
+    next: (res: any) => {
+      // Accepte 'url' (préféré), ou 'path' / 'location'
+      const url = res?.url || res?.path || res?.location;
+      if (!url) {
+        console.error('Upload OK mais pas d’URL dans la réponse', res);
+        return;
       }
-    });
-  }
+
+      // ✅ on stocke l’URL dans le contrôle "value" de la question UPLOAD
+      const group = this.responses.at(index) as FormGroup;
+      group.get('value')?.setValue(url);
+      group.markAsDirty();
+      group.updateValueAndValidity({ emitEvent: false });
+
+      console.log('📸 URL fichier enregistrée dans le formulaire :', url);
+    },
+    error: (err) => {
+      console.error('Erreur upload', err);
+    }
+  });
+}
+
 
   onCheckboxToggle(index: number, optionId: number, event: Event): void {
     const options = this.responses.at(index).get('optionIds') as FormArray;
@@ -174,6 +270,8 @@ export class ProfilComponent implements OnInit {
 
     this.responses.at(index).get('value')?.setValue('');
     this.cdRef.detectChanges(); // Pour forcer le recalcul d’affichage des questions dépendantes
+
+     this.applyVisibilityState(); // ⬅⬅⬅
 
   }
 
@@ -199,6 +297,7 @@ export class ProfilComponent implements OnInit {
         }
       }
     }
+     this.applyVisibilityState(); // ⬅⬅⬅
   }
 
   isOptionChecked(index: number, optionId: number): boolean {

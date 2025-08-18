@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FormService } from '../../../../core/services/form.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { Payload } from '../../../../shared/models/creation-projet.dto';
 
 
 @Component({
@@ -54,10 +55,11 @@ export class CreationProjetComponent implements OnInit {
       }
     }
 
+    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
 
-    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
+   
 
   }
   setReadOnlyMode() {
@@ -341,21 +343,20 @@ export class CreationProjetComponent implements OnInit {
   }
 
   submit(): void {
-    this.formGroup.markAllAsTouched(); // 🔥 FORCERA l’affichage des erreurs !
-
+    // 1) validation UI
+    this.formGroup.markAllAsTouched();
     this.isSubmitted = true;
+    Object.keys(this.fieldStates).forEach(k => (this.fieldStates[+k].touched = true));
 
-    Object.keys(this.fieldStates).forEach(key => {
-      this.fieldStates[+key].touched = true;
-    });
-
-    if (this.formGroup.invalid || !this.formMetadata) {
+    // 2) ne bloque pas un admin qui poste juste un commentaire
+    if (!this.isAdmin && (this.formGroup.invalid || !this.formMetadata)) {
       this.scrollToFirstInvalidField();
       return;
     }
 
     const stepId = 2;
 
+    // 3) construire le payload (vide côté réponses si admin)
     const cleanedResponses = this.responses.controls
       .map((ctrl: any) => ({
         questionId: ctrl.value.questionId,
@@ -369,51 +370,53 @@ export class CreationProjetComponent implements OnInit {
 
     if (this.shouldShowAutresTextField()) {
       cleanedResponses.push({
-        questionId: 15,
+        questionId: 15, // garde ton id
         value: this.autresCtrl.value?.trim() || null,
         optionIds: []
       });
     }
 
-    console.log('🚀 Payload envoyé:', cleanedResponses);
-
-    const payload = {
+    let payload: Payload = {
       formId: this.formMetadata.id,
-      stepId: stepId,
-      dossierId: this.dossierId,
-      responses: this.isAdmin ? [] : cleanedResponses,
-      comment: this.formGroup.get('comment')?.value || ''
+      stepId,
+      dossierId: this.dossierId, // ok si ton API l’accepte
+      responses: this.isAdmin ? [] : cleanedResponses
     };
-
-
-    console.log('📩 Commentaire envoyé :', this.formGroup.get('comment')?.value);
-
+    if (this.isAdmin) {
+      payload.comment = this.formGroup.get('comment')?.value || '';
+    }
 
     const dossierIdToSend: number | null = this.dossierId ? Number(this.dossierId) : null;
-    const onSuccess = (res: any): void => {
-      const dossierId = res.dossierId || dossierIdToSend;
 
-      if (dossierId) {
-        localStorage.setItem('dossierId', String(dossierId));
-        this.router.navigate([`/projects/edit/${dossierId}`], {
-          state: { fromStep2: true }
-        });
-      }
+    // 4) au succès: stocker l'id, avancer la barre, et renvoyer au hub AVEC message + progression
+    const onSuccess = (res: any): void => {
+      const dossierId = res?.dossierId || dossierIdToSend;
+      if (!dossierId) return;
+
+      localStorage.setItem('dossierId', String(dossierId));
+
+      // avance la progression au moins à 2
+      const prev = Number(localStorage.getItem('completedStep') || '0');
+      if (prev < 2) localStorage.setItem('completedStep', '2');
+
+      this.router.navigate(['/projects/edit', dossierId], {
+        state: {
+          successMessage: 'Étape 2 terminée avec succès !',
+          completedStep: 2
+        }
+      });
     };
 
+    // 5) call API
     if (this.isEditMode && dossierIdToSend) {
       this.formService.submitStep(payload, stepId, dossierIdToSend).subscribe({
         next: onSuccess,
-        error: (err: any) => {
-          console.error('Erreur envoi (edit)', err);
-        }
+        error: (err: any) => console.error('Erreur envoi (edit)', err)
       });
     } else {
       this.formService.submitStep(payload, stepId, null).subscribe({
         next: onSuccess,
-        error: (err: any) => {
-          console.error('Erreur envoi (création)', err);
-        }
+        error: (err: any) => console.error('Erreur envoi (création)', err)
       });
     }
   }
@@ -442,4 +445,6 @@ export class CreationProjetComponent implements OnInit {
       }
     }, 100);
   }
+
+
 }

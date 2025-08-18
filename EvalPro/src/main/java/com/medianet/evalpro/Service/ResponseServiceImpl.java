@@ -13,7 +13,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @Service
@@ -350,6 +357,51 @@ public class ResponseServiceImpl implements ResponseService {
                     .build();
             responseAdminRepository.save(newComment);
             System.out.println("✅ Commentaire admin créé pour le dossier ID=" + dossierId + ", étape ID=" + stepId);
+        }
+    }
+
+    @Override
+    public String storeFileAndReturnUrl(MultipartFile file,
+                                        Long questionId,
+                                        Long dossierId,
+                                        String email) {
+        try {
+            // 1) validations de base
+            if (file == null || file.isEmpty()) {
+                throw new IllegalArgumentException("Fichier vide ou manquant.");
+            }
+
+            // 2) nom de fichier « safe »
+            String original = Objects.requireNonNull(file.getOriginalFilename(), "originalFilename null");
+            // retire toute éventuelle partie chemin + caractères douteux
+            String baseName = Paths.get(StringUtils.cleanPath(original)).getFileName().toString()
+                    .replaceAll("[\\r\\n\\\\/]+", "")      // pas de retours ligne / slash
+                    .replaceAll("\\s+", "_");              // espaces -> _
+
+            String filename = UUID.randomUUID() + "-" + baseName;
+
+            // 3) base uploads + sous-dossier par dossierId (ou tmp)
+            Path base = Paths.get("uploads").toAbsolutePath().normalize();
+            Path dir  = base.resolve(dossierId != null ? dossierId.toString() : "tmp").normalize();
+
+            Files.createDirectories(dir);
+
+            // 4) chemin final normalisé + protection path-traversal
+            Path target = dir.resolve(filename).normalize();
+            if (!target.startsWith(base)) {
+                throw new SecurityException("Chemin d'upload invalide.");
+            }
+
+            // 5) écrire le fichier
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            // 6) URL de retour (doit correspondre à ton ResourceHandler)
+            return "/uploads/" + (dossierId != null ? dossierId + "/" : "tmp/") + filename;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Échec upload fichier", e);
         }
     }
 

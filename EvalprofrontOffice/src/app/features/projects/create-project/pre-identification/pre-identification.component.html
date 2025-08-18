@@ -1,4 +1,5 @@
 <div class="form-container">
+
   <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
     <div class="form-header">
       <div class="header-icon">
@@ -42,7 +43,7 @@
           <div *ngIf="q.type === 'TEXTE'" class="input-container">
             <div class="input-wrapper">
               <input class="input" formControlName="value" type="text"
-                [placeholder]="q.placeholder || 'Saisissez votre réponse'" [class.invalid]="showError(i)" />
+                [placeholder]="q.placeholder || 'Saisissez votre réponse'" [readonly]="isAdmin" [disabled]="isAdmin"  [class.invalid]="!isAdmin && showError(i)" />
               <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                 fill="currentColor">
                 <path fill-rule="evenodd"
@@ -65,7 +66,7 @@
           <div *ngIf="q.type === 'NUMERIQUE'" class="input-container">
             <div class="input-wrapper">
               <input class="input" formControlName="value" type="number"
-                [placeholder]="q.placeholder || 'Saisissez un nombre'" [class.invalid]="showError(i)" />
+                [placeholder]="q.placeholder || 'Saisissez un nombre'" [readonly]="isAdmin" [disabled]="isAdmin"  [class.invalid]="!isAdmin && showError(i)"/>
               <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                 fill="currentColor">
                 <path fill-rule="evenodd"
@@ -89,7 +90,7 @@
               <label class="checkbox-label">
                 <!-- ✅ Checkbox liée au FormArray -->
                 <input type="checkbox" class="checkbox-input" [value]="opt.id" [checked]="isOptionChecked(i, opt.id)"
-                  (change)="onCheckboxToggle(i, opt.id, $event)" />
+                  (change)="onCheckboxToggle(i, opt.id, $event)"   [disabled]="isAdmin"  [class.invalid]="!isAdmin && showError(i)" />
                 <span class="checkbox-custom"></span>
                 <span class="checkbox-text">{{ opt.value }}</span>
               </label>
@@ -98,9 +99,9 @@
           <!-- CHOIX UNIQUE (RADIO) -->
           <div *ngIf="q.type === 'RADIO' && q.options?.length" class="option-group">
             <div *ngFor="let opt of q.options" class="radio-container">
-              <label class="radio-label">
+              <label class="radio-label" >
                 <input type="radio" class="radio-input" [value]="opt.id" [checked]="isRadioSelected(i, opt.id)"
-                  (change)="onRadioChange(i, opt.id)" name="radio-{{i}}" />
+                  (change)="onRadioChange(i, opt.id)" name="radio-{{i}}"   [disabled]="isAdmin"  [class.invalid]="!isAdmin && showError(i)" />
                 <span class="radio-custom"></span>
                 <span class="radio-text">{{ opt.value }}</span>
               </label>
@@ -110,10 +111,11 @@
           <!-- SELECTION -->
           <div *ngIf="q.type === 'SELECT' && q.options?.length" class="input-container">
             <div class="input-wrapper">
-              <select class="input" [formControlName]="'value'" [class.invalid]="showError(i)">
+              <select class="input" [formControlName]="'value'" [disabled]="isAdmin"  [class.invalid]="!isAdmin && showError(i)" >
                 <option value="" disabled selected>Veuillez sélectionner une option</option>
                 <option *ngFor="let opt of q.options" [value]="opt.id">{{ opt.value }}</option>
               </select>
+              
               <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                 fill="currentColor">
                 <path fill-rule="evenodd"
@@ -134,6 +136,15 @@
 
         </div>
       </ng-container>
+    </div>
+
+     <div class="input-container mt-5" *ngIf="isAdmin">
+      <label class="label">Commentaire de l’administrateur</label>
+      <div class="input-wrapper">
+        <textarea formControlName="comment" class="input textarea"
+          placeholder="Saisissez un commentaire ou une note complémentaire..." rows="5"></textarea>
+
+      </div>
     </div>
 
 

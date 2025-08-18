@@ -9,12 +9,14 @@ import com.medianet.evalpro.Service.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.*;
@@ -208,6 +210,25 @@ public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto,
         return ResponseEntity.ok(scores);
     }
 
+
+    @PostMapping(
+            value = "/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<Map<String, String>> upload(
+            @RequestPart("file") MultipartFile file,
+            @RequestParam("questionId") Long questionId,
+            @RequestParam(value = "dossierId", required = false) Long dossierId,
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user
+    ) {
+        // 👉 stocke le fichier où tu veux (S3, disque, etc.) et récupère une URL
+        String url = responseService.storeFileAndReturnUrl(file, questionId, dossierId, user.getUsername());
+
+        // (facultatif) si tu veux créer tout de suite la "Response" associée :
+        // responseService.saveUploadedFileResponse(questionId, dossierId, url, user.getUsername());
+
+        return ResponseEntity.ok(Map.of("url", url));
+    }
 
 
 

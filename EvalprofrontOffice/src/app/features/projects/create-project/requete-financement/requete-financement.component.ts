@@ -40,4 +40,19 @@ export class RequeteFinancementComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/projects/create']);
   }
+  // ex. dans step1.component.ts
+  finishAndGoNext() {
+    const dossierId = localStorage.getItem('dossierId');
+    const target = dossierId
+      ? ['/projects/edit', dossierId, 'step2']
+      : ['/projects/create', 'step2'];
+
+    this.router.navigate(target, {
+      state: {
+        successMessage: 'Étape 4 terminée avec succès !',
+        completedStep: 4   // ✅ clé: informe CreateProject que l’étape 4 est finie
+      }
+    });
+  }
+
 }

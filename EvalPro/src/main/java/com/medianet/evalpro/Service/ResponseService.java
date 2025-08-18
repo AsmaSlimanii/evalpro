@@ -3,6 +3,7 @@ package com.medianet.evalpro.Service;
 import com.medianet.evalpro.Dto.ResponseRequestDTO;
 import com.medianet.evalpro.Entity.Response;
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ public interface ResponseService {
     //Permet à un administrateur de sauvegarder un commentaire lié à une étape d’un dossier utilisateur.
     void saveAdminComment(Long dossierId, Long stepId, String comment, String adminEmail);
 
+
+    String storeFileAndReturnUrl(MultipartFile file, Long questionId, Long dossierId, String email);
 
 
 

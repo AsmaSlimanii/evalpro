@@ -73,6 +73,19 @@ export class AutoEvaluationComponent implements OnInit {
   }
   goBack(): void {
     this.router.navigate(['/projects/create']);
+    // avance la progression au moins à 3
+      const prev = Number(localStorage.getItem('completedStep') || '0');
+      if (prev < 3) localStorage.setItem('completedStep', '3');
+
+      this.router.navigate(['/projects/edit', this.dossierId], {
+        state: {
+          successMessage: 'Étape 3 terminée avec succès !',
+          completedStep: 3
+        }
+      });
+
   }
+
+
 
 }

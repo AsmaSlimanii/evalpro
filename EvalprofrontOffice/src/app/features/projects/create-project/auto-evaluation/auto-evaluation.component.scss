@@ -226,6 +226,12 @@
     transform: scale(1.03);
   }
 }
+.right-button .btn-primary {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
 .alert {
   padding: 1rem 1.5rem;
   border-radius: 5px;

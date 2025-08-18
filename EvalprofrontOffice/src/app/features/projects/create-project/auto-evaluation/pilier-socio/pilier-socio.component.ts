@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FormService } from '../../../../../core/services/form.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-pilier-socio',
@@ -21,6 +22,7 @@ export class PilierSocioComponent implements OnInit {
   isEditMode = false;
   currentSection = 1;
   fieldStates: { [key: number]: { touched: boolean } } = {};
+  isAdmin = false;
 
 
 
@@ -34,7 +36,8 @@ export class PilierSocioComponent implements OnInit {
     private fb: FormBuilder,
     private formService: FormService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -44,6 +47,7 @@ export class PilierSocioComponent implements OnInit {
     this.dossierId = routeParams['id'] || localStorage.getItem('dossierId');
     this.isEditMode = !!this.dossierId;
 
+    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
   }
@@ -59,10 +63,31 @@ export class PilierSocioComponent implements OnInit {
       }
     });
   }
+  setReadOnlyMode() {
+    const responsesArray = this.formGroup.get('responses') as FormArray;
+
+    responsesArray.controls.forEach((control) => {
+      const valueControl = control.get('value');
+      const optionIdsControl = control.get('optionIds');
+
+      if (valueControl) {
+        valueControl.disable({ emitEvent: false });
+      }
+
+      if (optionIdsControl && optionIdsControl instanceof FormArray) {
+        optionIdsControl.controls.forEach(opt => opt.disable({ emitEvent: false }));
+      }
+    });
+
+    // 🟢 Reactiver le champ commentaire pour l’admin
+    this.formGroup.get('comment')?.enable({ emitEvent: false });
+  }
+
 
   private initForm(): void {
     this.formGroup = this.fb.group({
-      responses: this.fb.array([])
+      responses: this.fb.array([]),
+      comment: ['']
     });
   }
 
@@ -80,10 +105,10 @@ export class PilierSocioComponent implements OnInit {
 
 
       // 🎯 Ajouter les sections spécifiques à ce pilier
-    
+
       form.questions.forEach((q: any) => {
-      
-       if ([22, 23, 24, 25, 26, 27].includes(q.id)) {
+
+        if ([22, 23, 24, 25, 26, 27].includes(q.id)) {
           q.section = 'Socio 1';
           q.pillar = 'SOCIO_TERRITORIAL';
         } else if ([28, 29, 30, 31, 32].includes(q.id)) {
@@ -102,6 +127,12 @@ export class PilierSocioComponent implements OnInit {
       this.buildFormControlsWithData(form.responses || []);
       this.goToSection(1);
       this.isLoading = false;
+      this.formGroup.patchValue({ comment: form.comment || '' });
+      // ✅ seulement maintenant : désactiver si admin
+      if (this.isAdmin) {
+        this.setReadOnlyMode();
+      }
+
     };
 
 
@@ -244,14 +275,23 @@ export class PilierSocioComponent implements OnInit {
 
     console.log('🚀 Payload envoyé:', cleanedResponses);
 
-    const payload = {
+    const payload: {
+      formId: any;
+      stepId: number;
+      pillar: string;
+      dossierId: string | null;
+      responses: { questionId: any; value: any; optionIds: any; pillar: any; }[];
+      comment?: string;
+    } = {
       formId: this.formMetadata.id,
-      stepId: this.stepId,
+      stepId: stepId,
       pillar: this.pillar,
-      responses: cleanedResponses,
-      dossierId: this.dossierId
+      dossierId: this.dossierId,
+      responses: this.isAdmin ? [] : cleanedResponses   // l’admin ne modifie pas les réponses
     };
-
+    if (this.isAdmin) {
+      payload.comment = this.formGroup.get('comment')?.value || '';
+    }
 
     const dossierIdToSend: number | null = this.dossierId ? Number(this.dossierId) : null;
 

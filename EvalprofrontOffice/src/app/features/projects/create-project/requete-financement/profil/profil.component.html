@@ -13,7 +13,7 @@
         <div formArrayName="responses">
             <ng-container *ngFor="let q of allQuestions; let i = index; trackBy: trackByQuestionId">
                 <div [formGroupName]="i">
-              <ng-container *ngIf="shouldDisplayQuestion(q) && !q.isHidden">
+                    <ng-container *ngIf="shouldDisplayQuestion(q) && !q.isHidden">
 
                         <!-- SECTION_TITLE -->
                         <div *ngIf="q.type === 'SECTION_TITLE'" class="section-title-block">
@@ -78,6 +78,12 @@
                                 <input type="file" (change)="onFileChange($event, i)" class="input" />
                                 <div class="uploaded-file" *ngIf="uploadedFiles[i]">{{ uploadedFiles[i].name }}
                                 </div>
+                                <div *ngIf="(responses.at(i).get('value')?.value) as url"
+                                    class="text-xs text-gray-500 mt-1">
+                                    Fichier enregistré :
+                                    <a [href]="url" target="_blank" rel="noopener">{{ url }}</a>
+                                </div>
+
                             </div>
 
                         </div>
@@ -86,10 +92,10 @@
             </ng-container>
         </div>
 
-            <!-- ✅ Bouton -->
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">Valider →</button>
-            </div>
+        <!-- ✅ Bouton -->
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Valider →</button>
+        </div>
 
     </form>
 

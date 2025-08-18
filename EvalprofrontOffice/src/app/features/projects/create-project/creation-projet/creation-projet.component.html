@@ -1,4 +1,5 @@
 <div class="form-container">
+
   <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
     <div class="form-header">
       <div class="header-icon">
@@ -128,9 +129,9 @@
       <button type="button" class="btn-secondary" (click)="goBack()">
         Précédent
       </button>
-      <button [disabled]="!isAdmin && formGroup.invalid" (click)="submit()">
+      <!-- bouton Valider : laisse le form gérer la soumission -->
+      <button type="submit" class="btn-primary" [disabled]="!isAdmin && formGroup.invalid">Valider</button>
 
-        Valider</button>
     </div>
   </form>
 

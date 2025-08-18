@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FormService } from '../../../../../core/services/form.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-pilier-economique',
@@ -13,13 +14,13 @@ export class PilierEconomiqueComponent implements OnInit {
   formGroup!: FormGroup;
   formMetadata: any;
   formId: number | null = null;
-
   isLoading = true;
   isSubmitted = false;
   dossierId: string | null = null;
   isEditMode = false;
   currentSection = 1;
   fieldStates: { [key: number]: { touched: boolean } } = {};
+  isAdmin = false;
 
   readonly step = 'auto-evaluation';
   readonly pillar = 'ECONOMIQUE';
@@ -31,7 +32,8 @@ export class PilierEconomiqueComponent implements OnInit {
     private fb: FormBuilder,
     private formService: FormService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -41,6 +43,7 @@ export class PilierEconomiqueComponent implements OnInit {
     this.dossierId = routeParams['id'] || localStorage.getItem('dossierId');
     this.isEditMode = !!this.dossierId;
 
+    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
   }
@@ -56,10 +59,30 @@ export class PilierEconomiqueComponent implements OnInit {
       }
     });
   }
+  setReadOnlyMode() {
+    const responsesArray = this.formGroup.get('responses') as FormArray;
+
+    responsesArray.controls.forEach((control) => {
+      const valueControl = control.get('value');
+      const optionIdsControl = control.get('optionIds');
+
+      if (valueControl) {
+        valueControl.disable({ emitEvent: false });
+      }
+
+      if (optionIdsControl && optionIdsControl instanceof FormArray) {
+        optionIdsControl.controls.forEach(opt => opt.disable({ emitEvent: false }));
+      }
+    });
+
+    // 🟢 Reactiver le champ commentaire pour l’admin
+    this.formGroup.get('comment')?.enable({ emitEvent: false });
+  }
 
   private initForm(): void {
     this.formGroup = this.fb.group({
-      responses: this.fb.array([])
+      responses: this.fb.array([]),
+      comment: ['']
     });
   }
 
@@ -99,6 +122,11 @@ export class PilierEconomiqueComponent implements OnInit {
       this.buildFormControlsWithData(form.responses || []);
       this.goToSection(1);
       this.isLoading = false;
+      this.formGroup.patchValue({ comment: form.comment || '' });
+      // ✅ seulement maintenant : désactiver si admin
+      if (this.isAdmin) {
+        this.setReadOnlyMode();
+      }
     };
 
     if (this.isEditMode && this.dossierId) {
@@ -240,13 +268,23 @@ export class PilierEconomiqueComponent implements OnInit {
 
     console.log('🚀 Payload envoyé:', cleanedResponses);
 
-    const payload = {
+    const payload: {
+      formId: any;
+      stepId: number;
+      pillar: string;
+      dossierId: string | null;
+      responses: { questionId: any; value: any; optionIds: any; pillar: any; }[];
+      comment?: string;
+    } = {
       formId: this.formMetadata.id,
       stepId: stepId,
       pillar: this.pillar,
-      responses: cleanedResponses,
-      dossierId: this.dossierId
+      dossierId: this.dossierId,
+      responses: this.isAdmin ? [] : cleanedResponses   // l’admin ne modifie pas les réponses
     };
+    if (this.isAdmin) {
+      payload.comment = this.formGroup.get('comment')?.value || '';
+    }
 
     const dossierIdToSend: number | null = this.dossierId ? Number(this.dossierId) : null;
 
