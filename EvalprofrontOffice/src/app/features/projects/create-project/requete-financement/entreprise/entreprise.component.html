@@ -24,27 +24,18 @@
                         <!-- Autres types -->
                         <div *ngIf="q.type !== 'SECTION_TITLE'" class="form-section">
 
-                            <!-- NUMERIQUE -->
-                            <div *ngIf="q.type === 'NUMERIQUE'" class="input-container">
+                            <!-- TEXTE / NUMERIQUE -->
+                            <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
+                                <label class="label">
+                                    {{ q.text }}
+                                    <span *ngIf="q.required" class="required-asterisk">*</span>
+                                </label>
                                 <div class="input-wrapper">
-                                    <input class="input" formControlName="value" type="number"
-                                        [placeholder]="q.placeholder || 'Saisissez un nombre'"
-                                        [class.invalid]="showError(i)" />
-                                    <svg *ngIf="showError(i)" class="input-error-icon"
-                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                            clip-rule="evenodd" />
-                                    </svg>
+                                    <input [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'" class="input"
+                                        formControlName="value" [placeholder]="q.placeholder || 'Votre réponse'"
+                                        [class.invalid]="showError(i)" (blur)="onFieldBlur(i)" />
                                 </div>
-                                <div class="error-text" *ngIf="showError(i)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    Veuillez saisir un nombre valide.
-                                </div>
+                                <div class="error-text" *ngIf="showError(i)">Ce champ est requis</div>
                             </div>
 
                             <!-- CHOIX MULTIPLE -->
@@ -81,10 +72,12 @@
                             <!-- SELECTION -->
                             <div *ngIf="q.type === 'SELECT' && q.options?.length" class="input-container">
                                 <div class="input-wrapper">
-                                    <select class="input" [formControlName]="'value'" [class.invalid]="showError(i)">
+                                    <select class="input" [formControlName]="'value'" 
+                                        [class.invalid]="showError(i)">
                                         <option value="" disabled selected>Veuillez sélectionner une option</option>
                                         <option *ngFor="let opt of q.options" [value]="opt.id">{{ opt.value }}</option>
                                     </select>
+
                                     <svg *ngIf="showError(i)" class="input-error-icon"
                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd"
@@ -102,6 +95,7 @@
                                 </div>
                             </div>
 
+
                             <!-- UPLOAD -->
                             <div *ngIf="q.type === 'UPLOAD'" class="input-container">
                                 <label class="label">
@@ -111,6 +105,11 @@
                                 <input type="file" (change)="onFileChange($event, i)" class="input" />
                                 <div class="uploaded-file" *ngIf="uploadedFiles[i]">
                                     {{ uploadedFiles[i].name }}
+                                </div>
+                                <div *ngIf="(responses.at(i).get('value')?.value) as url"
+                                    class="text-xs text-gray-500 mt-1">
+                                    Fichier enregistré :
+                                    <a [href]="url" target="_blank" rel="noopener">{{ url }}</a>
                                 </div>
                             </div>
                             <!-- DATE -->

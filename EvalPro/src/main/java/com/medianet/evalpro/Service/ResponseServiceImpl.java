@@ -174,13 +174,21 @@ public class ResponseServiceImpl implements ResponseService {
 
         // ❌ Supprimer les anciennes réponses (pour éviter les doublons)
 
-        //  responseRepository.deleteByFormIdAndDossierIdAndPillar(dto.getFormId(), dossier.getId(), dto.getPillar());
-        if (dto.getStepId() == 3L && dto.getPillar() != null) {
-            responseRepository.deleteByFormIdAndDossierIdAndPillarAndStepId(dto.getFormId(), dossier.getId(), dto.getPillar(), step.getId());
+        // normalise le pilier
+        String pillar = dto.getPillar() == null ? null : dto.getPillar().trim().toUpperCase();
 
+        if (pillar != null && !pillar.isBlank()) {
+            // ✅ NE SUPPRIME QUE CE PILIER POUR CE STEP
+            responseRepository.deleteByFormIdAndDossierIdAndStepIdAndPillarIgnoreCase(
+                    dto.getFormId(), dossier.getId(), step.getId(), pillar
+            );
         } else {
-            responseRepository.deleteByFormIdAndDossierIdAndStepId(dto.getFormId(), dossier.getId(), dto.getStepId());
+            // fallback si jamais aucun pilier n'est envoyé
+            responseRepository.deleteByFormIdAndDossierIdAndStepId(
+                    dto.getFormId(), dossier.getId(), dto.getStepId()
+            );
         }
+
 
         System.out.println("🧹 Anciennes réponses supprimées pour le dossier " + dossier.getId());
 
@@ -206,7 +214,7 @@ public class ResponseServiceImpl implements ResponseService {
                                 .option(opt)
                                 .value(null)
                                 .isValid(false)
-                                .pillar(dto.getPillar())
+                                .pillar(pillar) // ✅
                                 .build();
                         responseRepository.save(response);
                         System.out.println("✅ Réponse multiple enregistrée : questionId=" + r.getQuestionId() + " | optionId=" + optId);

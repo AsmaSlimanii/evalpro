@@ -67,6 +67,12 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
 
 
     void deleteByDossierId(Long dossierId);
+    // ResponseRepository.java
+    @Modifying
+    void deleteByFormIdAndDossierIdAndStepIdAndPillarIgnoreCase(
+            Long formId, Long dossierId, Long stepId, String pillar
+    );
+
 
 }
 

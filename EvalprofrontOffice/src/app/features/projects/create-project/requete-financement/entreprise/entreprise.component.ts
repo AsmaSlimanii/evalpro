@@ -21,7 +21,7 @@ export class EntrepriseComponent implements OnInit {
 
   readonly step = 'requete-financement';
   readonly stepId = 4;
-  readonly pillar = 'entreprise'; // ✅ spécifique à ce formulaire
+  readonly pillar = 'ENTREPRISE'; // <- fixe
 
   constructor(
     private fb: FormBuilder,
@@ -29,7 +29,7 @@ export class EntrepriseComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cdRef: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.dossierId = this.route.snapshot.params['id'] || localStorage.getItem('dossierId');
@@ -57,45 +57,109 @@ export class EntrepriseComponent implements OnInit {
       this.formMetadata = form;
       this.formId = form.id;
 
-      // 🔥 Ne garder que les questions de ce pillar
-      this.allQuestions = form.questions.filter((q: any) => q.pillar === this.pillar);
+      const norm = (v: any) => (v ?? '').toString().trim().toUpperCase();
+      const all = Array.isArray(form?.questions) ? form.questions : [];
 
-      this.buildFormControlsWithData(form.responses || []);
+      this.allQuestions = all.filter((q: any) => norm(q.pillar) === this.pillar);
+
+      const ids = new Set(this.allQuestions.map(q => q.id));
+      const existing = (form.responses || []).filter((r: any) => ids.has(r.questionId));
+
+      this.buildFormControlsWithData(existing);
       this.isLoading = false;
 
-      // Abonnement pour affichage conditionnel
-      this.responses.controls.forEach((ctrl, i) => {
-        const optionIdsControl = ctrl.get('optionIds');
-        if (optionIdsControl instanceof FormArray) {
-          optionIdsControl.valueChanges.subscribe(() => this.cdRef.detectChanges());
+      this.applyVisibilityState(); // ⬅ IMPORTANT (initial)
+
+      // Recalcule visibilité quand les options changent
+      this.responses.controls.forEach(ctrl => {
+        const fa = ctrl.get('optionIds');
+        if (fa instanceof FormArray) {
+          fa.valueChanges.subscribe(() => this.applyVisibilityState()); // ⬅ IMPORTANT
         }
       });
     };
 
-    if (this.isEditMode && this.dossierId) {
-      this.formService.getFormWithResponses(this.step, this.dossierId).subscribe({ next: callback });
-    } else {
-      this.formService.getFormByStep(this.step).subscribe({ next: callback });
-    }
+    (this.isEditMode && this.dossierId
+      ? this.formService.getFormWithResponses(this.step, this.dossierId)
+      : this.formService.getFormByStep(this.step)
+    ).subscribe({ next: callback, error: _ => this.isLoading = false });
   }
+
+
+  // 1) Calcule la visibilité réelle d’une question (SECTION_TITLE = toujours visible)
+  private isQuestionVisible(q: any): boolean {
+    if (q.type === 'SECTION_TITLE') return true;
+    if (!q.parentQuestionId || !q.parentOptionId) return true;
+
+    const parent = this.responses.controls.find(ctrl =>
+      ctrl.get('questionId')?.value === q.parentQuestionId
+    );
+    if (!parent) return true; // si pas trouvé, on ne bloque pas
+
+    const selected = (parent.get('optionIds')?.value || []) as any[];
+    return selected.includes(q.parentOptionId);
+  }
+
+  // 2) Applique la visibilité aux contrôles (désactive/active + (dé)valide)
+  private applyVisibilityState(): void {
+    this.allQuestions.forEach((q, i) => {
+      const group = this.responses.at(i) as FormGroup;
+      const visible = this.isQuestionVisible(q) && !q.isHidden;
+
+      if (visible) {
+        group.enable({ emitEvent: false });
+
+        const valueCtrl = group.get('value');
+        if (valueCtrl) {
+          const mustBeRequired =
+            (q.type === 'TEXTE' || q.type === 'NUMERIQUE' || q.type === 'SELECT' || q.type === 'DATE') && !!q.required;
+          valueCtrl.setValidators(mustBeRequired ? [Validators.required] : []);
+          valueCtrl.updateValueAndValidity({ emitEvent: false });
+        }
+      } else {
+        const opts = group.get('optionIds') as FormArray;
+        while (opts && opts.length) opts.removeAt(0);
+
+        group.get('value')?.setValue((q.type === 'SELECT' || q.type === 'DATE') ? null : '');
+        group.disable({ emitEvent: false });
+      }
+    });
+  }
+
+
+
+
+
 
   buildFormControlsWithData(existingResponses: any[]): void {
     while (this.responses.length) this.responses.removeAt(0);
 
     this.allQuestions.forEach((q, index) => {
-      const matching = existingResponses.filter(r => r.questionId === q.id);
-      const value = matching.find(r => r.value !== undefined)?.value || '';
-      const optionIds = matching.map(r => r.optionId).filter(Boolean);
+      const matches = existingResponses.filter((r: any) => r.questionId === q.id);
+
+      const valueFromDb = matches.find((r: any) => r.value !== undefined && r.value !== null)?.value;
+
+      // ✅ valeur initiale selon le type (comme à l’étape 3)
+      const initialValue =
+        q.type === 'SELECT' || q.type === 'DATE'
+          ? (valueFromDb != null ? String(valueFromDb) : null)
+          : (valueFromDb ?? '');
+
+      const mustBeRequired =
+        (q.type === 'TEXTE' || q.type === 'NUMERIQUE' || q.type === 'SELECT' || q.type === 'DATE') && !!q.required;
 
       this.uploadedFiles[index] = null!;
 
-      const group = this.fb.group({
+      this.responses.push(this.fb.group({
         questionId: [q.id],
-        value: [value, ['TEXTE', 'NUMERIQUE'].includes(q.type) && q.required ? Validators.required : null],
-        optionIds: this.fb.array(optionIds.map(id => this.fb.control(id)))
-      });
-
-      this.responses.push(group);
+        value: [initialValue, mustBeRequired ? Validators.required : []],
+        optionIds: this.fb.array(
+          matches
+            .map((r: any) => r.optionId)
+            .filter((id: any) => id != null)
+            .map((id: any) => this.fb.control(id))
+        )
+      }));
     });
   }
 
@@ -116,41 +180,70 @@ export class EntrepriseComponent implements OnInit {
   submit(): void {
     this.isSubmitted = true;
 
-    if (this.formGroup.invalid || !this.formMetadata) return;
+    if (this.formGroup.invalid || !this.formMetadata) {
+      // aide debug : montre quelles questions bloquent
+      const invalids = this.responses.controls
+        .map((g, i) => ({ i, g, q: this.allQuestions[i] }))
+        .filter(x => x.g.enabled && x.g.invalid);
+      console.warn('Form invalide, questions en faute :',
+        invalids.map(x => ({ id: x.q.id, text: x.q.text, type: x.q.type })));
+
+      // (optionnel) marque tout comme touché pour afficher les erreurs
+      this.responses.markAllAsTouched();
+      return;
+    }
+
+    const ids = new Set(this.allQuestions.map(q => q.id));
+    const raw: Array<{ questionId: number, value: any, optionIds: any[] }> = this.responses.getRawValue();
+
+    const onlyEntrepriseResponses = raw
+      .filter(r => ids.has(r.questionId))
+      .map(r => ({
+        questionId: r.questionId,
+        value: (typeof r.value === 'string' && r.value.trim() === '') ? null : r.value,
+        optionIds: Array.isArray(r.optionIds) ? r.optionIds.filter(v => v != null) : []
+      }))
+      .filter(r => r.value !== null || (r.optionIds && r.optionIds.length));
 
     const payload = {
       formId: this.formId,
       stepId: this.stepId,
       pillar: this.pillar,
       dossierId: this.dossierId,
-      responses: this.responses.value
+      responses: onlyEntrepriseResponses
     };
 
-    this.formService.submitStep(payload, this.stepId, Number(this.dossierId)).subscribe(() => {
-      this.router.navigate([`/projects/edit/${this.dossierId}/step4`]);
-    });
+    console.log('🚀 Payload Entreprise', payload);
+
+    this.formService.submitStep(payload, this.stepId, Number(this.dossierId))
+      .subscribe({
+        next: () => this.router.navigate([`/projects/edit/${this.dossierId}/step4`]),
+        error: err => console.error('submit error', err)
+      });
   }
+
 
   onFileChange(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
-
-    const file = input.files[0];
-    this.uploadedFiles[index] = file;
+    const file = input?.files?.[0];
+    if (!file) return;
 
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('questionId', this.responses.at(index).value.questionId);
+    formData.append('file', file, file.name);
+    formData.append('questionId', String(this.responses.at(index).get('questionId')?.value));
+    if (this.dossierId) formData.append('dossierId', String(this.dossierId));
 
     this.formService.uploadFile(formData).subscribe({
-      next: (res) => {
-        this.responses.at(index).get('value')?.setValue(res.url);
+      next: (res: any) => {
+        const url = res?.url || res?.path || res?.location;
+        if (!url) { console.error('Upload OK mais pas d’URL', res); return; }
+        (this.responses.at(index) as FormGroup).get('value')?.setValue(url);
       },
-      error: (err) => {
-        console.error('Erreur upload', err);
-      }
+      error: err => console.error('Erreur upload', err)
     });
   }
+
+
 
   onCheckboxToggle(index: number, optionId: number, event: Event): void {
     const options = this.responses.at(index).get('optionIds') as FormArray;
@@ -165,12 +258,14 @@ export class EntrepriseComponent implements OnInit {
 
     this.responses.at(index).get('value')?.setValue('');
     this.cdRef.detectChanges();
+    this.applyVisibilityState(); // ⬅ IMPORTANT
   }
 
   onRadioChange(i: number, selectedId: number): void {
     const optionIds = this.responses.at(i).get('optionIds') as FormArray;
     while (optionIds.length !== 0) optionIds.removeAt(0);
     optionIds.push(this.fb.control(selectedId));
+    this.applyVisibilityState(); // ⬅ IMPORTANT
   }
 
   isOptionChecked(index: number, optionId: number): boolean {
