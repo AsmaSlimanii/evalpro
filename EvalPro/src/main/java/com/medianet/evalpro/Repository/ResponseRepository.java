@@ -72,6 +72,19 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
     void deleteByFormIdAndDossierIdAndStepIdAndPillarIgnoreCase(
             Long formId, Long dossierId, Long stepId, String pillar
     );
+    // QuestionRepository
+
+    // ResponseRepository
+    @Query("""
+  SELECT COUNT(DISTINCT r.question.id)
+  FROM Response r
+  WHERE r.dossier.id = :dossierId
+    AND r.step.id    = :stepId
+    AND UPPER(r.pillar) = UPPER(:pillar)
+""")
+    int countDistinctQuestionByDossierAndStepIdAndPillar(@Param("dossierId") Long dossierId,
+                                                         @Param("stepId") Long stepId,
+                                                         @Param("pillar") String pillar);
 
 
 }

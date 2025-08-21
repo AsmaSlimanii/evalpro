@@ -38,7 +38,7 @@ public interface ResponseService {
 
     String storeFileAndReturnUrl(MultipartFile file, Long questionId, Long dossierId, String email);
 
-
+    Map<String, Integer> computeStep4Progress(Long dossierId);
 
     //Cette interface définit les contrats métier pour la gestion des réponses utilisateur (Response)
     // dans la plateforme EvalPro. Elle est ensuite implémentée par la classe ResponseServiceImpl.

@@ -5,8 +5,10 @@ import com.medianet.evalpro.Dto.FormDTO;
 import com.medianet.evalpro.Dto.FormProgressDTO;
 import com.medianet.evalpro.Entity.Form;
 import com.medianet.evalpro.Service.FormService;
+import com.medianet.evalpro.Service.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +22,7 @@ import java.util.Map;
 public class FormController {
 
     private final FormService formService;
+    private final ResponseService responseService; // ✅ injection
 
     // 🔹 CREATE
     @PostMapping
@@ -103,6 +106,11 @@ public class FormController {
     @GetMapping("/step3-pillar-progress/{dossierId}")
     public ResponseEntity<Map<String, Integer>> getPillarProgressPercentage(@PathVariable Long dossierId) {
         return ResponseEntity.ok(formService.getPillarProgressPercentage(dossierId));
+    }
+
+    @GetMapping("/step4-pillar-progress/{dossierId}")
+    public ResponseEntity<Map<String,Integer>> getStep4Progress(@PathVariable Long dossierId) {
+        return ResponseEntity.ok(responseService.computeStep4Progress(dossierId));
     }
 
 

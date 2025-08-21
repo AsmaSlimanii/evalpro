@@ -1,5 +1,7 @@
+// requete-financement.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormService } from '../../../../core/services/form.service';
 
 @Component({
   selector: 'app-requete-financement',
@@ -17,8 +19,9 @@ export class RequeteFinancementComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private route: ActivatedRoute
-  ) { }
+    private route: ActivatedRoute,
+    private formService: FormService
+  ) {}
 
   ngOnInit(): void {
     this.dossierId = this.route.snapshot.paramMap.get('id') || localStorage.getItem('dossierId');
@@ -27,32 +30,44 @@ export class RequeteFinancementComponent implements OnInit {
       return;
     }
 
-    // Appelle fictif si tu veux gérer la progression comme l'étape 3
-    // this.loadProgress();
+    this.loadProgress();  // ✅ comme étape 4
   }
 
-  navigateTo(section: 'profil' | 'entreprise' | 'projet'): void {
+    loadProgress(): void {
+    const dossierId = Number(this.dossierId);
+    this.formService.getStep4PillarProgress(dossierId).subscribe({
+      next: (data: { [key: string]: number }) => {
+        console.log('🟢 Progress reçu :', data); // <= Vérifie les noms ici
+
+        this.progress.profil = data['PROFIL'] || 0;
+        this.progress.entreprise = data['ENTREPRISE'] || 0;
+        this.progress.projet = data['PROJET'] || 0;
+
+      },
+      error: (err) => console.error('❌ Erreur progression pilier', err)
+    });
+  }
+  
+
+    navigateTo(pilier: 'profil' | 'entreprise' | 'projet'): void {
     if (this.dossierId) {
-      this.router.navigate([`/projects/edit/${this.dossierId}/step4/${section}`]);
+      this.router.navigate([`/projects/edit/${this.dossierId}/step4/${pilier}`]);
     }
   }
 
-  goBack(): void {
+goBack(): void {
     this.router.navigate(['/projects/create']);
-  }
-  // ex. dans step1.component.ts
-  finishAndGoNext() {
-    const dossierId = localStorage.getItem('dossierId');
-    const target = dossierId
-      ? ['/projects/edit', dossierId, 'step2']
-      : ['/projects/create', 'step2'];
+    // avance la progression au moins à 4
+      const prev = Number(localStorage.getItem('completedStep') || '0');
+      if (prev < 4) localStorage.setItem('completedStep', '4');
 
-    this.router.navigate(target, {
-      state: {
-        successMessage: 'Étape 4 terminée avec succès !',
-        completedStep: 4   // ✅ clé: informe CreateProject que l’étape 4 est finie
-      }
-    });
+      this.router.navigate(['/projects/edit', this.dossierId], {
+        state: {
+          successMessage: 'Étape 4 terminée avec succès !',
+          completedStep: 4
+        }
+      });
+
   }
 
 }

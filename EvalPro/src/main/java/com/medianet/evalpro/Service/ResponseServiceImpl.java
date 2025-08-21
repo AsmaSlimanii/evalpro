@@ -236,7 +236,7 @@ public class ResponseServiceImpl implements ResponseService {
                         .value(r.getValue())
                         .option(null)
                         .isValid(false)
-                        .pillar(dto.getPillar())
+                        .pillar(pillar)  // <-- ICI
                         .build();
                 responseRepository.save(response);
                 System.out.println("✅ Réponse texte enregistrée : questionId=" + r.getQuestionId() + " | valeur='" + r.getValue() + "'");
@@ -412,6 +412,32 @@ public class ResponseServiceImpl implements ResponseService {
             throw new RuntimeException("Échec upload fichier", e);
         }
     }
+
+
+    @Override
+    public Map<String, Integer> computeStep4Progress(Long dossierId) {
+        final Long STEP_ID = 4L;
+        final List<String>  pillars = List.of("PROFIL", "ENTREPRISE", "PROJET");
+
+        Map<String, Integer> out = new LinkedHashMap<>();
+
+        for (String p :  pillars) {
+            long total = Optional.of(
+                    questionRepository.countByStepIdAndPillar(STEP_ID, p)
+            ).orElse(0);
+
+            long answered = Optional.of(
+                    responseRepository.countDistinctQuestionByDossierAndStepIdAndPillar(dossierId, STEP_ID, p)
+            ).orElse(0);
+
+            int percent = (total == 0) ? 0 : (int)Math.round(answered * 100.0 / total);
+            out.put(p, Math.max(0, Math.min(100, percent)));
+        }
+        return out;
+    }
+
+
+
 
 }
 

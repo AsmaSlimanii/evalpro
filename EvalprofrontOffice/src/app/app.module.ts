@@ -59,6 +59,7 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
     PilierEnvironnementalComponent,
     RequeteFinancementComponent,
     ProfilComponent,
+    ProjetComponent,
     SchemaFinancementComponent,
     ProjectListComponent,
     EntrepriseComponent,
@@ -81,7 +82,7 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
     MatSnackBarModule,
 
 
-    ProjetComponent,
+    
 
     
     ReactiveFormsModule,

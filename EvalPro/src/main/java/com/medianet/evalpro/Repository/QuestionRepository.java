@@ -25,6 +25,10 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     List<Question> findAllByStepId(Long stepId);
 
-    //  List<Question> findByFormId(Long id);
+    @Query("SELECT COUNT(q.id) FROM Question q WHERE q.step.id = :stepId AND UPPER(q.pillar) = UPPER(:pillar)")
+    int countByStepIdAndPillar(@Param("stepId") Long stepId, @Param("pillar") String pillar);
+
+
+
 }
 

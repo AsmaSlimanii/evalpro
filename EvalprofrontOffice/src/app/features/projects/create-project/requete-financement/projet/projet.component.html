@@ -1,1 +1,131 @@
-<p>projet works!</p>
+<div class="form-container">
+  <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
+
+    <!-- En-tête -->
+    <div class="form-header text-center">
+      <h2 class="form-title">{{ formMetadata?.title || 'Votre Projet' }}</h2>
+    </div>
+
+    <div class="form-subtitle-box">
+      Présentez votre projet, son calendrier et les pièces justificatives demandées.
+    </div>
+
+    <!-- Questions dynamiques -->
+    <div formArrayName="responses">
+      <ng-container *ngFor="let q of allQuestions; let i = index; trackBy: trackByQuestionId">
+        <div [formGroupName]="i">
+          <ng-container *ngIf="shouldDisplayQuestion(q) && !q.isHidden">
+
+            <!-- SECTION -->
+            <div *ngIf="q.type === 'SECTION_TITLE'" class="section-title-block">
+              <h3 class="text-primary mb-3">{{ q.text }}</h3>
+            </div>
+
+            <!-- Autres types -->
+            <div *ngIf="q.type !== 'SECTION_TITLE'" class="form-section">
+
+              <!-- TEXTE / NUMERIQUE -->
+              <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
+                <label class="label">
+                  {{ q.text }} <span *ngIf="q.required" class="required-asterisk">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <textarea *ngIf="q.isLong" class="input textarea"
+                            formControlName="value"
+                            [placeholder]="q.placeholder || 'Votre réponse'"
+                            [class.invalid]="showError(i)"></textarea>
+                  <input *ngIf="!q.isLong"
+                         [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'"
+                         class="input"
+                         formControlName="value"
+                         [placeholder]="q.placeholder || 'Votre réponse'"
+                         [class.invalid]="showError(i)" />
+                </div>
+                <div class="error-text" *ngIf="showError(i)">Ce champ est requis</div>
+              </div>
+
+              <!-- CHOIX MULTIPLE -->
+              <div *ngIf="q.type === 'CHOIXMULTIPLE'" class="option-group">
+                <label class="label">
+                  {{ q.text }} <span *ngIf="q.required" class="required-asterisk">*</span>
+                </label>
+                <div *ngFor="let opt of q.options" class="checkbox-container">
+                  <label class="checkbox-label">
+                    <input type="checkbox" class="checkbox-input"
+                           [value]="opt.id"
+                           [checked]="isOptionChecked(i, opt.id)"
+                           (change)="onCheckboxToggle(i, opt.id, $event)" />
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-text">{{ opt.value }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- RADIO -->
+              <div *ngIf="q.type === 'RADIO'" class="option-group">
+                <label class="label">
+                  {{ q.text }} <span *ngIf="q.required" class="required-asterisk">*</span>
+                </label>
+                <div *ngFor="let opt of q.options" class="radio-container">
+                  <label class="radio-label">
+                    <input type="radio"
+                           [value]="opt.id"
+                           [checked]="isRadioSelected(i, opt.id)"
+                           (change)="onRadioChange(i, opt.id)"
+                           name="radio-{{i}}" />
+                    <span class="radio-text">{{ opt.value }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- SELECT -->
+              <div *ngIf="q.type === 'SELECT' && q.options?.length" class="input-container">
+                <div class="input-wrapper">
+                  <select class="input" [formControlName]="'value'" [class.invalid]="showError(i)">
+                    <option value="" disabled selected>Veuillez sélectionner une option</option>
+                    <option *ngFor="let opt of q.options" [value]="opt.id">{{ opt.value }}</option>
+                  </select>
+                </div>
+                <div class="error-text" *ngIf="showError(i)">Veuillez sélectionner une option.</div>
+              </div>
+
+              <!-- DATE -->
+              <div *ngIf="q.type === 'DATE'" class="input-container">
+                <label class="label">
+                  {{ q.text }} <span *ngIf="q.required" class="required-asterisk">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="date" class="input" formControlName="value" [class.invalid]="showError(i)" />
+                </div>
+                <div class="error-text" *ngIf="showError(i)">Ce champ est requis</div>
+              </div>
+
+              <!-- UPLOAD -->
+              <div *ngIf="q.type === 'UPLOAD'" class="input-container">
+                <label class="label">
+                  {{ q.text }} <span *ngIf="q.required" class="required-asterisk">*</span>
+                </label>
+                <input type="file" (change)="onFileChange($event, i)" class="input" />
+                <div class="uploaded-file" *ngIf="uploadedFiles[i]">{{ uploadedFiles[i].name }}</div>
+                <div *ngIf="(responses.at(i).get('value')?.value) as url" class="text-xs text-gray-500 mt-1">
+                  Fichier enregistré : <a [href]="url" target="_blank" rel="noopener">{{ url }}</a>
+                </div>
+              </div>
+
+            </div>
+          </ng-container>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Valider →</button>
+    </div>
+  </form>
+
+  <div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Chargement en cours...</p>
+  </div>
+</div>

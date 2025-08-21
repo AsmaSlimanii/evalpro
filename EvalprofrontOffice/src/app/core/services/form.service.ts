@@ -78,7 +78,14 @@ export class FormService {
     );
 
   }
+  getStep4PillarProgress(dossierId: number): Observable<{ [key: string]: number }> {
+    // ✅ URL correcte vers FormController
+    return this.http.get<{ [key: string]: number }>(
+      `${this.formApiUrl}/step4-pillar-progress/${dossierId}`,
+      { headers: this.getAuthHeaders() }
+    );
 
+  }
 
   getPillarScores(dossierId: number): Observable<any> {
     return this.http.get(`${this.responseApiUrl}/step3-score/${dossierId}`, {
@@ -102,7 +109,6 @@ export class FormService {
 
     return this.http.delete(`${this.dossierApiUrl}/${id}`, { headers });
   }
-
 
 
 
