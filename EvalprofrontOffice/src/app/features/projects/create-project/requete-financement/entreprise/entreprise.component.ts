@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormService } from '../../../../../core/services/form.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-entreprise',
@@ -18,6 +19,8 @@ export class EntrepriseComponent implements OnInit {
   isSubmitted = false;
   uploadedFiles: File[] = [];
   allQuestions: any[] = [];
+  isAdmin = false;
+
 
   readonly step = 'requete-financement';
   readonly stepId = 4;
@@ -28,19 +31,42 @@ export class EntrepriseComponent implements OnInit {
     private formService: FormService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
     this.dossierId = this.route.snapshot.params['id'] || localStorage.getItem('dossierId');
     this.isEditMode = !!this.dossierId;
+
+    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
   }
+  private setReadOnlyMode(): void {
+    const responses = this.formGroup.get('responses') as FormArray;
+
+    responses.controls.forEach(g => {
+      // value = TEXTE / NUMERIQUE / SELECT / DATE / UPLOAD
+      g.get('value')?.disable({ emitEvent: false });
+
+      const opts = g.get('optionIds');
+      if (opts instanceof FormArray) {
+        opts.disable({ emitEvent: false });
+        opts.controls.forEach(c => c.disable({ emitEvent: false }));
+      }
+    });
+
+    // laisser le commentaire admin actif si tu en as un
+    this.formGroup.get('comment')?.enable({ emitEvent: false });
+  }
+
+
 
   initForm(): void {
     this.formGroup = this.fb.group({
-      responses: this.fb.array([])
+      responses: this.fb.array([]),
+      comment: ['']
     });
   }
 
@@ -67,6 +93,11 @@ export class EntrepriseComponent implements OnInit {
 
       this.buildFormControlsWithData(existing);
       this.isLoading = false;
+      this.formGroup.patchValue({ comment: form.comment || '' });
+      // ✅ seulement maintenant : désactiver si admin
+      if (this.isAdmin) {
+        this.setReadOnlyMode();
+      }
 
       this.applyVisibilityState(); // ⬅ IMPORTANT (initial)
 
@@ -124,6 +155,10 @@ export class EntrepriseComponent implements OnInit {
         group.disable({ emitEvent: false });
       }
     });
+    if (this.isAdmin) {
+      this.responses.disable({ emitEvent: false });
+      return;
+    }
   }
 
 
@@ -205,13 +240,23 @@ export class EntrepriseComponent implements OnInit {
       }))
       .filter(r => r.value !== null || (r.optionIds && r.optionIds.length));
 
-    const payload = {
-      formId: this.formId,
+    const payload: {
+      formId: any;
+      stepId: number;
+      pillar: string;
+      dossierId: string | null;
+      responses: any;
+      comment?: string;
+    } = {
+      formId: this.formMetadata.id,
       stepId: this.stepId,
       pillar: this.pillar,
       dossierId: this.dossierId,
-      responses: onlyEntrepriseResponses
+      responses: this.isAdmin ? [] : onlyEntrepriseResponses
     };
+    if (this.isAdmin) {
+      payload.comment = this.formGroup.get('comment')?.value || '';
+    }
 
     console.log('🚀 Payload Entreprise', payload);
 

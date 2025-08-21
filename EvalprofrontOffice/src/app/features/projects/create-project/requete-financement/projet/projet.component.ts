@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormService } from '../../../../../core/services/form.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-projet',
@@ -20,6 +21,8 @@ export class ProjetComponent implements OnInit {
 
   uploadedFiles: File[] = [];
   allQuestions: any[] = [];
+  isAdmin = false;
+
 
   // ⚙️ Étape & pilier
   readonly step = 'requete-financement';
@@ -31,19 +34,42 @@ export class ProjetComponent implements OnInit {
     private formService: FormService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdRef: ChangeDetectorRef
-  ) {}
+    private cdRef: ChangeDetectorRef,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.dossierId = this.route.snapshot.params['id'] || localStorage.getItem('dossierId');
     this.isEditMode = !!this.dossierId;
+
+    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
+  }
+  setReadOnlyMode() {
+    const responsesArray = this.formGroup.get('responses') as FormArray;
+
+    responsesArray.controls.forEach((control) => {
+      const valueControl = control.get('value');
+      const optionIdsControl = control.get('optionIds');
+
+      if (valueControl) {
+        valueControl.disable({ emitEvent: false });
+      }
+
+      if (optionIdsControl && optionIdsControl instanceof FormArray) {
+        optionIdsControl.controls.forEach(opt => opt.disable({ emitEvent: false }));
+      }
+    });
+
+    // 🟢 Reactiver le champ commentaire pour l’admin
+    this.formGroup.get('comment')?.enable({ emitEvent: false });
   }
 
   initForm(): void {
     this.formGroup = this.fb.group({
-      responses: this.fb.array([])
+      responses: this.fb.array([]),
+       comment: ['']
     });
   }
 
@@ -69,6 +95,11 @@ export class ProjetComponent implements OnInit {
 
       this.buildFormControlsWithData(existing);
       this.isLoading = false;
+       this.formGroup.patchValue({ comment: form.comment || '' });
+      // ✅ seulement maintenant : désactiver si admin
+      if (this.isAdmin) {
+        this.setReadOnlyMode();
+      }
 
       // Visibilité initiale
       this.applyVisibilityState();
@@ -198,13 +229,23 @@ export class ProjetComponent implements OnInit {
       }))
       .filter(r => r.value !== null || (r.optionIds && r.optionIds.length));
 
-    const payload = {
-      formId: this.formId,
+    const payload: {
+      formId: any;
+      stepId: number;
+      pillar: string;
+      dossierId: string | null;
+      responses: any;
+      comment?: string;
+    } = {
+      formId: this.formMetadata.id,
       stepId: this.stepId,
       pillar: this.pillar,
       dossierId: this.dossierId,
-      responses: onlyProjectResponses
+      responses: this.isAdmin ? [] : onlyProjectResponses
     };
+    if (this.isAdmin) {
+      payload.comment = this.formGroup.get('comment')?.value || '';
+    }
 
     console.log('🚀 Payload Projet', payload);
 
@@ -285,5 +326,5 @@ export class ProjetComponent implements OnInit {
     return !!control?.invalid && this.isSubmitted;
   }
 
-  onFieldBlur(_index: number): void {}
+  onFieldBlur(_index: number): void { }
 }

@@ -22,17 +22,15 @@
 
                         <!-- Autres types -->
                         <div *ngIf="q.type !== 'SECTION_TITLE'" class="form-section">
-
                             <!-- TEXTE / NUMERIQUE -->
                             <div *ngIf="q.type === 'TEXTE' || q.type === 'NUMERIQUE'" class="input-container">
-                                <label class="label">
-                                    {{ q.text }}
-                                    <span *ngIf="q.required" class="required-asterisk">*</span>
-                                </label>
+                                <label class="label">{{ q.text }}<span *ngIf="q.is_required"
+                                        class="required-asterisk">*</span></label>
                                 <div class="input-wrapper">
                                     <input [type]="q.type === 'NUMERIQUE' ? 'number' : 'text'" class="input"
                                         formControlName="value" [placeholder]="q.placeholder || 'Votre réponse'"
-                                        [class.invalid]="showError(i)" (blur)="onFieldBlur(i)" />
+                                        [readonly]="isAdmin" [disabled]="isAdmin"
+                                        [class.invalid]="!isAdmin && showError(i)" (blur)="onFieldBlur(i)" />
                                 </div>
                                 <div class="error-text" *ngIf="showError(i)">Ce champ est requis</div>
                             </div>
@@ -47,7 +45,8 @@
                                     <label class="checkbox-label">
                                         <input type="checkbox" class="checkbox-input" [value]="opt.id"
                                             [checked]="isOptionChecked(i, opt.id)"
-                                            (change)="onCheckboxToggle(i, opt.id, $event)" />
+                                            (change)="onCheckboxToggle(i, opt.id, $event)" [disabled]="isAdmin"
+                                            [class.invalid]="!isAdmin && showError(i)" />
                                         <span class="checkbox-custom"></span>
                                         <span class="checkbox-text">{{ opt.value }}</span>
                                     </label>
@@ -63,7 +62,8 @@
                                 <div *ngFor="let opt of q.options" class="radio-container">
                                     <label class="radio-label">
                                         <input type="radio" [value]="opt.id" [checked]="isRadioSelected(i, opt.id)"
-                                            (change)="onRadioChange(i, opt.id)" name="radio-{{i}}" />
+                                            (change)="onRadioChange(i, opt.id)" name="radio-{{i}}" [disabled]="isAdmin"
+                                            [class.invalid]="!isAdmin && showError(i)" />
                                         <span class="radio-text">{{ opt.value }}</span>
                                     </label>
                                 </div>
@@ -75,7 +75,8 @@
                                     {{ q.text }}
                                     <span *ngIf="q.required" class="required-asterisk">*</span>
                                 </label>
-                                <input type="file" (change)="onFileChange($event, i)" class="input" />
+                                <input type="file" (change)="onFileChange($event, i)" class="input" [disabled]="isAdmin"
+                                    [class.invalid]="!isAdmin && showError(i)" />
                                 <div class="uploaded-file" *ngIf="uploadedFiles[i]">{{ uploadedFiles[i].name }}
                                 </div>
                                 <div *ngIf="(responses.at(i).get('value')?.value) as url"
@@ -90,6 +91,15 @@
                     </ng-container>
                 </div>
             </ng-container>
+        </div>
+
+        <div class="input-container mt-5" *ngIf="isAdmin">
+            <label class="label">Commentaire de l’administrateur</label>
+            <div class="input-wrapper">
+                <textarea formControlName="comment" class="input textarea"
+                    placeholder="Saisissez un commentaire ou une note complémentaire..." rows="5"></textarea>
+
+            </div>
         </div>
 
         <!-- ✅ Bouton -->

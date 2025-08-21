@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormService } from '../../../../../core/services/form.service';
+import { AuthService } from '../../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-profil',
@@ -18,6 +19,8 @@ export class ProfilComponent implements OnInit {
   isSubmitted = false;
   uploadedFiles: File[] = [];
   allQuestions: any[] = [];
+  isAdmin = false;
+
 
   readonly step = 'requete-financement';
   readonly stepId = 4;
@@ -28,22 +31,45 @@ export class ProfilComponent implements OnInit {
     private formService: FormService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdRef: ChangeDetectorRef
+    private cdRef: ChangeDetectorRef,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
     this.dossierId = this.route.snapshot.params['id'] || localStorage.getItem('dossierId');
     this.isEditMode = !!this.dossierId;
+
+    this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
+  }
+  private setReadOnlyMode(): void {
+    const responses = this.formGroup.get('responses') as FormArray;
+
+    responses.controls.forEach(g => {
+      // value = TEXTE / NUMERIQUE / SELECT / DATE / UPLOAD
+      g.get('value')?.disable({ emitEvent: false });
+
+      const opts = g.get('optionIds');
+      if (opts instanceof FormArray) {
+        opts.disable({ emitEvent: false });
+        opts.controls.forEach(c => c.disable({ emitEvent: false }));
+      }
+    });
+
+    // laisser le commentaire admin actif si tu en as un
+    this.formGroup.get('comment')?.enable({ emitEvent: false });
   }
 
   initForm(): void {
     this.formGroup = this.fb.group({
       responses: this.fb.array([]),
+      comment: ['']
 
     });
   }
+
+
   trackByQuestionId(index: number, question: any): number {
     return question.id;
   }
@@ -79,6 +105,10 @@ export class ProfilComponent implements OnInit {
         group.disable({ emitEvent: false });
       }
     });
+     if (this.isAdmin) {
+      this.responses.disable({ emitEvent: false });
+      return;
+    }
   }
 
 
@@ -106,6 +136,11 @@ export class ProfilComponent implements OnInit {
 
       this.buildFormControlsWithData(existing);
       this.isLoading = false;
+      this.formGroup.patchValue({ comment: form.comment || '' });
+      // ✅ seulement maintenant : désactiver si admin
+      if (this.isAdmin) {
+        this.setReadOnlyMode();
+      }
 
       // ⬇⬇⬇ AJOUT
       this.applyVisibilityState();
@@ -177,84 +212,94 @@ export class ProfilComponent implements OnInit {
   }
 
   submit(): void {
-  this.isSubmitted = true;
-  if (!this.formMetadata) return;
+    this.isSubmitted = true;
+    if (!this.formMetadata) return;
 
-  if (this.formGroup.invalid) {
-    const invalid = this.responses.controls
-      .map((g, i) => ({ i, g, q: this.allQuestions[i] }))
-      .filter(x => x.g.enabled && x.g.invalid);
-    console.warn('Form invalide :', invalid.map(x => ({ id: x.q.id, text: x.q.text, type: x.q.type })));
-    return;
+    if (this.formGroup.invalid) {
+      const invalid = this.responses.controls
+        .map((g, i) => ({ i, g, q: this.allQuestions[i] }))
+        .filter(x => x.g.enabled && x.g.invalid);
+      console.warn('Form invalide :', invalid.map(x => ({ id: x.q.id, text: x.q.text, type: x.q.type })));
+      return;
+    }
+
+    // ⬅⬅⬅ prend toutes les valeurs (même si un champ a été désactivé puis réactivé)
+    const raw: Array<{ questionId: number, value: any, optionIds: any[] }> = this.responses.getRawValue();
+
+    const ids = new Set(this.allQuestions.map(q => q.id));
+    const onlyProfilResponses = raw
+      .filter(r => ids.has(r.questionId))
+      .map(r => ({
+        questionId: r.questionId,
+        value: (typeof r.value === 'string' && r.value.trim() === '') ? null : r.value,
+        optionIds: Array.isArray(r.optionIds) ? r.optionIds.filter(v => v != null) : []
+      }))
+      // ⬇ garde aussi les UPLOAD même si value = URL (pas vide)
+      .filter(r => r.value !== null || (r.optionIds && r.optionIds.length));
+
+    const payload: {
+      formId: any;
+      stepId: number;
+      pillar: string;
+      dossierId: string | null;
+      responses: any;
+      comment?: string;
+    } = {
+      formId: this.formMetadata.id,
+      stepId: this.stepId,
+      pillar: this.pillar,
+      dossierId: this.dossierId,
+      responses: this.isAdmin ? [] : onlyProfilResponses
+    };
+    if (this.isAdmin) {
+      payload.comment = this.formGroup.get('comment')?.value || '';
+    }
+
+    console.log('🚀 Payload envoyé', payload); // tu dois y voir la question UPLOAD avec value = URL
+
+    this.formService.submitStep(payload, this.stepId, Number(this.dossierId))
+      .subscribe({
+        next: () => this.router.navigate([`/projects/edit/${this.dossierId}/step4`]),
+        error: err => console.error('submit error', err)
+      });
   }
 
-  // ⬅⬅⬅ prend toutes les valeurs (même si un champ a été désactivé puis réactivé)
-  const raw: Array<{questionId:number, value:any, optionIds:any[]}> = this.responses.getRawValue();
+  onFileChange(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    if (!file) return;
 
-  const ids = new Set(this.allQuestions.map(q => q.id));
-  const onlyProfilResponses = raw
-    .filter(r => ids.has(r.questionId))
-    .map(r => ({
-      questionId: r.questionId,
-      value: (typeof r.value === 'string' && r.value.trim() === '') ? null : r.value,
-      optionIds: Array.isArray(r.optionIds) ? r.optionIds.filter(v => v != null) : []
-    }))
-    // ⬇ garde aussi les UPLOAD même si value = URL (pas vide)
-    .filter(r => r.value !== null || (r.optionIds && r.optionIds.length));
+    // Facultatif mais utile côté serveur pour ranger le fichier
+    const qid = String(this.responses.at(index).get('questionId')?.value);
+    const did = this.dossierId ? String(this.dossierId) : '';
 
-  const payload = {
-    formId: this.formId,
-    stepId: this.stepId,
-    pillar: this.pillar,
-    dossierId: this.dossierId,
-    responses: onlyProfilResponses
-  };
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    formData.append('questionId', qid);
+    if (did) formData.append('dossierId', did);
 
-  console.log('🚀 Payload envoyé', payload); // tu dois y voir la question UPLOAD avec value = URL
+    this.formService.uploadFile(formData).subscribe({
+      next: (res: any) => {
+        // Accepte 'url' (préféré), ou 'path' / 'location'
+        const url = res?.url || res?.path || res?.location;
+        if (!url) {
+          console.error('Upload OK mais pas d’URL dans la réponse', res);
+          return;
+        }
 
-  this.formService.submitStep(payload, this.stepId, Number(this.dossierId))
-    .subscribe({
-      next: () => this.router.navigate([`/projects/edit/${this.dossierId}/step4`]),
-      error: err => console.error('submit error', err)
-    });
-}
+        // ✅ on stocke l’URL dans le contrôle "value" de la question UPLOAD
+        const group = this.responses.at(index) as FormGroup;
+        group.get('value')?.setValue(url);
+        group.markAsDirty();
+        group.updateValueAndValidity({ emitEvent: false });
 
-onFileChange(event: Event, index: number): void {
-  const input = event.target as HTMLInputElement;
-  const file = input?.files?.[0];
-  if (!file) return;
-
-  // Facultatif mais utile côté serveur pour ranger le fichier
-  const qid = String(this.responses.at(index).get('questionId')?.value);
-  const did = this.dossierId ? String(this.dossierId) : '';
-
-  const formData = new FormData();
-  formData.append('file', file, file.name);
-  formData.append('questionId', qid);
-  if (did) formData.append('dossierId', did);
-
-  this.formService.uploadFile(formData).subscribe({
-    next: (res: any) => {
-      // Accepte 'url' (préféré), ou 'path' / 'location'
-      const url = res?.url || res?.path || res?.location;
-      if (!url) {
-        console.error('Upload OK mais pas d’URL dans la réponse', res);
-        return;
+        console.log('📸 URL fichier enregistrée dans le formulaire :', url);
+      },
+      error: (err) => {
+        console.error('Erreur upload', err);
       }
-
-      // ✅ on stocke l’URL dans le contrôle "value" de la question UPLOAD
-      const group = this.responses.at(index) as FormGroup;
-      group.get('value')?.setValue(url);
-      group.markAsDirty();
-      group.updateValueAndValidity({ emitEvent: false });
-
-      console.log('📸 URL fichier enregistrée dans le formulaire :', url);
-    },
-    error: (err) => {
-      console.error('Erreur upload', err);
-    }
-  });
-}
+    });
+  }
 
 
   onCheckboxToggle(index: number, optionId: number, event: Event): void {
@@ -271,7 +316,7 @@ onFileChange(event: Event, index: number): void {
     this.responses.at(index).get('value')?.setValue('');
     this.cdRef.detectChanges(); // Pour forcer le recalcul d’affichage des questions dépendantes
 
-     this.applyVisibilityState(); // ⬅⬅⬅
+    this.applyVisibilityState(); // ⬅⬅⬅
 
   }
 
@@ -297,7 +342,7 @@ onFileChange(event: Event, index: number): void {
         }
       }
     }
-     this.applyVisibilityState(); // ⬅⬅⬅
+    this.applyVisibilityState(); // ⬅⬅⬅
   }
 
   isOptionChecked(index: number, optionId: number): boolean {
