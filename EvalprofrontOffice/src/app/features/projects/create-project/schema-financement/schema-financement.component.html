@@ -1,1 +1,507 @@
-<p>schema-financement works!</p>
+<div class="page-bg" *ngIf="!isLoading">
+  <div class="stage">
+    <!-- Titre + onglets à gauche -->
+    <div class="stage-header">
+      <h1 class="title">
+        Plan d’investissement du projet
+        <span *ngIf="projectName"> : {{ projectName }}</span>
+      </h1>
+
+      <div class="tabs left">
+        <button class="tab" [class.active]="activeTab==='needs'" (click)="activeTab='needs'">
+          Besoins d’investissement
+        </button>
+        <button class="tab" [class.active]="activeTab==='funding'" (click)="activeTab='funding'">
+          Financement
+        </button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- ====================== COLONNE GAUCHE ====================== -->
+      <div class="left card">
+
+        <!-- Sous-onglets (Besoins) -->
+        <div *ngIf="activeTab==='needs'" class="subtabs">
+          <button class="subtab" [class.active]="cat==='immobilier'" (click)="cat='immobilier'">Immobilier</button>
+          <button class="subtab" [class.active]="cat==='mobilier'" (click)="cat='mobilier'">Mobilier</button>
+          <button class="subtab" [class.active]="cat==='services'" (click)="cat='services'">Services</button>
+          <button class="subtab" [class.active]="cat==='fonds'" (click)="cat='fonds'">Fonds de roulement</button>
+        </div>
+
+        <!-- ---------------------- IMMOBILIER ---------------------- -->
+        <ng-container *ngIf="activeTab==='needs' && cat==='immobilier'">
+          <div class="section">
+            <div class="section-title">Total d’investissement Immobilier</div>
+
+            <div class="acc">
+              <details open>
+                <summary>Construction de bâtiment</summary>
+                <button class="btn-add" (click)="addLine(immo.construction)">+ Ajouter un bien</button>
+                <div class="row" *ngFor="let l of immo.construction; let i = index">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event,l)">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" (click)="removeLine(immo.construction,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Aménagement de bâtiment existant</summary>
+                <button class="btn-add" (click)="addLine(immo.amenagement)">+ Ajouter un bien</button>
+                <div class="row" *ngFor="let l of immo.amenagement; let i = index">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event,l)">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" (click)="removeLine(immo.amenagement,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Travaux de génie civil</summary>
+                <button class="btn-add" (click)="addLine(immo.genieCivil)">+ Ajouter un bien</button>
+                <div class="row" *ngFor="let l of immo.genieCivil; let i = index">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event,l)">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" (click)="removeLine(immo.genieCivil,i)">✕</button>
+                </div>
+              </details>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ---------------------- MOBILIER ---------------------- -->
+        <ng-container *ngIf="activeTab==='needs' && cat==='mobilier'">
+          <div class="section">
+            <div class="section-title">Total d’investissement Mobilier</div>
+
+            <div class="acc">
+              <details open>
+                <summary>Matériel roulant</summary>
+                <button class="btn-add" (click)="addLine(mob.roulant)">+ Ajouter un bien</button>
+                <div class="row" *ngFor="let l of mob.roulant; let i = index">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(mob.roulant,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Équipement</summary>
+                <button class="btn-add" (click)="addLine(mob.equipement)">+ Ajouter un bien</button>
+                <div class="row" *ngFor="let l of mob.equipement; let i = index">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(mob.equipement,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Cheptel</summary>
+                <button class="btn-add" (click)="addLine(mob.cheptel)">+ Ajouter un bien</button>
+                <div class="row" *ngFor="let l of mob.cheptel; let i = index">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(mob.cheptel,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Matériel végétal</summary>
+                <button class="btn-add" (click)="addLine(mob.vegetal)">+ Ajouter un bien</button>
+                <div class="row" *ngFor="let l of mob.vegetal; let i = index">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(mob.vegetal,i)">✕</button>
+                </div>
+              </details>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ---------------------- SERVICES ---------------------- -->
+        <ng-container *ngIf="activeTab==='needs' && cat==='services'">
+          <div class="section">
+            <div class="section-title">Total d’investissement Services</div>
+
+            <div class="acc">
+              <details open>
+                <summary>Frais de constitution d’une société</summary>
+                <button class="btn-add" (click)="addLine(serv.constitutionSociete)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.constitutionSociete; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.constitutionSociete,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Frais liés à l’obtention d’un crédit</summary>
+                <button class="btn-add" (click)="addLine(serv.obtentionCredit)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.obtentionCredit; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.obtentionCredit,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Étude</summary>
+                <button class="btn-add" (click)="addLine(serv.etude)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.etude; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.etude,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Marketing</summary>
+                <button class="btn-add" (click)="addLine(serv.marketing)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.marketing; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.marketing,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Expertise technique</summary>
+                <button class="btn-add" (click)="addLine(serv.expertise)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.expertise; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.expertise,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Assistance technique</summary>
+                <button class="btn-add" (click)="addLine(serv.assistanceTech)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.assistanceTech; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.assistanceTech,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Assurance de l’investissement</summary>
+                <button class="btn-add" (click)="addLine(serv.assurance)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.assurance; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.assurance,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Frais de formalisation de l’emploi</summary>
+                <button class="btn-add" (click)="addLine(serv.formalisationEmploi)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.formalisationEmploi; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.formalisationEmploi,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Frais de mise à niveau réglementaire</summary>
+                <button class="btn-add" (click)="addLine(serv.miseNiveauRegl)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.miseNiveauRegl; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.miseNiveauRegl,i)">✕</button>
+                </div>
+              </details>
+
+              <details>
+                <summary>Autres</summary>
+                <button class="btn-add" (click)="addLine(serv.autres)">+ Ajouter une ligne</button>
+                <div class="row" *ngFor="let l of serv.autres; let i = index">
+                  <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                    (ngModelChange)="recompute()">
+                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                      target="_blank">Devis</a></div>
+                  <button class="icon" (click)="removeLine(serv.autres,i)">✕</button>
+                </div>
+              </details>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ---------------------- FONDS DE ROULEMENT ---------------------- -->
+        <ng-container *ngIf="activeTab==='needs' && cat==='fonds'">
+          <div class="section">
+            <div class="section-title">Total d’investissement Fonds de roulement</div>
+            <div class="simple">
+              <label>Montant mensuel</label>
+              <input type="number" step="0.001" [(ngModel)]="fonds.monthly" (ngModelChange)="recompute()"
+                placeholder="0.000">
+
+              <label>Nombre de mois</label>
+              <input type="number" step="1" [(ngModel)]="fonds.months" (ngModelChange)="recompute()" placeholder="0">
+
+              <label>Expliquez ce que couvre votre fonds de roulement</label>
+              <textarea rows="3" [(ngModel)]="fonds.note" (ngModelChange)="recompute()"></textarea>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ---------------------- FINANCEMENT ---------------------- -->
+        <ng-container *ngIf="activeTab==='funding'">
+          <div class="subtabs">
+            <button class="subtab" [class.active]="credOrApport==='credits'"
+              (click)="credOrApport='credits'">Crédits</button>
+            <button class="subtab" [class.active]="credOrApport==='apports'"
+              (click)="credOrApport='apports'">Apports</button>
+          </div>
+
+          <div *ngIf="credOrApport==='credits'" class="section">
+            <div class="section-title">Total Crédits</div>
+            <div class="hint">La contribution d’ADAPT s’élève à un maximum de 14 % du montant total des crédits (min 3
+              000 DT, max 70 000 DT).</div>
+            <details open>
+              <summary>Crédits</summary>
+              <button class="btn-add" (click)="addLine(credits)">+ Ajouter un crédit</button>
+              <div class="row" *ngFor="let l of credits; let i = index">
+                <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                  (ngModelChange)="recompute()">
+                <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                    target="_blank">Devis</a></div>
+                <button class="icon" (click)="removeLine(credits,i)">✕</button>
+              </div>
+            </details>
+          </div>
+
+          <div *ngIf="credOrApport==='apports'" class="section">
+            <div class="section-title">Total Apports</div>
+            <details open>
+              <summary>Dons / autres subventions</summary>
+              <button class="btn-add" (click)="addLine(apports)">+ Ajouter un apport</button>
+              <div class="row" *ngFor="let l of apports; let i = index">
+                <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
+                  (ngModelChange)="recompute()">
+                <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
+                    target="_blank">Devis</a></div>
+                <button class="icon" (click)="removeLine(apports,i)">✕</button>
+              </div>
+            </details>
+          </div>
+        </ng-container>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn ghost" (click)="back()">← Précédent</button>
+          <button class="btn primary" (click)="submit()">Valider →</button>
+        </div>
+      </div>
+
+      <!-- ====================== COLONNE DROITE ====================== -->
+      <div class="right">
+
+        <!-- DROITE : BESoins (4 tuiles en %) -->
+        <ng-container *ngIf="activeTab==='needs'; else fundingRight">
+          <div class="stat pink">
+            <div class="stat-head">
+              <span>Total Immobilier</span>
+              <span class="stat-pct">{{ percent(totals.immo) }}%</span>
+            </div>
+            <div class="stat-bar"><span [style.width.%]="percent(totals.immo)"></span></div>
+          </div>
+
+          <div class="stat blue">
+            <div class="stat-head">
+              <span>Total Mobilier</span>
+              <span class="stat-pct">{{ percent(totals.mob) }}%</span>
+            </div>
+            <div class="stat-bar"><span [style.width.%]="percent(totals.mob)"></span></div>
+          </div>
+
+          <div class="stat gray">
+            <div class="stat-head">
+              <span>Total Services</span>
+              <span class="stat-pct">{{ percent(totals.serv) }}%</span>
+            </div>
+            <div class="stat-bar"><span [style.width.%]="percent(totals.serv)"></span></div>
+          </div>
+
+          <div class="stat slate">
+            <div class="stat-head">
+              <span>Total Fonds de roulement</span>
+              <span class="stat-pct">{{ percent(totals.fonds) }}%</span>
+            </div>
+            <div class="stat-bar"><span [style.width.%]="percent(totals.fonds)"></span></div>
+          </div>
+        </ng-container>
+
+        <!-- DROITE : Financement (3 tuiles + jauge) -->
+        <ng-template #fundingRight>
+          <div class="stat pink">
+            <div class="stat-head">
+              <span>Total Crédits</span>
+              <span class="stat-pct">{{ percentFunding(totals.credits) }}%</span>
+            </div>
+            <div class="stat-bar"><span [style.width.%]="percentFunding(totals.credits)"></span></div>
+          </div>
+
+          <div class="stat gray">
+            <div class="stat-head">
+              <span>Contribution ADAPT</span>
+              <span class="stat-pct">{{ adaptPct }}%</span>
+            </div>
+            <div class="stat-bar"><span [style.width.%]="adaptPct"></span></div>
+          </div>
+
+          <div class="stat blue">
+            <div class="stat-head">
+              <span>Total Apports</span>
+              <span class="stat-pct">{{ percentFunding(totals.apports) }}%</span>
+            </div>
+            <div class="stat-bar"><span [style.width.%]="percentFunding(totals.apports)"></span></div>
+          </div>
+
+
+
+
+          <div class="gauge-card financement card">
+            <div class="gauge-title">Contribution ADAPT</div>
+
+            <svg class="gauge-svg2" viewBox="0 0 200 110" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="red-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#ff1e1e" />
+                  <stop offset="100%" stop-color="#ff5252" />
+                </linearGradient>
+                <linearGradient id="orange-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#f59e0b" />
+                  <stop offset="100%" stop-color="#fbbf24" />
+                </linearGradient>
+                <linearGradient id="yellow-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#ffef00" />
+                  <stop offset="100%" stop-color="#fde047" />
+                </linearGradient>
+                <linearGradient id="green-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#198e3d" />
+                  <stop offset="100%" stop-color="#22c55e" />
+                </linearGradient>
+              </defs>
+
+              <!-- 4 bandes demi-donut -->
+              <path class="band-1" d="M 5,100 A 95,95 0 0 1 32.825,32.825 L 57.574,57.574 A 60,60 0 0 0 40,100 Z" />
+              <path class="band-2" d="M 32.825,32.825 A 95,95 0 0 1 100,5 L 100,40 A 60,60 0 0 0 57.574,57.574 Z" />
+              <path class="band-3" d="M 100,5 A 95,95 0 0 1 167.175,32.825 L 142.426,57.574 A 60,60 0 0 0 100,40 Z" />
+              <path class="band-4"
+                d="M 167.175,32.825 A 95,95 0 0 1 195,100 L 160,100 A 60,60 0 0 0 142.426,57.574 Z" />
+
+              <!-- Aiguille -->
+              <g class="needle" [style.transform]="'rotate(' + gaugeAngle + 'deg)'"
+                style="transform-origin:100px 100px;">
+                <polygon class="needle-polygon" points="100,100 192,98 192,102" fill="#0a0a0a"></polygon>
+                <circle class="needle-circle" cx="100" cy="100" r="5" fill="#0a0a0a" stroke="#fff" stroke-width="2">
+                </circle>
+              </g>
+
+              <!-- Cartouche valeur -->
+              <g class="value">
+                <rect class="value-rect" x="82" y="60" width="36" height="18" rx="5" />
+                <text x="100" y="69" text-anchor="middle" dominant-baseline="middle" font-size="9">{{ adaptPct
+                  }}%</text>
+              </g>
+            </svg>
+
+            <div class="gauge-labels">
+              <span class="gauge-label">0%</span>
+              <span class="gauge-label">25%</span>
+              <span class="gauge-label">50%</span>
+              <span class="gauge-label">75%</span>
+              <span class="gauge-label">100%</span>
+            </div>
+
+            <div class="gauge-legend">
+              <div class="legend-item">
+                <div class="legend-color legend-1"></div><span>Faible</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color legend-2"></div><span>Moyen</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color legend-3"></div><span>Bon</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color legend-4"></div><span>Excellent</span>
+              </div>
+            </div>
+
+            <div class="info-tooltip"><span>La jauge indique le niveau de contribution actuel</span></div>
+          </div>
+
+
+
+        </ng-template>
+
+        <!-- Résumé en bas -->
+        <div class="summary card">
+          <div class="sum-row"><span>Total d’investissement</span><strong>{{ totals.invest | number:'1.3-3' }}
+              DT</strong></div>
+          <div class="sum-row"><span>Total de financement</span><strong>{{ totals.funding | number:'1.3-3' }}
+              DT</strong></div>
+          <div class="sum-row diff" [class.ok]="totals.diff>=0" [class.bad]="totals.diff<0">
+            <span>Différentiel</span><strong>{{ totals.diff | number:'1.3-3' }} DT</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading" *ngIf="isLoading">
+  <div class="spinner"></div>
+  Chargement…
+</div>
