@@ -1,12 +1,11 @@
 package com.medianet.evalpro.Service;
 
-//import com.medianet.evalpro.Dto.OptionDto;
-//import com.medianet.evalpro.Dto.PreIdentificationDto;
-//import com.medianet.evalpro.Dto.QuestionDto;
 import com.medianet.evalpro.Dto.DossierDto;
 import com.medianet.evalpro.Dto.PreIdentificationDto;
-import com.medianet.evalpro.Dto.StepDto;
+
 import com.medianet.evalpro.Entity.Dossier;
+import com.medianet.evalpro.Entity.Notification; // <-- OBLIGATOIRE
+
 import com.medianet.evalpro.Entity.User;
 import com.medianet.evalpro.Repository.DossierRepository;
 import com.medianet.evalpro.Repository.ResponseAdminRepository;
@@ -34,11 +33,14 @@ public class DossierServiceImpl implements DossierService {
     private ResponseAdminRepository responseAdminRepository;
     @Autowired
     private ResponseRepository responseRepository;
+    // ✅ injection du service de notifications
+    @Autowired private  NotificationService notificationService;
 
 
-    public DossierServiceImpl(DossierRepository dossierRepository, UserRepository userRepository) {
+    public DossierServiceImpl(DossierRepository dossierRepository, UserRepository userRepository, NotificationService notificationService) {
         this.dossierRepository = dossierRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -196,8 +198,56 @@ private Map<String, Integer> generateStepProgress(Dossier dossier) {
         steps.put(stepName, progress);
     }
     return steps;
+
+
 }
 
+    @Override
+    @Transactional
+    public Dossier updateStatus(Long dossierId, Dossier.Status status, String message, String adminEmail) {
+        // (facultatif) vérifier l’admin
+        userRepository.findByEmail(adminEmail).orElseThrow(() -> new RuntimeException("Admin introuvable"));
+
+        Dossier dossier = dossierRepository.findById(dossierId)
+                .orElseThrow(() -> new RuntimeException("Dossier non trouvé"));
+
+        dossier.setStatus(status);
+        dossier.setUpdatedAt(LocalDateTime.now());
+        dossier = dossierRepository.save(dossier);
+
+        // mapping Status -> Notification.Type
+        Notification.Type type;
+        String finalMessage;
+
+        switch (status) {
+            case ACCEPTE:
+            case VALIDE: // tu peux considérer VALIDE comme "accepté"
+                type = Notification.Type.DOSSIER_ACCEPTED;
+                finalMessage = (message == null || message.isBlank())
+                        ? "Votre dossier a été accepté."
+                        : message.trim();
+                break;
+
+            case REJETE:
+                type = Notification.Type.DOSSIER_REJECTED;
+                finalMessage = (message == null || message.isBlank())
+                        ? "Votre dossier a été refusé. Veuillez consulter les remarques."
+                        : message.trim();
+                break;
+
+            case EN_COURS:
+            default:
+                type = Notification.Type.DOSSIER_NEEDS_CHANGES;
+                finalMessage = (message == null || message.isBlank())
+                        ? "Des compléments sont requis pour finaliser votre dossier."
+                        : message.trim();
+        }
+
+        // envoi de la notification
+        notificationService.notifyStatus(dossier, type, finalMessage);
+
+        return dossier;
+    }
 
 
 
@@ -218,41 +268,6 @@ private Map<String, Integer> generateStepProgress(Dossier dossier) {
 
 
 
-
-
-//    @Override
-//    @Transactional
-//    public void saveStep1(Long userId, PreIdentificationDto dto) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé avec l'ID: " + userId));
-
-        // ❌ À supprimer : cast dangereux
-        // Dossier dossier = (Dossier) dossierRepository.findByUserId(userId);
-
-        // ✅ À utiliser à la place :
-//        Dossier dossier = dossierRepository.findTopByUserIdOrderByIdDesc(userId)
-//                .orElseGet(() -> {
-//                    Dossier d = new Dossier();
-//                    d.setUser(user);
-//                    d.setStatus(Dossier.Status.EN_COURS);
-//                    return dossierRepository.save(d);
-//                });
-
-//        Step1PreIdentification step1 = Step1PreIdentification.builder()
-//                .situation(dto.getSituation())
-//                .nomEntreprise(dto.getNomEntreprise())
-//                .secteur(dto.getSecteur())
-//                .production(dto.isProduction())
-//                .collecte(dto.isCollecte())
-//                .transformation(dto.isTransformation())
-//                .services(dto.isServices())
-//                .transitionComment(dto.getTransitionComment())
-//                .dossier(dossier)
-//                .build();
-//
-//        dossier.setStep1PreIdentification(step1);
-//        dossierRepository.save(dossier);
-//    }
 
 
 

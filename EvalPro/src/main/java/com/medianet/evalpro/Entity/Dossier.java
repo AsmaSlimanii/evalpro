@@ -57,6 +57,6 @@ public class Dossier {
 
 
     public enum Status {
-        EN_COURS, VALIDE, REJETE
+        EN_COURS, VALIDE, ACCEPTE, REJETE , DOSSIER_NEEDS_CHANGES
     }
 }

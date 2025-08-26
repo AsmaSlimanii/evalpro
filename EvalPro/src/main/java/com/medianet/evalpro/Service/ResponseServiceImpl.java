@@ -36,6 +36,7 @@ public class ResponseServiceImpl implements ResponseService {
     @Autowired private UserRepository userRepository;
     @Autowired private StepRepository stepRepository;
     @Autowired private  ResponseAdminRepository responseAdminRepository;
+    @Autowired private NotificationService notificationService;
 
 
     public ResponseServiceImpl(ResponseRepository responseRepository) {
@@ -334,6 +335,8 @@ public class ResponseServiceImpl implements ResponseService {
     //Enregistre un objet ResponseAdmin avec le commentaire
     @Override
     public void saveAdminComment(Long dossierId, Long stepId, String comment, String adminEmail) {
+        final String trimmed = (comment == null) ? "" : comment.trim();  // <-- ajoute cette ligne
+
         User admin = userRepository.findByEmail(adminEmail)
                 .orElseThrow(() -> new RuntimeException("Admin introuvable"));
 
@@ -368,6 +371,22 @@ public class ResponseServiceImpl implements ResponseService {
             responseAdminRepository.save(newComment);
             System.out.println("✅ Commentaire admin créé pour le dossier ID=" + dossierId + ", étape ID=" + stepId);
         }
+
+        // 3) Notification (seulement si on a vraiment un texte)
+        try {
+            notificationService.notifyStepComment(
+                    dossier,
+                    step,
+                    "Commentaire de l’administrateur",
+                    trimmed,
+                    // si tes routes step existent, garde ceci; sinon remplace par "/projects/edit/" + dossier.getId()
+                    "/projects/edit/" + dossier.getId() + "/step" + step.getId()
+            );
+        } catch (Exception ex) {
+            // on log, mais on ne casse pas l’enregistrement du commentaire
+            System.err.println("⚠️ Échec envoi notification commentaire admin : " + ex.getMessage());
+        }
+
     }
 
     @Override

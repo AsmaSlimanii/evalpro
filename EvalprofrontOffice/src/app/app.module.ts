@@ -34,6 +34,7 @@ import { PilierEnvironnementalComponent } from './features/projects/create-proje
 import { ProfilComponent } from './features/projects/create-project/requete-financement/profil/profil.component';
 import { EntrepriseComponent } from './features/projects/create-project/requete-financement/entreprise/entreprise.component';
 import { ProjetComponent } from './features/projects/create-project/requete-financement/projet/projet.component';
+import { NotificationsComponent } from './features/notifications/notifications.component';
 
 
 
@@ -64,9 +65,7 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
     ProjectListComponent,
     EntrepriseComponent,
     TimeAgoPipe,
-
-
-
+    NotificationsComponent,
   ],
   imports: [
     BrowserModule,
@@ -80,11 +79,8 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
     //RecaptchaFormsModule,
     BrowserAnimationsModule,
     MatSnackBarModule,
+   
 
-
-    
-
-    
     ReactiveFormsModule,
 
 

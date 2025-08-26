@@ -33,6 +33,7 @@ import { PilierEnvironnementalComponent } from './features/projects/create-proje
 import { ProfilComponent } from './features/projects/create-project/requete-financement/profil/profil.component';
 import { EntrepriseComponent } from './features/projects/create-project/requete-financement/entreprise/entreprise.component';
 import { ProjetComponent } from './features/projects/create-project/requete-financement/projet/projet.component';
+import { NotificationsComponent } from './features/notifications/notifications.component';
 
 
 const routes: Routes = [
@@ -43,6 +44,7 @@ const routes: Routes = [
   { path: 'mot-de-passe-oublie', component: ResetPasswordComponent },
   { path: 'nouveau-mot-de-passe', component: ResetPasswordConfirmComponent },
   { path: 'home-authenticated', component: HomeAuthenticatedComponent },
+  
 
   // Authenticated Layout
   {
@@ -50,6 +52,7 @@ const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: 'dashboard', component: DashboardComponent },
+      { path: 'notifications', component: NotificationsComponent },
 
       { path: 'projects/create/step1', component: PreIdentificationComponent },
       { path: 'projects/create', component: CreateProjectComponent },

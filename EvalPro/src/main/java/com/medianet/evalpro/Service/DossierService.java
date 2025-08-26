@@ -33,5 +33,8 @@ public interface DossierService {
 
     void deleteDossierIfOwnedByUser(Long id, String email);
 
+    // ⇩⇩⇩ AJOUT: changer le statut + notifier
+    Dossier updateStatus(Long dossierId, Dossier.Status status, String message, String adminEmail);
+
 
 }

@@ -6,38 +6,59 @@
 
   <div class="right-section">
     <!-- REMPLACER CETTE SECTION -->
+    <!-- Notifications (mêmes classes / même design) -->
     <div class="notifications">
+      <!-- CLOche -->
       <div class="notification-icon">
         <i class="fas fa-bell"></i>
-        <span class="notification-badge">3</span>
+
+        <!-- badge dynamique : caché si 0 -->
+        <span class="notification-badge" *ngIf="(unread$ | async) as c; else noBadge">{{ c }}</span>
+        <ng-template #noBadge></ng-template>
+
+        <!-- dropdown (toujours géré par ton :hover en CSS) -->
         <div class="notification-dropdown">
           <div class="notification-header">
             <span class="notification-title">Notifications</span>
-            <span class="mark-all-read">Tout marquer comme lu</span>
+            <span class="mark-all-read" (click)="markAll(); $event.stopPropagation()">Tout marquer comme lu</span>
           </div>
-          <div class="notification-item unread">
-            <div class="notification-icon-wrapper">
-              <i class="fas fa-envelope"></i>
+
+          <!-- liste dynamique (5 dernières) -->
+          <ng-container *ngIf="(items$ | async) as items">
+            <div class="notification-item" *ngFor="let n of items | slice:0:5; trackBy: trackById"
+              [class.unread]="!n.readFlag" (click)="openNote(n); $event.stopPropagation()">
+              <div class="notification-icon-wrapper" [attr.data-type]="n.type">
+                <i class="fas" [ngClass]="{
+                 'fa-comment-dots': n.type==='STEP_COMMENT',
+                 'fa-check-circle': n.type==='DOSSIER_ACCEPTED',
+                 'fa-times-circle': n.type==='DOSSIER_REJECTED',
+                 'fa-exclamation-triangle': n.type==='DOSSIER_NEEDS_CHANGES' || n.type==='NEEDS_CHANGES'
+               }"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-message">{{ n.title }}</div>
+                <div class="notification-time">{{ n.createdAt | date:'short' }}</div>
+              </div>
             </div>
-            <div class="notification-content">
-              <div class="notification-message">Nouveau message reçu</div>
-              <div class="notification-time">Il y a 5 min</div>
+
+            <div class="notification-footer">
+              <span class="view-all" (click)="goAll(); $event.stopPropagation()">Voir toutes</span>
             </div>
-          </div>
-          <div class="notification-footer">
-            <span class="view-all">Voir toutes</span>
-          </div>
+          </ng-container>
         </div>
       </div>
-      
+
+      <!-- ton 2e icône (messages) laissé tel quel -->
       <div class="notification-icon">
         <i class="fas fa-comments"></i>
         <span class="notification-badge">5</span>
-        <!-- Menu déroulant des messages (même structure) -->
       </div>
     </div>
+
+
+
     <!-- FIN DE LA SECTION REMPLACÉE -->
-    
+
     <div class="profile">
       <div class="profile-info">
         <span class="profile-name">Slimani Asma</span>

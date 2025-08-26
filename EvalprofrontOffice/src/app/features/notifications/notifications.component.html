@@ -1,0 +1,36 @@
+<div class="page">
+  <div class="header">
+    <h1>Notifications</h1>
+    <div class="actions">
+      <!-- utilise unread$ unique -->
+      <span class="badge" *ngIf="(unread$ | async) as c" [class.hidden]="!c">{{ c }}</span>
+      <button class="btn ghost" (click)="markAll()">Tout marquer comme lu</button>
+      <button class="btn" (click)="refresh()">Rafraîchir</button>
+    </div>
+  </div>
+
+  <div class="content" *ngIf="(items$ | async) as items">
+    <div class="empty" *ngIf="!items.length">Aucune notification pour le moment.</div>
+
+    <div class="list" *ngIf="items.length">
+      <div class="note card" *ngFor="let n of items; trackBy: trackById"
+           [class.unread]="!n.readFlag" (click)="open(n)">
+        <div class="icon" [attr.data-type]="n.type">
+          <span class="material-icons">{{ iconOf(n.type) }}</span>
+        </div>
+        <div class="body">
+          <div class="title">
+            {{ n.title }}
+            <small class="date">{{ n.createdAt | date:'short' }}</small>
+          </div>
+          <div class="msg">{{ n.message }}</div>
+        <div class="meta" *ngIf="n.dossierId">Dossier #{{ n.dossierId }}</div>
+        </div>
+        <div class="right">
+          <button class="btn tiny" *ngIf="!n.readFlag" (click)="markRead(n); $event.stopPropagation()">Marquer lu</button>
+          <a class="btn tiny primary" *ngIf="n.link" (click)="$event.stopPropagation(); open(n)">Ouvrir</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
