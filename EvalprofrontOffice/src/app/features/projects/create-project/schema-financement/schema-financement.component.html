@@ -1,4 +1,4 @@
-<div class="page-bg" *ngIf="!isLoading">
+<div class="page-bg" *ngIf="!isLoading" [formGroup]="formGroup">
   <div class="stage">
     <!-- Titre + onglets à gauche -->
     <div class="stage-header">
@@ -37,48 +37,58 @@
             <div class="acc">
               <details open>
                 <summary>Construction de bâtiment</summary>
-                <button class="btn-add" (click)="addLine(immo.construction)">+ Ajouter un bien</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(immo.construction)">+ Ajouter un bien</button>
                 <div class="row" *ngFor="let l of immo.construction; let i = index">
-                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                    (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
-                    <input type="file" (change)="onFile($event,l)">
+                    <input type="file" (change)="onFile($event, l, Q.immo.construction.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
                   </div>
-                  <button class="icon" (click)="removeLine(immo.construction,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.construction,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Aménagement de bâtiment existant</summary>
-                <button class="btn-add" (click)="addLine(immo.amenagement)">+ Ajouter un bien</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(immo.amenagement)">+ Ajouter un bien</button>
                 <div class="row" *ngFor="let l of immo.amenagement; let i = index">
-                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                    (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
-                    <input type="file" (change)="onFile($event,l)">
+                    <input type="file" (change)="onFile($event, l, Q.immo.amenagement.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
                   </div>
-                  <button class="icon" (click)="removeLine(immo.amenagement,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.amenagement,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Travaux de génie civil</summary>
-                <button class="btn-add" (click)="addLine(immo.genieCivil)">+ Ajouter un bien</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(immo.genieCivil)">+ Ajouter un bien</button>
                 <div class="row" *ngFor="let l of immo.genieCivil; let i = index">
-                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                    (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
-                    <input type="file" (change)="onFile($event,l)">
+                    <input type="file" (change)="onFile($event, l, Q.immo.genieCivil.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
                   </div>
-                  <button class="icon" (click)="removeLine(immo.genieCivil,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.genieCivil,i)">✕</button>
                 </div>
               </details>
+            </div>
+
+            <!-- Bouton SUIVANT du bloc IMMOBILIER -->
+            <div class="section-actions">
+              <button class="btn primary" [disabled]="isSaving || isAdmin" (click)="saveAndNext('IMMOBILIER')">
+                Suivant →
+              </button>
             </div>
           </div>
         </ng-container>
@@ -91,55 +101,74 @@
             <div class="acc">
               <details open>
                 <summary>Matériel roulant</summary>
-                <button class="btn-add" (click)="addLine(mob.roulant)">+ Ajouter un bien</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(mob.roulant)">+ Ajouter un bien</button>
                 <div class="row" *ngFor="let l of mob.roulant; let i = index">
-                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                    (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(mob.roulant,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.mob.roulant.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.roulant,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Équipement</summary>
-                <button class="btn-add" (click)="addLine(mob.equipement)">+ Ajouter un bien</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(mob.equipement)">+ Ajouter un bien</button>
                 <div class="row" *ngFor="let l of mob.equipement; let i = index">
-                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                    (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(mob.equipement,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.mob.equipement.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.equipement,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Cheptel</summary>
-                <button class="btn-add" (click)="addLine(mob.cheptel)">+ Ajouter un bien</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(mob.cheptel)">+ Ajouter un bien</button>
                 <div class="row" *ngFor="let l of mob.cheptel; let i = index">
-                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                    (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(mob.cheptel,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.mob.cheptel.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.cheptel,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Matériel végétal</summary>
-                <button class="btn-add" (click)="addLine(mob.vegetal)">+ Ajouter un bien</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(mob.vegetal)">+ Ajouter un bien</button>
                 <div class="row" *ngFor="let l of mob.vegetal; let i = index">
-                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                  <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                    (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(mob.vegetal,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.mob.vegetal.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.vegetal,i)">✕</button>
                 </div>
               </details>
+            </div>
+
+            <!-- Bouton SUIVANT du bloc MOBILIER -->
+            <div class="section-actions">
+              <button class="btn primary" [disabled]="isSaving || isAdmin" (click)="saveAndNext('MOBILIER')">
+                Suivant →
+              </button>
             </div>
           </div>
         </ng-container>
@@ -152,123 +181,160 @@
             <div class="acc">
               <details open>
                 <summary>Frais de constitution d’une société</summary>
-                <button class="btn-add" (click)="addLine(serv.constitutionSociete)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.constitutionSociete)">+ Ajouter une
+                  ligne</button>
                 <div class="row" *ngFor="let l of serv.constitutionSociete; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.constitutionSociete,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.constitutionSociete.file)"
+                      [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.constitutionSociete,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Frais liés à l’obtention d’un crédit</summary>
-                <button class="btn-add" (click)="addLine(serv.obtentionCredit)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.obtentionCredit)">+ Ajouter une
+                  ligne</button>
                 <div class="row" *ngFor="let l of serv.obtentionCredit; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.obtentionCredit,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.obtentionCredit.file)"
+                      [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.obtentionCredit,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Étude</summary>
-                <button class="btn-add" (click)="addLine(serv.etude)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.etude)">+ Ajouter une ligne</button>
                 <div class="row" *ngFor="let l of serv.etude; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.etude,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.etude.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.etude,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Marketing</summary>
-                <button class="btn-add" (click)="addLine(serv.marketing)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.marketing)">+ Ajouter une ligne</button>
                 <div class="row" *ngFor="let l of serv.marketing; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.marketing,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.marketing.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.marketing,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Expertise technique</summary>
-                <button class="btn-add" (click)="addLine(serv.expertise)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.expertise)">+ Ajouter une ligne</button>
                 <div class="row" *ngFor="let l of serv.expertise; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.expertise,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.expertise.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.expertise,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Assistance technique</summary>
-                <button class="btn-add" (click)="addLine(serv.assistanceTech)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.assistanceTech)">+ Ajouter une
+                  ligne</button>
                 <div class="row" *ngFor="let l of serv.assistanceTech; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.assistanceTech,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.assistanceTech.file)"
+                      [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assistanceTech,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Assurance de l’investissement</summary>
-                <button class="btn-add" (click)="addLine(serv.assurance)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.assurance)">+ Ajouter une ligne</button>
                 <div class="row" *ngFor="let l of serv.assurance; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.assurance,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.assurance.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assurance,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Frais de formalisation de l’emploi</summary>
-                <button class="btn-add" (click)="addLine(serv.formalisationEmploi)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.formalisationEmploi)">+ Ajouter une
+                  ligne</button>
                 <div class="row" *ngFor="let l of serv.formalisationEmploi; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.formalisationEmploi,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.formalisationEmploi.file)"
+                      [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.formalisationEmploi,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Frais de mise à niveau réglementaire</summary>
-                <button class="btn-add" (click)="addLine(serv.miseNiveauRegl)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.miseNiveauRegl)">+ Ajouter une
+                  ligne</button>
                 <div class="row" *ngFor="let l of serv.miseNiveauRegl; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.miseNiveauRegl,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.miseNiveauRegl.file)"
+                      [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.miseNiveauRegl,i)">✕</button>
                 </div>
               </details>
 
               <details>
                 <summary>Autres</summary>
-                <button class="btn-add" (click)="addLine(serv.autres)">+ Ajouter une ligne</button>
+                <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(serv.autres)">+ Ajouter une ligne</button>
                 <div class="row" *ngFor="let l of serv.autres; let i = index">
                   <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                    (ngModelChange)="recompute()">
-                  <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                      target="_blank">Devis</a></div>
-                  <button class="icon" (click)="removeLine(serv.autres,i)">✕</button>
+                    [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                  <div class="file">
+                    <input type="file" (change)="onFile($event, l, Q.services.autres.file)" [disabled]="isAdmin">
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  </div>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.autres,i)">✕</button>
                 </div>
               </details>
+            </div>
+
+            <!-- Bouton SUIVANT du bloc SERVICES -->
+            <div class="section-actions">
+              <button class="btn primary" [disabled]="isSaving || isAdmin" (click)="saveAndNext('SERVICES')">
+                Suivant →
+              </button>
             </div>
           </div>
         </ng-container>
@@ -279,14 +345,21 @@
             <div class="section-title">Total d’investissement Fonds de roulement</div>
             <div class="simple">
               <label>Montant mensuel</label>
-              <input type="number" step="0.001" [(ngModel)]="fonds.monthly" (ngModelChange)="recompute()"
-                placeholder="0.000">
+              <input type="number" step="0.001" [(ngModel)]="fonds.monthly" [ngModelOptions]="{standalone:true}"
+                (ngModelChange)="recompute()" placeholder="0.000" [readonly]="isAdmin">
 
               <label>Nombre de mois</label>
-              <input type="number" step="1" [(ngModel)]="fonds.months" (ngModelChange)="recompute()" placeholder="0">
+              <input type="number" step="1" [(ngModel)]="fonds.months" [ngModelOptions]="{standalone:true}"
+                (ngModelChange)="recompute()" placeholder="0" [readonly]="isAdmin">
 
               <label>Expliquez ce que couvre votre fonds de roulement</label>
-              <textarea rows="3" [(ngModel)]="fonds.note" (ngModelChange)="recompute()"></textarea>
+              <textarea rows="3" [(ngModel)]="fonds.note" [ngModelOptions]="{standalone:true}"
+                (ngModelChange)="recompute()" placeholder="Détaillez brièvement..." [readonly]="isAdmin"></textarea>
+            </div>
+            <div class="section-actions">
+              <button class="btn primary" [disabled]="isSaving || isAdmin" (click)="saveAndNext('FONDS')">
+                Suivant →
+              </button>
             </div>
           </div>
         </ng-container>
@@ -302,18 +375,23 @@
 
           <div *ngIf="credOrApport==='credits'" class="section">
             <div class="section-title">Total Crédits</div>
-            <div class="hint">La contribution d’ADAPT s’élève à un maximum de 14 % du montant total des crédits (min 3
-              000 DT, max 70 000 DT).</div>
+            <div class="hint">
+              La contribution EVALPRO s’élève à un maximum de 14 % du montant total des crédits
+              (min 3&nbsp;000 DT, max 70&nbsp;000 DT).
+            </div>
             <details open>
               <summary>Crédits</summary>
-              <button class="btn-add" (click)="addLine(credits)">+ Ajouter un crédit</button>
+              <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(credits)">+ Ajouter un crédit</button>
               <div class="row" *ngFor="let l of credits; let i = index">
-                <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                  (ngModelChange)="recompute()" [readonly]="isAdmin">
                 <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                  (ngModelChange)="recompute()">
-                <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                    target="_blank">Devis</a></div>
-                <button class="icon" (click)="removeLine(credits,i)">✕</button>
+                  [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                <div class="file">
+                  <input type="file" (change)="onFile($event, l, Q.credits.file)" [disabled]="isAdmin">
+                  <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                </div>
+                <button class="icon" *ngIf="!isAdmin" (click)="removeLine(credits,i)">✕</button>
               </div>
             </details>
           </div>
@@ -322,30 +400,44 @@
             <div class="section-title">Total Apports</div>
             <details open>
               <summary>Dons / autres subventions</summary>
-              <button class="btn-add" (click)="addLine(apports)">+ Ajouter un apport</button>
+              <button class="btn-add" *ngIf="!isAdmin" (click)="addLine(apports)">+ Ajouter un apport</button>
               <div class="row" *ngFor="let l of apports; let i = index">
-                <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" (ngModelChange)="recompute()">
+                <input class="w-2" placeholder="Libellé" [(ngModel)]="l.label" [ngModelOptions]="{standalone:true}"
+                  (ngModelChange)="recompute()" [readonly]="isAdmin">
                 <input class="w-1" type="number" step="0.001" placeholder="Montant (DT)" [(ngModel)]="l.amount"
-                  (ngModelChange)="recompute()">
-                <div class="file"><input type="file" (change)="onFile($event,l)"><a *ngIf="l.file" [href]="l.file"
-                    target="_blank">Devis</a></div>
-                <button class="icon" (click)="removeLine(apports,i)">✕</button>
+                  [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
+                <div class="file">
+                  <input type="file" (change)="onFile($event, l, Q.apports.file)" [disabled]="isAdmin">
+                  <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                </div>
+                <button class="icon" *ngIf="!isAdmin" (click)="removeLine(apports,i)">✕</button>
               </div>
             </details>
           </div>
         </ng-container>
 
-        <!-- Actions -->
-        <div class="actions">
-          <button class="btn ghost" (click)="back()">← Précédent</button>
-          <button class="btn primary" (click)="submit()">Valider →</button>
+
+        <!-- Commentaire administrateur -->
+        <div class="input-container mt-5" *ngIf="isAdmin">
+          <label class="label">Commentaire de l’administrateur</label>
+          <div class="input-wrapper">
+            <textarea formControlName="comment" class="input textarea"
+              placeholder="Saisissez un commentaire ou une note complémentaire..." rows="5"></textarea>
+          </div>
         </div>
+        <!-- Actions (uniquement sur Financement) -->
+        <div class="actions" *ngIf="activeTab==='funding'">
+          <button class="btn ghost" (click)="activeTab='needs'; cat='immobilier'">← Précédent</button>
+          <button class="btn primary" (click)="submit()">
+            {{ isAdmin ? 'Enregistrer le commentaire' : 'Valider →' }}
+          </button>
+        </div>
+
       </div>
 
       <!-- ====================== COLONNE DROITE ====================== -->
       <div class="right">
-
-        <!-- DROITE : BESoins (4 tuiles en %) -->
+        <!-- DROITE : besoins (4 tuiles en %) -->
         <ng-container *ngIf="activeTab==='needs'; else fundingRight">
           <div class="stat pink">
             <div class="stat-head">
@@ -392,7 +484,7 @@
 
           <div class="stat gray">
             <div class="stat-head">
-              <span>Contribution ADAPT</span>
+              <span>Contribution EVALPRO</span>
               <span class="stat-pct">{{ adaptPct }}%</span>
             </div>
             <div class="stat-bar"><span [style.width.%]="adaptPct"></span></div>
@@ -406,11 +498,8 @@
             <div class="stat-bar"><span [style.width.%]="percentFunding(totals.apports)"></span></div>
           </div>
 
-
-
-
           <div class="gauge-card financement card">
-            <div class="gauge-title">Contribution ADAPT</div>
+            <div class="gauge-title">Contribution EVALPRO</div>
 
             <svg class="gauge-svg2" viewBox="0 0 200 110" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
               <defs>
@@ -480,23 +569,27 @@
 
             <div class="info-tooltip"><span>La jauge indique le niveau de contribution actuel</span></div>
           </div>
-
-
-
         </ng-template>
 
         <!-- Résumé en bas -->
         <div class="summary card">
-          <div class="sum-row"><span>Total d’investissement</span><strong>{{ totals.invest | number:'1.3-3' }}
-              DT</strong></div>
-          <div class="sum-row"><span>Total de financement</span><strong>{{ totals.funding | number:'1.3-3' }}
-              DT</strong></div>
+          <div class="sum-row">
+            <span>Total d’investissement</span>
+            <strong>{{ totals.invest | number:'1.3-3' }} DT</strong>
+          </div>
+          <div class="sum-row">
+            <span>Total de financement</span>
+            <strong>{{ totals.funding | number:'1.3-3' }} DT</strong>
+          </div>
           <div class="sum-row diff" [class.ok]="totals.diff>=0" [class.bad]="totals.diff<0">
-            <span>Différentiel</span><strong>{{ totals.diff | number:'1.3-3' }} DT</strong>
+            <span>Différentiel</span>
+            <strong>{{ totals.diff | number:'1.3-3' }} DT</strong>
           </div>
         </div>
       </div>
     </div>
+
+
   </div>
 </div>
 

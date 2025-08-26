@@ -893,3 +893,194 @@ body {
     flex: 0 0 calc(50% - 15px);
   }
 }
+
+
+
+/* ===== Boutons – style commun ===== */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  padding:.6rem 1rem; border-radius:10px; font-weight:600;
+  border:1px solid transparent; cursor:pointer; user-select:none;
+  transition:all .18s ease; line-height:1; white-space:nowrap;
+  background:#f3f4f6; color:#111827; box-shadow:0 1px 0 rgba(0,0,0,.04);
+}
+.btn:focus-visible{ outline:2px solid rgba(37,99,235,.5); outline-offset:2px; }
+.btn:disabled{ opacity:.6; cursor:not-allowed; box-shadow:none; transform:none; }
+
+/* ===== Variantes ===== */
+.btn.primary{
+  color:#fff;
+  background:linear-gradient(180deg,#2563eb 0%, #1d4ed8 100%);
+  border-color:#1e40af;
+  box-shadow:0 6px 12px rgba(37,99,235,.25), inset 0 1px 0 rgba(255,255,255,.15);
+}
+.btn.primary:hover{ transform:translateY(-1px);
+  box-shadow:0 8px 16px rgba(37,99,235,.35), inset 0 1px 0 rgba(255,255,255,.2); }
+.btn.primary:active{ transform:none; box-shadow:0 2px 6px rgba(37,99,235,.25); }
+
+.btn.ghost{
+  background:#fff; color:#374151; border-color:#e5e7eb;
+}
+.btn.ghost:hover{ background:#f9fafb; }
+.btn.ghost:active{ background:#f3f4f6; }
+
+/* Ta petite action “+ Ajouter …” */
+.btn-add{
+  margin:.25rem 0 .75rem; padding:.35rem .65rem; font-weight:600; font-size:.85rem;
+  border:1px dashed #cbd5e1; color:#334155; background:#fff; border-radius:8px;
+}
+.btn-add:hover{ background:#f8fafc; border-color:#94a3b8; }
+
+/* Ta croix ✕ de suppression (si tu veux un style bouton) */
+button.icon{
+  display:inline-grid; place-items:center; width:2rem; height:2rem;
+  border:1px solid #e5e7eb; border-radius:8px; background:#fff; cursor:pointer;
+}
+button.icon:hover{ background:#f3f4f6; }
+
+/* Tailles optionnelles */
+.btn.sm{ padding:.45rem .8rem; font-size:.875rem; }
+.btn.lg{ padding:.8rem 1.15rem; font-size:1rem; }
+.btn.block{ display:flex; width:100%; }
+
+/* ===== Placement “Suivant →” en bas à droite de chaque section ===== */
+.section .section-actions{
+  margin-top:1rem; display:flex; justify-content:flex-end; gap:.5rem;
+}
+
+/* ===== Bouton “Valider” en bas de la colonne droite ===== */
+.right{ position:relative; }
+.bottom-left-button{
+  position:sticky; bottom:16px; left:16px; margin-top:1rem;
+}
+.bottom-left-button button{
+  color:#fff;
+  background:linear-gradient(180deg,#2563eb 0%, #1d4ed8 100%);
+  border:1px solid #1e40af; border-radius:10px; padding:.6rem 1rem; font-weight:600;
+}
+
+/* (Optionnel) bouton succès / danger */
+.btn.success{ color:#fff; background:linear-gradient(180deg,#16a34a,#15803d); border-color:#166534; }
+.btn.danger { color:#fff; background:linear-gradient(180deg,#ef4444,#dc2626); border-color:#b91c1c; }
+
+
+
+
+
+/* Ajouts pour readonly et priorité accrue */
+.input:disabled,
+.input[disabled],
+.input[readonly],
+textarea.input:disabled,
+textarea.input[readonly],
+select.input:disabled {
+  background-color: #f5f5f5 !important;
+  color: #888 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  border-color: #e5e7eb !important;
+}
+
+.input:disabled::placeholder,
+.input[readonly]::placeholder {
+  color: #a8a8a8;
+}
+
+
+
+/* ===== Bloc commentaire admin ===== */
+.input-container.mt-5,
+.admin-comment {
+  margin-top: 24px;
+  max-width: 1260px;
+  padding: 16px;
+  background: #f8fafc;              /* ardoise très clair */
+  border: 1px solid #e5e7eb;        /* gris clair */
+  border-radius: 12px;
+}
+
+/* Label */
+.input-container .label,
+.admin-comment .label {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #334155; /* slate-700 */
+}
+
+/* Wrapper utile si on veut des icônes, etc. */
+.input-container .input-wrapper,
+.admin-comment .input-wrapper {
+  position: relative;
+}
+
+/* Textarea stylée */
+.input-container .input.textarea,
+.admin-comment .input.textarea {
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;                 /* autorise redimensionnement vertical */
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;                   /* slate-900 */
+  background: #fff;
+  border: 1px solid #d1d5db;        /* gray-300 */
+  border-radius: 10px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.03);
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.input-container .input.textarea::placeholder,
+.admin-comment .input.textarea::placeholder {
+  color: #94a3b8;                   /* slate-400 */
+}
+
+/* Focus */
+.input-container .input.textarea:focus,
+.admin-comment .input.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;            /* blue-500 */
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+
+/* Accessibilité : hover léger */
+.input-container .input.textarea:hover,
+.admin-comment .input.textarea:hover {
+  border-color: #cbd5e1;            /* slate-300 */
+}
+
+/* Pour donner un aspect “lecture seule” si jamais on passe readonly */
+.input-container .input.textarea[readonly],
+.admin-comment .input.textarea[readonly] {
+  background: #f1f5f9;              /* slate-100 */
+  color: #475569;                   /* slate-600 */
+}
+
+/* Optionnel : style cohérent pour inputs/textarea read-only dans tout le composant */
+:host ::ng-deep input[readonly],
+:host ::ng-deep textarea[readonly] {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #475569;
+  pointer-events: none;
+}
+
+/* File input désactivé pour admin */
+:host ::ng-deep input[type="file"]:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Petit ajustement responsive */
+@media (max-width: 768px) {
+  .input-container.mt-5,
+  .admin-comment {
+    padding: 12px;
+  }
+  .input-container .input.textarea,
+  .admin-comment .input.textarea {
+    min-height: 140px;
+  }
+}
+

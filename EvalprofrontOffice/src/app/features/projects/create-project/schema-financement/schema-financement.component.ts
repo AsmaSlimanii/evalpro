@@ -1,7 +1,10 @@
+// schema-financement.component.ts
 import { Component, OnInit, TemplateRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormService } from '../../../../core/services/form.service';
 import { NgIfContext } from '@angular/common';
+import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
+import { FormService } from '../../../../core/services/form.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 type Cat = 'immobilier' | 'mobilier' | 'services' | 'fonds';
 type SubImm = 'construction' | 'amenagement' | 'genieCivil';
@@ -16,43 +19,42 @@ interface FundsWorking { monthly: number; months: number; note: string; }
   styleUrls: ['./schema-financement.component.scss']
 })
 export class SchemaFinancementComponent implements OnInit {
-  percentFunding(part: number): number {
-    const total = (this.totals.credits + this.totals.apports) || 1;
-    return Math.round((part / total) * 100);
-  }
 
-
+  // === Reactive form (structure identique step3)
+  formGroup!: FormGroup;
+  formMetadata: any;
+  formId: number | null = null;
+  isSaving = false;
   // UI
   isLoading = true;
+  isSubmitted = false;
   activeTab: 'needs' | 'funding' = 'needs';
   cat: Cat = 'immobilier';
   credOrApport: 'credits' | 'apports' = 'credits';
 
   // routing
   dossierId: string | null = null;
+  isEditMode = false;
   projectName = '';
+  isAdmin = false;
 
   readonly stepKey = 'schema-financement';
   readonly stepId = 5;
 
-
-  // en haut du composant si tu veux un max configurable
-  private readonly ADAPT_MAX = 70000; // plafond contribution ADAPT
+  private readonly EVALPRO_MAX = 70000; // plafond contribution EVALPRO
   fundingRight: TemplateRef<NgIfContext<boolean>> | null | undefined;
 
-  // 🔢 % affiché dans la jauge (0 → 100)
+  // 🔢 % jauge (0 → 100)
   get adaptPct(): number {
     const adapt = Number(this.totals?.adapt || 0);
-    return Math.max(0, Math.min(100, Math.round((adapt / this.ADAPT_MAX) * 100)));
+    return Math.max(0, Math.min(100, Math.round((adapt / this.EVALPRO_MAX) * 100)));
   }
-
-  // 🧭 angle de l’aiguille (-90° à +90°)
+  // 🧭 angle aiguille (-90° → +90°)
   get gaugeAngle(): number {
     return -90 + (this.adaptPct / 100) * 180;
   }
 
-
-  // === IDs des questions (adapte si besoin)
+  // === IDs des questions
   readonly Q = {
     immo: {
       construction: { label: 93, amount: 94, file: 95 },
@@ -78,11 +80,11 @@ export class SchemaFinancementComponent implements OnInit {
       autres: { amount: 132, file: 133 }
     },
     fonds: { monthly: 136, months: 137, note: 138 },
-    credits: { label: 143, amount: 144, file: 145 },  // 140..142 = titres
-    apports: { label: 147, amount: 148, file: 149 }   // 146 = titre
+    credits: { label: 143, amount: 144, file: 145 },
+    apports: { label: 147, amount: 148, file: 149 }
   } as const;
 
-  // === état
+  // === état UI
   immo: Record<SubImm, Line[]> = { construction: [], amenagement: [], genieCivil: [] };
   mob: Record<SubMob, Line[]> = { roulant: [], equipement: [], cheptel: [], vegetal: [] };
   serv: {
@@ -98,82 +100,64 @@ export class SchemaFinancementComponent implements OnInit {
 
   credits: Line[] = [];
   apports: Line[] = [];
-  ownFunds = 0; // si tu ajoutes “fonds propres” en question dédiée
+  ownFunds = 0;
 
   totals = {
     immo: 0, mob: 0, serv: 0, fonds: 0,
     invest: 0,
     credits: 0, apports: 0, funding: 0, diff: 0,
-    adapt: 0 // 14% borné
+    adapt: 0
   };
 
-  constructor(private route: ActivatedRoute, private router: Router, private formService: FormService) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private formService: FormService,
+    private fb: FormBuilder,
+    private auth: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.dossierId = this.route.snapshot.paramMap.get('id') || localStorage.getItem('dossierId');
-    if (!this.dossierId) { this.router.navigate(['/projects/create']); return; }
-    this.load();
+    this.isEditMode = !!this.dossierId;
+    this.isAdmin = this.auth.isAdmin();
+
+    this.initForm();
+    this.loadForm();
   }
 
-  // ---------------------------- LOAD ----------------------------
-  private load(): void {
-    const dossierId = this.dossierId!;
-    this.formService.getFormWithResponses(this.stepKey, dossierId).subscribe({
+  private initForm(): void {
+    this.formGroup = this.fb.group({
+      responses: this.fb.array([]),
+      comment: ['']
+    });
+  }
+  get responses(): FormArray { return this.formGroup.get('responses') as FormArray; }
+
+  private setReadOnlyMode(): void {
+    // Vue en ngModel : rien à désactiver ici sauf commentaire (réservé admin)
+    this.formGroup.get('comment')?.enable({ emitEvent: false });
+  }
+
+  private loadForm(): void {
+    this.isLoading = true;
+
+    const dossierIdNum = Number(this.dossierId);
+    if (!dossierIdNum) {
+      this.isLoading = false;
+      return;
+    }
+
+    this.formService.getFormWithResponses(this.stepKey, String(dossierIdNum)).subscribe({
       next: (form) => {
+        this.formMetadata = form;
         this.projectName = form?.projectName || '';
-        const resps: any[] = form?.responses || [];
+        this.formId = form?.id ?? form?.formId ?? null;
 
-        const pickAll = (qid: number): string[] =>
-          resps.filter(r => r.questionId === qid && r.value != null && r.value !== '')
-            .map(r => String(r.value));
+        this.buildFormControlsWithData(form?.responses || []);
+        this.formGroup.patchValue({ comment: form?.comment || '' });
 
-        const inflate = (cfg: { label?: number; amount: number; file?: number; }): Line[] => {
-          const labels = cfg.label ? pickAll(cfg.label) : [];
-          const amounts = pickAll(cfg.amount);
-          const files = cfg.file ? pickAll(cfg.file) : [];
-          const max = Math.max(labels.length, amounts.length, files.length);
-          const out: Line[] = [];
-          for (let i = 0; i < max; i++) {
-            out.push({
-              label: (labels[i] ?? '').trim(),
-              amount: +(amounts[i] ?? 0),
-              file: (files[i] ?? null)
-            });
-          }
-          return out;
-        };
-
-        // Immo
-        this.immo.construction = inflate(this.Q.immo.construction);
-        this.immo.amenagement = inflate(this.Q.immo.amenagement);
-        this.immo.genieCivil = inflate(this.Q.immo.genieCivil);
-
-        // Mobilier
-        this.mob.roulant = inflate(this.Q.mob.roulant);
-        this.mob.equipement = inflate(this.Q.mob.equipement);
-        this.mob.cheptel = inflate(this.Q.mob.cheptel);
-        this.mob.vegetal = inflate(this.Q.mob.vegetal);
-
-        // Services (chaque rubrique)
-        (Object.keys(this.serv) as (keyof SchemaFinancementComponent['serv'])[])
-          .forEach(k => this.serv[k] = inflate((this.Q.services as any)[k]));
-
-        // Fonds
-        this.fonds.monthly = +(pickAll(this.Q.fonds.monthly)[0] ?? 0);
-        this.fonds.months = +(pickAll(this.Q.fonds.months)[0] ?? 0);
-        this.fonds.note = pickAll(this.Q.fonds.note)[0] ?? '';
-
-        // Financement
-        this.credits = inflate(this.Q.credits);
-        this.apports = inflate(this.Q.apports);
-
-        // UX : au moins une ligne visible
-        const one = (arr: Line[]) => { if (!arr.length) arr.push({ label: '', amount: 0, file: null }); };
-        one(this.immo.construction); one(this.immo.amenagement); one(this.immo.genieCivil);
-        one(this.mob.roulant); one(this.mob.equipement); one(this.mob.cheptel); one(this.mob.vegetal);
-        (Object.values(this.serv)).forEach(one);
-        one(this.credits); one(this.apports);
-
+        if (this.isAdmin) this.setReadOnlyMode();
         this.isLoading = false;
         this.recompute();
       },
@@ -181,24 +165,158 @@ export class SchemaFinancementComponent implements OnInit {
     });
   }
 
-  // ---------------------------- UI helpers ----------------------------
-  addLine(target: Line[]): void { target.push({ label: '', amount: 0, file: null }); this.recompute(); }
-  removeLine(target: Line[], i: number): void { target.splice(i, 1); if (!target.length) this.addLine(target); this.recompute(); }
+  // ---------- Helpers communs (utilisés par saveAndNext ET submit)
+  private push(qid: number | undefined, v: any, bag: any[]) {
+    if (!qid) return;
+    const s = String(v ?? '').trim();
+    if (s !== '') bag.push({ questionId: qid, value: s, optionIds: [] });
+  }
 
-  onFile($event: Event, target: Line): void {
-    const input = $event.target as HTMLInputElement;
-    const file = input?.files?.[0]; if (!file) return;
-    const fd = new FormData();
-    fd.append('file', file, file.name);
-    if (this.dossierId) fd.append('dossierId', String(this.dossierId));
-    this.formService.uploadFile(fd).subscribe({
-      next: (res: any) => target.file = res?.url || res?.path || res?.location || null,
-      error: err => console.error('upload err', err)
+  private addLines(
+    cfg: { label?: number; amount: number; file?: number; },
+    rows: { label?: string; amount?: number; file?: string | null }[],
+    acc: any[]
+  ) {
+    rows.forEach(l => {
+      if (cfg.label && l.label && l.label.trim()) this.push(cfg.label, l.label, acc);
+      if (l.amount !== null && l.amount !== undefined && !isNaN(+l.amount))
+        this.push(cfg.amount, +l.amount, acc);
+      if (cfg.file && l.file) this.push(cfg.file, l.file, acc);
     });
   }
 
-  // ---------------------------- Totaux ----------------------------
-  private sum(arr: Line[]) { return arr.reduce((s, l) => s + (+l.amount || 0), 0); }
+  private nextCatOf(c: Cat): Cat | null {
+    return c === 'immobilier' ? 'mobilier'
+      : c === 'mobilier' ? 'services'
+        : c === 'services' ? 'fonds'
+          : null;
+  }
+
+  // ---------- Sauvegarde pilier + aller au suivant
+  saveAndNext(pillar: 'IMMOBILIER' | 'MOBILIER' | 'SERVICES' | 'FONDS'): void {
+    if (this.isAdmin) return; // lecture seule
+    const cleaned: any[] = [];
+
+    if (pillar === 'IMMOBILIER') {
+      this.addLines(this.Q.immo.construction, this.immo.construction, cleaned);
+      this.addLines(this.Q.immo.amenagement, this.immo.amenagement, cleaned);
+      this.addLines(this.Q.immo.genieCivil, this.immo.genieCivil, cleaned);
+    }
+    if (pillar === 'MOBILIER') {
+      this.addLines(this.Q.mob.roulant, this.mob.roulant, cleaned);
+      this.addLines(this.Q.mob.equipement, this.mob.equipement, cleaned);
+      this.addLines(this.Q.mob.cheptel, this.mob.cheptel, cleaned);
+      this.addLines(this.Q.mob.vegetal, this.mob.vegetal, cleaned);
+    }
+    if (pillar === 'SERVICES') {
+      (Object.keys(this.serv) as (keyof typeof this.serv)[])
+        .forEach(k => this.addLines((this.Q.services as any)[k], this.serv[k], cleaned));
+    }
+    if (pillar === 'FONDS') {
+      this.push(this.Q.fonds.monthly, this.fonds.monthly, cleaned);
+      this.push(this.Q.fonds.months, this.fonds.months, cleaned);
+      this.push(this.Q.fonds.note, this.fonds.note, cleaned);
+    }
+
+    const dossierIdToSend = this.dossierId ? Number(this.dossierId) : null;
+    const formIdToSend = this.formId ?? this.stepId;
+
+    const payload: any = {
+      formId: formIdToSend,
+      stepId: this.stepId,
+      dossierId: dossierIdToSend,
+      pillar: pillar,         // ⬅️ le backend n’écrase que ce pilier
+      responses: cleaned
+    };
+
+    const onSuccess = () => {
+      const next = this.nextCatOf(this.cat);
+      if (next) {
+        this.cat = next;            // rester dans "Besoins", passer au sous-onglet suivant
+        this.activeTab = 'needs';
+      } else {
+        this.activeTab = 'funding'; // après Fonds → Financement
+      }
+    };
+
+    if (this.isEditMode && dossierIdToSend) {
+      this.formService.submitStep(payload, this.stepId, dossierIdToSend)
+        .subscribe({ next: onSuccess, error: err => console.error('[Step5] saveAndNext error (edit):', err) });
+    } else {
+      this.formService.submitStep(payload, this.stepId, null)
+        .subscribe({ next: onSuccess, error: err => console.error('[Step5] saveAndNext error (create):', err) });
+    }
+  }
+
+  private buildFormControlsWithData(resps: any[]): void {
+    while (this.responses.length) this.responses.removeAt(0);
+
+    const qidOf = (r: any) => r.questionId ?? r.question_id ?? r.question?.id;
+    const pickAll = (qid: number): string[] =>
+      (resps || []).filter(r => qidOf(r) === qid && r.value !== undefined && r.value !== null)
+        .map(r => String(r.value));
+
+    const inflate = (cfg: { label?: number; amount: number; file?: number; }): Line[] => {
+      const labels = cfg.label ? pickAll(cfg.label) : [];
+      const amounts = pickAll(cfg.amount);
+      const files = cfg.file ? pickAll(cfg.file) : [];
+      const max = Math.max(labels.length, amounts.length, files.length);
+      const out: Line[] = [];
+      for (let i = 0; i < max; i++) {
+        out.push({
+          label: (labels[i] ?? '').trim(),
+          amount: Number(amounts[i] ?? 0) || 0,
+          file: (files[i] ?? null)
+        });
+      }
+      return out;
+    };
+
+    // Immo
+    this.immo.construction = inflate(this.Q.immo.construction);
+    this.immo.amenagement = inflate(this.Q.immo.amenagement);
+    this.immo.genieCivil = inflate(this.Q.immo.genieCivil);
+
+    // Mobilier
+    this.mob.roulant = inflate(this.Q.mob.roulant);
+    this.mob.equipement = inflate(this.Q.mob.equipement);
+    this.mob.cheptel = inflate(this.Q.mob.cheptel);
+    this.mob.vegetal = inflate(this.Q.mob.vegetal);
+
+    // Services
+    (Object.keys(this.serv) as (keyof SchemaFinancementComponent['serv'])[])
+      .forEach(k => this.serv[k] = inflate((this.Q.services as any)[k]));
+
+    // Fonds
+    this.fonds.monthly = Number(pickAll(this.Q.fonds.monthly)[0] ?? 0) || 0;
+    this.fonds.months = Number(pickAll(this.Q.fonds.months)[0] ?? 0) || 0;
+    this.fonds.note = (pickAll(this.Q.fonds.note)[0] ?? '').trim();
+
+    // Financement
+    this.credits = inflate(this.Q.credits);
+    this.apports = inflate(this.Q.apports);
+
+    const one = (a: Line[]) => {
+      if (!a.length && !this.isAdmin) {
+        a.push({ label: '', amount: 0, file: null });
+      }
+    };
+
+    one(this.immo.construction); one(this.immo.amenagement); one(this.immo.genieCivil);
+    one(this.mob.roulant); one(this.mob.equipement); one(this.mob.cheptel); one(this.mob.vegetal);
+    Object.values(this.serv).forEach(one);
+    one(this.credits); one(this.apports);
+  }
+
+  // ===== helpers d'affichage
+  percentFunding(part: number): number {
+    const total = (this.totals.credits + this.totals.apports) || 1;
+    return Math.round((part / total) * 100);
+  }
+  // somme robuste
+  private sum(arr: Line[]) {
+    return arr.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  }
 
   recompute(): void {
     const tImmo = this.sum(this.immo.construction) + this.sum(this.immo.amenagement) + this.sum(this.immo.genieCivil);
@@ -211,14 +329,12 @@ export class SchemaFinancementComponent implements OnInit {
 
     this.totals.immo = tImmo; this.totals.mob = tMob; this.totals.serv = tServ; this.totals.fonds = tFds;
     this.totals.invest = tImmo + tMob + tServ + tFds;
-
     this.totals.credits = tCredits; this.totals.apports = tApports;
     this.totals.funding = tCredits + tApports;
     this.totals.diff = this.totals.funding - this.totals.invest;
 
-    // Contribution ADAPT (comme sur la capture, 14% borné)
     const raw = tCredits * 0.14;
-    this.totals.adapt = Math.max(3000, Math.min(70000, raw));
+    this.totals.adapt = Math.max(3000, Math.min(this.EVALPRO_MAX, raw));
   }
 
   percent(part: number): number {
@@ -226,92 +342,109 @@ export class SchemaFinancementComponent implements OnInit {
     return Math.round((part / total) * 100);
   }
 
-  // ---------------------------- SAVE ----------------------------
+  addLine(target: Line[]): void {
+    if (this.isAdmin) return;
+    target.push({ label: '', amount: 0, file: null });
+    this.recompute();
+  }
+  removeLine(target: Line[], i: number): void {
+    if (this.isAdmin) return;
+    target.splice(i, 1);
+    this.recompute();
+  }
+
+
+  onFile($event: Event, target: Line, qid?: number): void {
+    if (this.isAdmin) return;
+    const input = $event.target as HTMLInputElement;
+    const file = input?.files?.[0]; if (!file) return;
+
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    if (this.dossierId) fd.append('dossierId', String(this.dossierId));
+    if (qid != null) fd.append('questionId', String(qid));
+
+    this.formService.uploadFile(fd).subscribe({
+      next: (res: any) => {
+        target.file = typeof res === 'string'
+          ? res
+          : (res?.url || res?.path || res?.location || res?.fileUrl || null);
+      },
+      error: err => console.error('upload err', err)
+    });
+  }
+
+  // ===== submit (tout envoyer à la fin)
   submit(): void {
-    const dossierIdNum = Number(this.dossierId);
-    const asResponses = (triple: { label?: number; amount: number; file?: number; }, rows: Line[]) => {
-      const out: any[] = [];
-      rows.forEach(l => {
-        const hasAmount = l.amount != null && !isNaN(+l.amount) && +l.amount > 0;
-        const hasLabel = !!(triple.label && l.label && l.label.trim().length);
-        const hasFile = !!(triple.file && l.file);
+    const cleaned: any[] = [];
+    // Besoins
+    this.addLines(this.Q.immo.construction, this.immo.construction, cleaned);
+    this.addLines(this.Q.immo.amenagement, this.immo.amenagement, cleaned);
+    this.addLines(this.Q.immo.genieCivil, this.immo.genieCivil, cleaned);
 
-        if (hasLabel) out.push({ questionId: triple.label!, value: l.label.trim(), optionIds: [] });
-        if (hasAmount) out.push({ questionId: triple.amount, value: String(+l.amount), optionIds: [] });
-        if (hasFile) out.push({ questionId: triple.file!, value: String(l.file), optionIds: [] });
-      });
-      return out;
+    this.addLines(this.Q.mob.roulant, this.mob.roulant, cleaned);
+    this.addLines(this.Q.mob.equipement, this.mob.equipement, cleaned);
+    this.addLines(this.Q.mob.cheptel, this.mob.cheptel, cleaned);
+    this.addLines(this.Q.mob.vegetal, this.mob.vegetal, cleaned);
+
+    (Object.keys(this.serv) as (keyof SchemaFinancementComponent['serv'])[])
+      .forEach(k => this.addLines((this.Q.services as any)[k], this.serv[k], cleaned));
+
+    this.push(this.Q.fonds.monthly, this.fonds.monthly, cleaned);
+    this.push(this.Q.fonds.months, this.fonds.months, cleaned);
+    this.push(this.Q.fonds.note, this.fonds.note, cleaned);
+
+    // Financement
+    this.addLines(this.Q.credits, this.credits, cleaned);
+    this.addLines(this.Q.apports, this.apports, cleaned);
+
+    // Sécurités
+    const dossierIdToSend = this.dossierId ? Number(this.dossierId) : null;
+    const formIdToSend = this.formId ?? this.stepId;
+
+    // ⛔ PAS de pillar ici : on valide tout l'étape.
+    const payload: any = {
+      formId: formIdToSend,
+      stepId: this.stepId,
+      dossierId: dossierIdToSend,
+      responses: this.isAdmin ? [] : cleaned
+    };
+    if (this.isAdmin) payload.comment = this.formGroup.get('comment')?.value || '';
+
+    const onSuccess = (res: any) => {
+      const id = res?.dossierId || dossierIdToSend;
+      if (id) {
+        localStorage.setItem('dossierId', String(id));
+        const prev = Number(localStorage.getItem('completedStep') || '0');
+        if (prev < 5) localStorage.setItem('completedStep', '5');
+
+        this.router.navigate(['/projects/edit', id], {
+          state: { successMessage: 'Étape 5 terminée avec succès !', completedStep: 5 }
+        });
+      }
     };
 
-    const calls: Array<{ pillar: string; responses: any[]; }> = [];
-
-    // IMMOBILIER
-    calls.push({
-      pillar: 'IMMOBILIER',
-      responses: [
-        ...asResponses(this.Q.immo.construction, this.immo.construction),
-        ...asResponses(this.Q.immo.amenagement, this.immo.amenagement),
-        ...asResponses(this.Q.immo.genieCivil, this.immo.genieCivil),
-      ]
-    });
-
-    // MOBILIER
-    calls.push({
-      pillar: 'MOBILIER',
-      responses: [
-        ...asResponses(this.Q.mob.roulant, this.mob.roulant),
-        ...asResponses(this.Q.mob.equipement, this.mob.equipement),
-        ...asResponses(this.Q.mob.cheptel, this.mob.cheptel),
-        ...asResponses(this.Q.mob.vegetal, this.mob.vegetal),
-      ]
-    });
-
-    // SERVICES
-    type ServMap = SchemaFinancementComponent['serv'];  // ✅ évite "typeof this"
-    const servResp: any[] = [];
-    (Object.keys(this.serv) as (keyof ServMap)[]).forEach(k => {
-      servResp.push(...asResponses((this.Q.services as any)[k], this.serv[k]));
-    });
-    calls.push({ pillar: 'SERVICES', responses: servResp });
-
-    // FONDS
-    // FONDS
-    const fondsResp: any[] = [];
-    if (this.fonds.monthly > 0) fondsResp.push({ questionId: this.Q.fonds.monthly, value: String(+this.fonds.monthly), optionIds: [] });
-    if (this.fonds.months > 0) fondsResp.push({ questionId: this.Q.fonds.months, value: String(+this.fonds.months), optionIds: [] });
-    if ((this.fonds.note || '').trim().length) fondsResp.push({ questionId: this.Q.fonds.note, value: this.fonds.note.trim(), optionIds: [] });
-    calls.push({ pillar: 'FONDS', responses: fondsResp });
-
-
-    // FINANCEMENT
-    calls.push({ pillar: 'FINANCEMENT_CREDITS', responses: [...asResponses(this.Q.credits, this.credits)] });
-    calls.push({ pillar: 'FINANCEMENT_APPORTS', responses: [...asResponses(this.Q.apports, this.apports)] });
-
-    // enchaîne les calls
-    const run = (i: number) => {
-      if (i >= calls.length) return this.afterSave();
-      const payload = {
-        formId: this.stepId,
-        stepId: this.stepId,
-        dossierId: this.dossierId,
-        pillar: calls[i].pillar,
-        responses: calls[i].responses
-      };
-      this.formService.submitStep(payload, this.stepId, dossierIdNum).subscribe({
-        next: () => run(i + 1),
-        error: (e) => { console.error('save error', calls[i].pillar, e); run(i + 1); }
+    if (this.isEditMode && dossierIdToSend) {
+      this.formService.submitStep(payload, this.stepId, dossierIdToSend).subscribe({
+        next: onSuccess,
+        error: err => console.error('[Step5] Erreur envoi (edit):', err)
       });
-    };
-    run(0);
+    } else {
+      this.formService.submitStep(payload, this.stepId, null).subscribe({
+        next: onSuccess,
+        error: err => console.error('[Step5] Erreur envoi (création):', err)
+      });
+    }
   }
 
-  private afterSave() {
-    this.router.navigate([`/projects/edit/${this.dossierId}/step5`], {
-      state: { successMessage: 'Étape 5 enregistrée avec succès !' }
+  back(): void { this.router.navigate([`/projects/edit/${this.dossierId}/step4`]); }
+
+  goBack(): void {
+    this.router.navigate(['/projects/create']);
+    const prev = Number(localStorage.getItem('completedStep') || '0');
+    if (prev < 5) localStorage.setItem('completedStep', '5');
+    this.router.navigate(['/projects/edit', this.dossierId], {
+      state: { successMessage: 'Étape 5 terminée avec succès !', completedStep: 5 }
     });
-  }
-
-  back(): void {
-    this.router.navigate([`/projects/edit/${this.dossierId}/step4`]);
   }
 }

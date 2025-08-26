@@ -147,4 +147,5 @@ private syncFromHistoryState(): void {
       error: (err) => { console.error('Erreur de soumission', err); this.isSubmitting = false; }
     });
   }
+  
 }

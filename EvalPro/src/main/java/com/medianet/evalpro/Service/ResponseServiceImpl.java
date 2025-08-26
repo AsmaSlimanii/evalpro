@@ -252,6 +252,8 @@ public class ResponseServiceImpl implements ResponseService {
 
 
     }
+
+
     //But : Vérifie si le pilier donné (economique, socio, etc.) contient des réponses pour l'étape 3.
     @Override
     public boolean isPillarCompleted(Long dossierId, String pillar) {
