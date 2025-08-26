@@ -69,20 +69,6 @@ isAdmin(): boolean {
     }
   }
 
-// auth.guard.ts
-canActivate(route: ActivatedRouteSnapshot): boolean {
-  if (!this.auth.isAuthenticated()) {
-    this.router.navigateByUrl('/connexion'); // seulement si pas connecté
-    return false;
-  }
-  const allowed: string[] = route.data['roles'] ?? [];
-  const role = this.auth.getCurrentUserRole(); // 'ADMIN' | 'CLIENT'
-  if (allowed.length && !allowed.includes(role ?? '')) {
-    this.router.navigateByUrl('/forbidden');   // 403 local
-    return false;
-  }
-  return true;
-}
 
 
 
