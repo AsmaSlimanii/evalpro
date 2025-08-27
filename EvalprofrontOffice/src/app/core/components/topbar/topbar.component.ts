@@ -23,10 +23,10 @@ export class TopbarComponent implements OnInit {
     @Inject(DOCUMENT) private document: Document,
     private notif: NotificationService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.items$  = this.notif.items$;
+    this.items$ = this.notif.items$;
     this.unread$ = this.notif.unread$;
     this.notif.load().subscribe(); // charge liste + compteur
   }
@@ -45,14 +45,18 @@ export class TopbarComponent implements OnInit {
   toggleDropdown(evt?: MouseEvent) { if (evt) evt.stopPropagation(); this.isOpen = !this.isOpen; }
   @HostListener('document:click') closeOnOutsideClick() { if (this.isOpen) this.isOpen = false; }
 
+  // Remplace TOUT le corps de cette méthode :
   openNote(n: NotificationDto) {
-    this.notif.openAndRead(n, url => this.router.navigateByUrl(url));
+    if (n && !n.readFlag) this.notif.markRead(n.id).subscribe(); // (optionnel) marque lu
     this.isOpen = false;
+    this.router.navigateByUrl('/notifications');                  // 👉 force /notifications
   }
+
+
   markAll() { this.notif.markAll().subscribe(); }
   goAll() { this.isOpen = false; this.router.navigateByUrl('/notifications'); }
 
-  trackById(_i:number, n:NotificationDto){ return n.id; }
+  trackById(_i: number, n: NotificationDto) { return n.id; }
 
   // pour tes icônes Font Awesome dans le menu
   faIconOf(t: NotificationType): string {
@@ -66,5 +70,5 @@ export class TopbarComponent implements OnInit {
     }
   }
 
-  logout(){ console.log('Déconnexion'); }
+  logout() { console.log('Déconnexion'); }
 }

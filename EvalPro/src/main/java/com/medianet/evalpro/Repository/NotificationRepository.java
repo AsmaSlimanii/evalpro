@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Repository;
 
 import com.medianet.evalpro.Entity.Notification;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -19,4 +20,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     @Query("update Notification n set n.readFlag = true where n.user.id = :userId")
     int markAllAsRead(@Param("userId") Long userId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Notification n where n.id = :id and n.user.id = :userId")
+    int deleteByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from Notification n where n.user.id = :userId")
+    int deleteAllByUserId(@Param("userId") Long userId);
+
 }

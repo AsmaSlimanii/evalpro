@@ -3,7 +3,9 @@ package com.medianet.evalpro.Controller;
 import com.medianet.evalpro.Dto.NotificationDTO;
 import com.medianet.evalpro.Repository.NotificationRepository;
 import com.medianet.evalpro.Repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,13 +33,13 @@ public class NotificationController {
         long c = repo.countByUserIdAndReadFlagFalse(userId);
         return Map.of("count", c);
     }
-
+    @Transactional
     @PostMapping("/{id}/read")
     public void markRead(@PathVariable Long id, Authentication auth) {
         Long userId = currentUserId(auth);
         repo.markAsRead(id, userId);
     }
-
+    @Transactional
     @PostMapping("/read-all")
     public void markAll(Authentication auth) {
         Long userId = currentUserId(auth);
@@ -49,4 +51,19 @@ public class NotificationController {
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"))
                 .getId();
     }
+    @Transactional
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOne(@PathVariable Long id, Authentication auth) {
+        Long userId = currentUserId(auth);
+        repo.deleteByIdAndUserId(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+    @Transactional
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll(Authentication auth) {
+        Long userId = currentUserId(auth);
+        repo.deleteAllByUserId(userId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

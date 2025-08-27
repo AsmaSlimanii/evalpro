@@ -32,10 +32,14 @@ export class AuthService {
 
   return this.http.get<{ id: number }>(`${this.apiUrl}/auth/current-user`, { headers }).pipe(
       map(response => response.id),
-      catchError(error => {
+      catchError((error) => {
+      // ✅ Déconnexion UNIQUEMENT si 401
+      if (error?.status === 401) {
         this.logout();
-        return throwError(() => new Error('Erreur d\'authentification'));
-      })
+      }
+      // ⛔ NE PAS déconnecter sur 403 (forbidden) ou autres
+      return throwError(() => error);
+    })
     );
   }
 

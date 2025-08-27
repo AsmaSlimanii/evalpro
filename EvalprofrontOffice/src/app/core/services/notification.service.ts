@@ -28,18 +28,18 @@ export interface NotificationDto {
 export class NotificationService {
   // ⚠ Même pattern que DossierService
   private readonly baseUrl = 'http://localhost:8080';
-  private readonly apiUrl  = `${this.baseUrl}/api/notifications`;
+  private readonly apiUrl = `${this.baseUrl}/api/notifications`;
 
-  private _items  = new BehaviorSubject<NotificationDto[]>([]);
+  private _items = new BehaviorSubject<NotificationDto[]>([]);
   readonly items$ = this._items.asObservable();
 
-  private _unread  = new BehaviorSubject<number>(0);
+  private _unread = new BehaviorSubject<number>(0);
   readonly unread$ = this._unread.asObservable();
 
-  private _localMessages  = new BehaviorSubject<string[]>([]);
+  private _localMessages = new BehaviorSubject<string[]>([]);
   readonly localMessages$ = this._localMessages.asObservable();
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
   // ================== Public API ==================
 
@@ -124,10 +124,9 @@ export class NotificationService {
     this._unread.next(0);
     return of(0);
   }
-
   private handleError(error: HttpErrorResponse): Observable<never> {
-    // même logique que DossierService
-    if ([401, 403].includes(error.status)) {
+    // ✅ déconnexion UNIQUEMENT si 401
+    if (error.status === 401) {
       this.authService.logout();
     }
     console.error('Erreur API Notifications :', error);
@@ -146,4 +145,30 @@ export class NotificationService {
       'Content-Type': 'application/json'
     });
   }
+
+
+  // notification.service.ts
+delete(id: number): Observable<void> {
+  return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+    headers: this.getAuthHeaders()
+  }).pipe(
+    tap(() => {
+      // maj du cache local
+      this._items.next(this._items.value.filter(x => x.id !== id));
+      // si c'était non-lu, décrémenter
+      const wasUnread = this._items.value.find(x => x.id === id)?.readFlag === false;
+      if (wasUnread) this._unread.next(Math.max(0, this._unread.value - 1));
+    }),
+    catchError(this.handleError.bind(this))
+  );
+}
+
+deleteAll(): Observable<void> {
+  return this.http.delete<void>(this.apiUrl, { headers: this.getAuthHeaders() }).pipe(
+    tap(() => { this._items.next([]); this._unread.next(0); }),
+    catchError(this.handleError.bind(this))
+  );
+}
+
+
 }

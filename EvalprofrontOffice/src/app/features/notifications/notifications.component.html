@@ -6,6 +6,36 @@
       <span class="badge" *ngIf="(unread$ | async) as c" [class.hidden]="!c">{{ c }}</span>
       <button class="btn ghost" (click)="markAll()">Tout marquer comme lu</button>
       <button class="btn" (click)="refresh()">Rafraîchir</button>
+
+      <!-- Bouton en haut -->
+      <button class="btn danger" type="button" (click)="openConfirmAll($event)">
+        <i class="fas fa-trash"></i> Supprimer tout
+      </button>
+
+      <!-- Backdrop -->
+      <div class="modal-backdrop" *ngIf="confirmAll.open" (click)="closeConfirmAll($event)">
+      </div>
+
+      <!-- Modale -->
+      <div class="modal" *ngIf="confirmAll.open" role="dialog" aria-modal="true">
+        <div class="panel">
+          <div class="modal-icon"><i class="fas fa-exclamation"></i></div>
+          <h3>Supprimer toutes les notifications ?</h3>
+          <p>Cette action est définitive.</p>
+          <div class="modal-actions">
+            <button class="btn ghost" type="button" (click)="$event.stopPropagation(); closeConfirmAll()">
+              Annuler
+            </button>
+
+            <button class="btn danger" type="button" (click)="$event.stopPropagation(); deleteAllConfirmed()">
+              Oui, supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+
     </div>
   </div>
 
@@ -13,10 +43,16 @@
     <div class="empty" *ngIf="!items.length">Aucune notification pour le moment.</div>
 
     <div class="list" *ngIf="items.length">
-      <div class="note card" *ngFor="let n of items; trackBy: trackById"
-           [class.unread]="!n.readFlag" (click)="open(n)">
+      <div class="note card" *ngFor="let n of items; trackBy: trackById" [class.unread]="!n.readFlag" (click)="open(n)">
         <div class="icon" [attr.data-type]="n.type">
-          <span class="material-icons">{{ iconOf(n.type) }}</span>
+          <!-- après (FA) -->
+          <i class="fas" [ngClass]="{
+                    'fa-comment-dots': n.type==='STEP_COMMENT',
+                    'fa-check-circle': n.type==='DOSSIER_ACCEPTED',
+                    'fa-times-circle': n.type==='DOSSIER_REJECTED',
+                    'fa-exclamation-triangle': n.type==='DOSSIER_NEEDS_CHANGES'
+                  }"></i>
+
         </div>
         <div class="body">
           <div class="title">
@@ -24,13 +60,23 @@
             <small class="date">{{ n.createdAt | date:'short' }}</small>
           </div>
           <div class="msg">{{ n.message }}</div>
-        <div class="meta" *ngIf="n.dossierId">Dossier #{{ n.dossierId }}</div>
+          <div class="meta">
+            <span *ngIf="n.dossierId">Dossier #{{ n.dossierId }}</span>
+            <span class="dot" *ngIf="n.stepId">•</span>
+            <span *ngIf="n.stepId">Étape {{ STEP_NAMES[n.stepId!] || n.stepId }}</span>
+            <span class="dot">•</span>
+            <span class="pill" [ngClass]="n.type">{{ labelOf(n.type) }}</span>
+          </div>
+
         </div>
         <div class="right">
-          <button class="btn tiny" *ngIf="!n.readFlag" (click)="markRead(n); $event.stopPropagation()">Marquer lu</button>
+          <button class="btn tiny" *ngIf="!n.readFlag" (click)="markRead(n); $event.stopPropagation()">Marquer
+            lu</button>
           <a class="btn tiny primary" *ngIf="n.link" (click)="$event.stopPropagation(); open(n)">Ouvrir</a>
         </div>
       </div>
     </div>
+
+    
   </div>
 </div>

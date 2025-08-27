@@ -65,16 +65,23 @@ export class DossierService {
   }
 
   /** 🔐 Gestion des erreurs */
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    if ([401, 403].includes(error.status)) {
-      this.authService.logout();
-    }
-
-    console.error('Erreur API :', error);
-    return throwError(() =>
-      new Error(error.error?.message || 'Une erreur serveur est survenue.')
-    );
+private handleError(error: HttpErrorResponse): Observable<never> {
+  // ⛔ Déconnexion seulement si NON authentifié
+  if (error.status === 401) {
+    this.authService.logout();
   }
+
+  // Optionnel : si rôle interdit, on peut juste signaler 403 sans déconnecter
+  // if (error.status === 403) {
+  //   // this.router.navigateByUrl('/forbidden'); // si tu as une page 403
+  // }
+
+  console.error('Erreur API :', error);
+  return throwError(() =>
+    new Error(error.error?.message || 'Une erreur serveur est survenue.')
+  );
+}
+
 
   /** 📥 JWT Headers */
   private getAuthHeaders(): HttpHeaders {

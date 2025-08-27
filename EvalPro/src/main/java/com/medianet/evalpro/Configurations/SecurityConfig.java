@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/responses/step3-pillar-progress/**").permitAll()
                         .requestMatchers("/api/responses/step4-pillar-progress/**").permitAll()
                         .requestMatchers("/api/notifications/**").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/notifications/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
 
