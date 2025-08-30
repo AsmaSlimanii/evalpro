@@ -2,15 +2,18 @@
   width: 360px;
   background-color: #ffffff;
   border-right: 1px solid #e8ebf0;
-  padding: 0 1.5rem; /* padding haut supprimé */
+  padding: 0 1.5rem;
+  /* padding haut supprimé */
   height: 100vh;
-  position: fixed; 
-  top:0;
+  position: fixed;
+  top: 0;
   left: 0;
   display: flex;
   flex-direction: column;
-  font-size: 1.7rem; /* Taille de police augmentée */
-  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.08); /* Ombre plus prononcée */
+  font-size: 1.7rem;
+  /* Taille de police augmentée */
+  box-shadow: 5px 0 20px rgba(0, 0, 0, 0.08);
+  /* Ombre plus prononcée */
   z-index: 1001;
   transition: all 0.3s ease;
 }
@@ -26,7 +29,8 @@
 }
 
 .sidebar-logo img {
-   width: 250px; /* Logo plus grand */
+  width: 250px;
+  /* Logo plus grand */
   height: auto;
   margin-top: 0 !important;
   object-fit: contain;
@@ -89,7 +93,7 @@
   color: #007bff;
 }
 
-.nav-section > a {
+.nav-section>a {
   font-weight: 600;
   color: #10386a !important;
 }
@@ -154,4 +158,18 @@
   top: -1rem;
   left: 0;
   right: 0;
+}
+
+
+/* sidebar.component.scss */
+a.active {
+  font-weight: 600;
+  border-left: 3px solid #5b8def;
+}
+
+.menu-section {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
 }

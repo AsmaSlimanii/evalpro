@@ -18,7 +18,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -249,6 +251,101 @@ private Map<String, Integer> generateStepProgress(Dossier dossier) {
         return dossier;
     }
 
+
+    // DossierServiceImpl
+    @Override
+    @Transactional
+    public Dossier submitLatestForUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur introuvable"));
+
+        Dossier d = dossierRepository.findTopByUserIdOrderByIdDesc(user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aucun dossier à soumettre"));
+
+        int last = Optional.ofNullable(d.getLastCompletedStep()).orElse(0);
+        if (last < 5) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Toutes les étapes ne sont pas terminées.");
+        }
+
+        d.setStatus(Dossier.Status.SOUMIS);
+        d.setSubmittedAt(LocalDateTime.now());
+        d.setUpdatedAt(LocalDateTime.now());
+        return dossierRepository.save(d);
+    }
+
+    @Override
+    @Transactional
+    public void touchDraftForUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        dossierRepository.findTopByUserIdOrderByIdDesc(user.getId())
+                .ifPresent(d -> {
+                    d.setUpdatedAt(LocalDateTime.now());
+                    dossierRepository.save(d);
+                });
+    }
+
+    @Override
+    public Page<Dossier> listByStatus(Dossier.Status status, int page, int size) {
+        return dossierRepository.findByStatusOrderBySubmittedAtDesc(
+                status, PageRequest.of(page, size));
+    }
+
+    @Override
+    public Dossier getForPdf(Long id) {
+        return dossierRepository.findByIdWithResponses(id)
+                .orElseThrow(() -> new RuntimeException("Dossier introuvable"));
+    }
+
+    @Override
+    @jakarta.transaction.Transactional
+    public void markStepCompleted(Long dossierId, int stepOrder) {
+        Dossier d = dossierRepository.findById(dossierId)
+                .orElseThrow(() -> new RuntimeException("Dossier non trouvé"));
+        int last = Optional.ofNullable(d.getLastCompletedStep()).orElse(0);
+        if (stepOrder > last) {
+            d.setLastCompletedStep(stepOrder);
+            d.setUpdatedAt(LocalDateTime.now());
+            // pas besoin d'appeler save() ici si l'entité est managée, Hibernate flushera au commit
+            // si tu préfères, tu peux faire: dossierRepository.save(d);
+        }
+    }
+
+    // DossierServiceImpl.java
+
+    // DossierServiceImpl.java
+
+    // DossierServiceImpl.java
+
+    @Override
+    @Transactional
+    public Dossier submitForUser(String email, Long dossierId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Utilisateur introuvable"));
+
+        Dossier d = dossierRepository.findById(dossierId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dossier introuvable"));
+
+        boolean isOwner = (d.getUser() != null && Objects.equals(d.getUser().getId(), user.getId()));
+        boolean isAdmin = (user.getRole() == User.Role.ADMIN);
+
+        if (!isOwner && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Dossier non autorisé");
+        }
+
+        int last = Optional.ofNullable(d.getLastCompletedStep()).orElse(0);
+
+        // ✅ l’ADMIN peut forcer la soumission
+        if (last < 5 && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Toutes les étapes ne sont pas terminées.");
+        }
+
+        d.setStatus(Dossier.Status.SOUMIS);
+        d.setSubmittedAt(LocalDateTime.now());
+        d.setUpdatedAt(LocalDateTime.now());
+        return dossierRepository.save(d);
+    }
 
 
 

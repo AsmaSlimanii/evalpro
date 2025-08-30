@@ -170,7 +170,15 @@ public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto,
     dto.setStepId(Long.valueOf(step_id));
     dto.setDossierId(Long.valueOf(dossier_id));
 
+
+
     responseService.saveStepResponses(dto, userDetails.getUsername());
+
+    // ✅ marquer l’étape comme terminée (depuis le DTO)
+    if (dto.getDossierId() == null || dto.getStepId() == null) {
+        return ResponseEntity.badRequest().body("dossierId/stepId manquants dans la requête");
+    }
+    dossierService.markStepCompleted(dto.getDossierId(), dto.getStepId().intValue());
 
     boolean isAdmin = userDetails.getAuthorities().stream()
             .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));

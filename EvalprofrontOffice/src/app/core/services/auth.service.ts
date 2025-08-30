@@ -4,12 +4,10 @@ import { catchError, map, Observable, throwError } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
- 
+
   private readonly apiUrl = 'http://localhost:8080/api'; // adapte si besoin
 
-  constructor(private http: HttpClient) 
-  
-  {}
+  constructor(private http: HttpClient) { }
 
 
   isAuthenticated(): boolean {
@@ -30,16 +28,16 @@ export class AuthService {
       Authorization: `Bearer ${token}`
     });
 
-  return this.http.get<{ id: number }>(`${this.apiUrl}/auth/current-user`, { headers }).pipe(
+    return this.http.get<{ id: number }>(`${this.apiUrl}/auth/current-user`, { headers }).pipe(
       map(response => response.id),
       catchError((error) => {
-      // ✅ Déconnexion UNIQUEMENT si 401
-      if (error?.status === 401) {
-        this.logout();
-      }
-      // ⛔ NE PAS déconnecter sur 403 (forbidden) ou autres
-      return throwError(() => error);
-    })
+        // ✅ Déconnexion UNIQUEMENT si 401
+        if (error?.status === 401) {
+          this.logout();
+        }
+        // ⛔ NE PAS déconnecter sur 403 (forbidden) ou autres
+        return throwError(() => error);
+      })
     );
   }
 
@@ -49,14 +47,14 @@ export class AuthService {
   }
 
   getCurrentUserRole(): string | null {
-  return localStorage.getItem('role');
-}
+    return localStorage.getItem('role');
+  }
 
-isAdmin(): boolean {
-  return this.getCurrentUserRole() === 'ADMIN';
-}
+  isAdmin(): boolean {
+    return this.getCurrentUserRole() === 'ADMIN';
+  }
 
- getUserEmail(): string | null {
+  getUserEmail(): string | null {
     try {
       const userData = localStorage.getItem('user');
       if (!userData) return null;
@@ -74,6 +72,17 @@ isAdmin(): boolean {
   }
 
 
-
+  getRoles(): string[] {
+    const t = this.getToken();
+    if (!t) return [];
+    try {
+      const payload = JSON.parse(atob(t.split('.')[1]));
+      // selon ce que tu mets dans le JWT: roles / authorities …
+      const raw = payload.roles || payload.authorities || [];
+      return raw.map((r: string) => r.startsWith('ROLE_') ? r : `ROLE_${r}`);
+    } catch {
+      return [];
+    }
+  }
 
 }

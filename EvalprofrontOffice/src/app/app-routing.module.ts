@@ -34,6 +34,8 @@ import { ProfilComponent } from './features/projects/create-project/requete-fina
 import { EntrepriseComponent } from './features/projects/create-project/requete-financement/entreprise/entreprise.component';
 import { ProjetComponent } from './features/projects/create-project/requete-financement/projet/projet.component';
 import { NotificationsComponent } from './features/notifications/notifications.component';
+import { AdminDossiersComponent } from './features/AdminDossiersComponent/AdminDossiersComponent';
+import { AdminGuard } from './core/guards/admin.guard';
 
 
 const routes: Routes = [
@@ -56,8 +58,8 @@ const routes: Routes = [
 
       { path: 'projects/create/step1', component: PreIdentificationComponent },
       { path: 'projects/create', component: CreateProjectComponent },
-
-      // ✅ Routes plates pour modification
+       { path: 'admin/dossiers', canActivate: [AdminGuard], component: AdminDossiersComponent },
+      // ✅ Routes plates pour modification 
       { path: 'projects/edit/:id/step1', component: PreIdentificationComponent },
       { path: 'projects/edit/:id/step2', component: CreationProjetComponent },
       { path: 'projects/edit/:id/step3', component: AutoEvaluationComponent },

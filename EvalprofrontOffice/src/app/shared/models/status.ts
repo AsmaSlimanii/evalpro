@@ -1,7 +1,10 @@
 export enum DossierStatus {
   EN_COURS = 'EN_COURS',
-  VALIDE = 'VALIDE',
-  REJETE = 'REJETE'
+  ACCEPTE = 'ACCEPTE',
+  REJETE = 'REJETE',
+  SOUMIS = "SOUMIS",
+  VALIDE = "VALIDE"
+
 }
 
 export enum ValidationStatus {

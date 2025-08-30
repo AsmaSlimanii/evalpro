@@ -118,6 +118,8 @@ public class ResponseServiceImpl implements ResponseService {
 //(optionnel) Gère le champ UPLOAD pour les fichiers
     @Override
     public void saveStepResponses(ResponseRequestDTO dto, String userEmail) {
+
+
         System.out.println("📩 Enregistrement des réponses pour l'utilisateur : " + userEmail);
        // System.out.println("👤 Utilisateur connecté : " + userEmail);
 

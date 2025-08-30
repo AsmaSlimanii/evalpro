@@ -38,21 +38,31 @@ public class SecurityConfig {
                     corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
+                // SecurityConfig.java
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/dossiers").permitAll()
                         .requestMatchers("/api/forms/**").permitAll()
                         .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/responses/**").permitAll()
                         .requestMatchers("/api/responses/progress/**").permitAll()
                         .requestMatchers("/api/responses/step3-pillar-progress/**").permitAll()
                         .requestMatchers("/api/responses/step4-pillar-progress/**").permitAll()
-                        .requestMatchers("/api/notifications/**").hasAnyRole("CLIENT", "ADMIN")
+
+                        .requestMatchers("/api/notifications/**").hasAnyRole("CLIENT","ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/notifications/**").authenticated()
+
+                        // ✅ routes dossiers
+                        .requestMatchers(HttpMethod.POST, "/api/dossiers/*/submit").hasAnyRole("CLIENT","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/dossiers/drafts").hasAnyRole("CLIENT","ADMIN")
+                        .requestMatchers("/api/dossiers/**").hasAnyRole("CLIENT","ADMIN")
+
+                        // ✅ admin
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
+
 
 
 

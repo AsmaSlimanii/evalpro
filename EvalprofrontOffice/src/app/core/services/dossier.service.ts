@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { DossierIdResponse } from '../../shared/models/dossier.model';
 
 interface QuestionOption {
   id: number;
@@ -29,7 +30,7 @@ export class DossierService {
   constructor(
     private http: HttpClient,
     private authService: AuthService
-  ) {}
+  ) { }
 
   /** 🔍 Charger les questions dynamiques d'une étape */
   getStepForm(step: string): Observable<{ questions: Question[] }> {
@@ -43,7 +44,7 @@ export class DossierService {
   submitStep(payload: any, stepId: number, dossierId?: number | null): Observable<any> {
     const url = dossierId != null
       ? `${this.responseApiUrl}/step${stepId}/${dossierId}`
-      : `${this.responseApiUrl}/step${stepId}/null`;
+      : `${this.responseApiUrl}/step${stepId}`;
 
     return this.http.post(url, payload, {
       headers: this.getAuthHeaders()
@@ -57,6 +58,16 @@ export class DossierService {
     }).pipe(catchError(this.handleError.bind(this)));
   }
 
+  /** ✅ Soumettre tout le dossier PAR ID */
+  submitById(dossierId: number): Observable<DossierIdResponse> {
+    return this.http.post<DossierIdResponse>(
+      `${this.baseUrl}/api/dossiers/${dossierId}/submit`,
+      {},
+      { headers: this.getAuthHeaders() }
+    ).pipe(catchError(this.handleError.bind(this)));
+  }
+
+
   /** 💾 Sauvegarde partielle du dossier */
   saveDraft(): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/api/dossiers/drafts`, {}, {
@@ -65,22 +76,22 @@ export class DossierService {
   }
 
   /** 🔐 Gestion des erreurs */
-private handleError(error: HttpErrorResponse): Observable<never> {
-  // ⛔ Déconnexion seulement si NON authentifié
-  if (error.status === 401) {
-    this.authService.logout();
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    // ⛔ Déconnexion seulement si NON authentifié
+    if (error.status === 401) {
+      this.authService.logout();
+    }
+
+    // Optionnel : si rôle interdit, on peut juste signaler 403 sans déconnecter
+    // if (error.status === 403) {
+    //   // this.router.navigateByUrl('/forbidden'); // si tu as une page 403
+    // }
+
+    console.error('Erreur API :', error);
+    return throwError(() =>
+      new Error(error.error?.message || 'Une erreur serveur est survenue.')
+    );
   }
-
-  // Optionnel : si rôle interdit, on peut juste signaler 403 sans déconnecter
-  // if (error.status === 403) {
-  //   // this.router.navigateByUrl('/forbidden'); // si tu as une page 403
-  // }
-
-  console.error('Erreur API :', error);
-  return throwError(() =>
-    new Error(error.error?.message || 'Une erreur serveur est survenue.')
-  );
-}
 
 
   /** 📥 JWT Headers */
@@ -98,21 +109,25 @@ private handleError(error: HttpErrorResponse): Observable<never> {
   }
 
   getAllDossiers(): Observable<any[]> {
-  return this.http.get<any[]>('/api/dossiers/user'); // ou le bon endpoint backend
-}
-// dossier.service.ts
-getPaginatedDossiers(page: number, size: number = 5): Observable<any> {
-  const url = `${this.baseUrl}/api/dossiers?page=${page}&size=${size}`;
-  return this.http.get<any>(url, {
-    headers: this.getAuthHeaders()
-  }).pipe(catchError(this.handleError.bind(this)));
-}
+    return this.http.get<any[]>(
+      `${this.baseUrl}/api/dossiers/user`,
+      { headers: this.getAuthHeaders() }
+    ).pipe(catchError(this.handleError.bind(this)));
+  }
+
+  // dossier.service.ts
+  getPaginatedDossiers(page: number, size: number = 5): Observable<any> {
+    const url = `${this.baseUrl}/api/dossiers?page=${page}&size=${size}`;
+    return this.http.get<any>(url, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError(this.handleError.bind(this)));
+  }
 
 
-deleteDossier(id: number): Observable<void> {
-  return this.http.delete<void>(`${this.baseUrl}/api/dossiers/${id}`, {
-    headers: this.getAuthHeaders()
-  }).pipe(catchError(this.handleError.bind(this)));
-}
+  deleteDossier(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/api/dossiers/${id}`, {
+      headers: this.getAuthHeaders()
+    }).pipe(catchError(this.handleError.bind(this)));
+  }
 
 }

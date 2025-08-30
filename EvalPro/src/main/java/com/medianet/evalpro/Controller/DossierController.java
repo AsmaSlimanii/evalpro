@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -119,6 +121,9 @@ public class DossierController {
         String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
         Dossier newDossier = dossierService.createDossier(dto, email);
 
+        // ✅ marquer STEP 1 comme terminée
+        dossierService.markStepCompleted(newDossier.getId(), 1);
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new DossierIdResponse(newDossier.getId()));
     }
@@ -128,6 +133,22 @@ public class DossierController {
         String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
         List<DossierDto> dossiers = dossierService.getUserDossiers(email);
         return ResponseEntity.ok(dossiers);
+    }
+
+
+
+    @PostMapping("/drafts")
+    public ResponseEntity<Void> saveDraftTouch(@AuthenticationPrincipal UserDetails user) {
+        dossierService.touchDraftForUser(user.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+// DossierController.java
+
+    @PostMapping("/{id}/submit")
+    public ResponseEntity<DossierIdResponse> submitById(@PathVariable Long id,
+                                                        @AuthenticationPrincipal UserDetails user) {
+        Dossier d = dossierService.submitForUser(user.getUsername(), id);
+        return ResponseEntity.ok(new DossierIdResponse(d.getId()));
     }
 
 

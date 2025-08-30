@@ -9,11 +9,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "dossier")
 @Data
+@Access(AccessType.FIELD) // ✅ JPA lit/écrit sur les champs (pas sur un getter custom)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,7 +29,12 @@ public class Dossier {
     @Enumerated(EnumType.STRING)
     private Status status;
     private Integer getLastCompletedStep;
+    private LocalDateTime submittedAt;  // date d’envoi
+    @OneToMany(mappedBy = "dossier", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Response> responses = new ArrayList<>();
 
+    @Column(name = "last_completed_step")
+    private Integer lastCompletedStep;
 
 
 
@@ -45,18 +52,18 @@ public class Dossier {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public int getLastCompletedStep() {
-        if (steps == null || steps.isEmpty()) {
-            return 0;
-        }
-
-        return (int) steps.stream()
-                .filter(Step::isCompleted)
-                .count();
-    }
+//    public int getLastCompletedStep() {
+//        if (steps == null || steps.isEmpty()) {
+//            return 0;
+//        }
+//
+//        return (int) steps.stream()
+//                .filter(Step::isCompleted)
+//                .count();
+//    }
 
 
     public enum Status {
-        EN_COURS, VALIDE, ACCEPTE, REJETE , DOSSIER_NEEDS_CHANGES
+        EN_COURS, VALIDE, ACCEPTE, REJETE , DOSSIER_NEEDS_CHANGES ,SOUMIS
     }
 }

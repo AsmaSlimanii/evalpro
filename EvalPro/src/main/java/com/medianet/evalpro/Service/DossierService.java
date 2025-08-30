@@ -37,4 +37,14 @@ public interface DossierService {
     Dossier updateStatus(Long dossierId, Dossier.Status status, String message, String adminEmail);
 
 
+
+    Dossier submitLatestForUser(String email);
+    void   touchDraftForUser(String email);
+    Page<Dossier> listByStatus(Dossier.Status status, int page, int size);
+    Dossier getForPdf(Long id);
+    void markStepCompleted(Long dossierId, int stepOrder);
+
+    // DossierService.java
+    Dossier submitForUser(String email, Long dossierId);
+
 }

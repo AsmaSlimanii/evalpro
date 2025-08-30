@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +28,25 @@ public interface DossierRepository extends JpaRepository<Dossier, Long> {
 
     // Dans DossierRepository.java
     List<Dossier> findByUser(User user);
+
+
+
+
+    /* ====== AJOUTS POUR ADMIN/PDF ====== */
+
+    // liste paginée des dossiers par statut
+    Page<Dossier> findByStatusOrderBySubmittedAtDesc(Dossier.Status status, Pageable pageable);
+
+    // pour générer le PDF (récupérer le dossier + ses réponses)
+    @Query("""
+    select distinct d from Dossier d
+    left join fetch d.responses r
+    left join fetch r.question q
+    where d.id = :id
+  """)
+    Optional<Dossier> findByIdWithResponses(@Param("id") Long id);
+
+
 
 
 }

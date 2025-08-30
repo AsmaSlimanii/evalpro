@@ -35,6 +35,7 @@ import { ProfilComponent } from './features/projects/create-project/requete-fina
 import { EntrepriseComponent } from './features/projects/create-project/requete-financement/entreprise/entreprise.component';
 import { ProjetComponent } from './features/projects/create-project/requete-financement/projet/projet.component';
 import { NotificationsComponent } from './features/notifications/notifications.component';
+import { AdminDossiersComponent } from './features/AdminDossiersComponent/AdminDossiersComponent';
 
 
 
@@ -66,6 +67,8 @@ import { NotificationsComponent } from './features/notifications/notifications.c
     EntrepriseComponent,
     TimeAgoPipe,
     NotificationsComponent,
+    AdminDossiersComponent,
+
   ],
   imports: [
     BrowserModule,
@@ -79,8 +82,7 @@ import { NotificationsComponent } from './features/notifications/notifications.c
     //RecaptchaFormsModule,
     BrowserAnimationsModule,
     MatSnackBarModule,
-   
-
+ 
     ReactiveFormsModule,
 
 

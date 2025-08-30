@@ -26,5 +26,16 @@
         <span class="nav-label">Notifications</span>
       </a>
     </li>
+
+    <!-- Notifications… -->
+
+    <li class="menu-section" *ngIf="auth.isAdmin()">Administration</li>
+
+    <li *ngIf="auth.isAdmin()">
+      <a [routerLink]="['/admin/dossiers']" routerLinkActive="active">
+        <i class="fas fa-clipboard-check"></i>
+        <span>Dossiers soumis</span>
+      </a>
+    </li>
   </ul>
 </aside>

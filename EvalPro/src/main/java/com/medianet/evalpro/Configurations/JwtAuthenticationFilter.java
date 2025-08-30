@@ -35,40 +35,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
         try {
             String jwt = parseJwt(request);
-            if (jwt != null && jwtUtil.validateToken(jwt)) {
+
+            if (jwt != null && jwtUtil.validateToken(jwt) &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                // 1) Email depuis le token
                 String email = jwtUtil.extractEmail(jwt);
-                List<String> roles = jwtUtil.extractRoles(jwt);
 
-                System.out.println("🎯 Rôles extraits du token : " + roles);
+                // 2) Charge l'utilisateur depuis la BDD (source de vérité)
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(SimpleGrantedAuthority::new)
+                // ⚠️ IMPORTANT : s’assurer que CustomUserDetailsService renvoie bien des autorités
+                // préfixées ROLE_ (ex: ROLE_CLIENT, ROLE_ADMIN). Si besoin, recrée-les ici :
+                List<SimpleGrantedAuthority> authorities = userDetails.getAuthorities().stream()
+                        .map(a -> {
+                            String name = a.getAuthority();
+                            return name.startsWith("ROLE_")
+                                    ? new SimpleGrantedAuthority(name)
+                                    : new SimpleGrantedAuthority("ROLE_" + name);
+                        })
                         .toList();
 
-                if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    System.out.println("✅ Utilisateur authentifié : " + email);
-                    System.out.println("🛡️ Autorité injectée : " + userDetails.getAuthorities());
-                }
-
+                System.out.println("✅ Utilisateur authentifié : " + email);
+                System.out.println("🛡️ Autorités effectives : " + authorities);
             }
         } catch (Exception e) {
-            System.err.println("❌ Erreur dans JwtAuthenticationFilter: " + e.getMessage());
+            System.err.println("❌ JwtAuthenticationFilter error: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
-
 
     private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");

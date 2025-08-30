@@ -45,7 +45,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.immo.construction.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.construction,i)">✕</button>
                 </div>
@@ -61,7 +61,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.immo.amenagement.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.amenagement,i)">✕</button>
                 </div>
@@ -77,7 +77,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.immo.genieCivil.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.genieCivil,i)">✕</button>
                 </div>
@@ -109,7 +109,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.mob.roulant.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.roulant,i)">✕</button>
                 </div>
@@ -125,7 +125,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.mob.equipement.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.equipement,i)">✕</button>
                 </div>
@@ -141,7 +141,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.mob.cheptel.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.cheptel,i)">✕</button>
                 </div>
@@ -157,7 +157,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.mob.vegetal.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.vegetal,i)">✕</button>
                 </div>
@@ -189,7 +189,7 @@
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.constitutionSociete.file)"
                       [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.constitutionSociete,i)">✕</button>
                 </div>
@@ -205,7 +205,7 @@
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.obtentionCredit.file)"
                       [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.obtentionCredit,i)">✕</button>
                 </div>
@@ -219,7 +219,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.etude.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.etude,i)">✕</button>
                 </div>
@@ -233,7 +233,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.marketing.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.marketing,i)">✕</button>
                 </div>
@@ -247,7 +247,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.expertise.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.expertise,i)">✕</button>
                 </div>
@@ -263,7 +263,7 @@
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.assistanceTech.file)"
                       [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assistanceTech,i)">✕</button>
                 </div>
@@ -277,7 +277,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.assurance.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assurance,i)">✕</button>
                 </div>
@@ -293,7 +293,7 @@
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.formalisationEmploi.file)"
                       [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.formalisationEmploi,i)">✕</button>
                 </div>
@@ -309,7 +309,7 @@
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.miseNiveauRegl.file)"
                       [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.miseNiveauRegl,i)">✕</button>
                 </div>
@@ -323,7 +323,7 @@
                     [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                   <div class="file">
                     <input type="file" (change)="onFile($event, l, Q.services.autres.file)" [disabled]="isAdmin">
-                    <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                    <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
                   <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.autres,i)">✕</button>
                 </div>
@@ -389,7 +389,7 @@
                   [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                 <div class="file">
                   <input type="file" (change)="onFile($event, l, Q.credits.file)" [disabled]="isAdmin">
-                  <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                 </div>
                 <button class="icon" *ngIf="!isAdmin" (click)="removeLine(credits,i)">✕</button>
               </div>
@@ -408,7 +408,7 @@
                   [ngModelOptions]="{standalone:true}" (ngModelChange)="recompute()" [readonly]="isAdmin">
                 <div class="file">
                   <input type="file" (change)="onFile($event, l, Q.apports.file)" [disabled]="isAdmin">
-                  <a *ngIf="l.file" [href]="l.file" target="_blank">Devis</a>
+                  <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                 </div>
                 <button class="icon" *ngIf="!isAdmin" (click)="removeLine(apports,i)">✕</button>
               </div>

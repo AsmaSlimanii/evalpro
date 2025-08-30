@@ -8,3 +8,7 @@ export interface Dossier {
   userId: number;
   steps: Step[];
 }
+
+export interface DossierIdResponse {
+  id: number;
+}
