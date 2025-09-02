@@ -1,6 +1,7 @@
 package com.medianet.evalpro.Controller;
 
 import com.medianet.evalpro.Dto.AdminDossierItemDto;
+import com.medianet.evalpro.Dto.AdminStatusUpdateDto;
 import com.medianet.evalpro.Dto.PageDto;
 import com.medianet.evalpro.Entity.Dossier;
 import com.medianet.evalpro.Service.DossierService;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -45,4 +48,20 @@ public class AdminDossierController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"dossier-" + id + ".pdf\"")
                 .body(bytes);
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> updateStatus(
+            @PathVariable Long id,
+            @RequestBody AdminStatusUpdateDto body) {
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        String adminEmail = auth != null ? auth.getName() : "admin@local";
+
+        dossierService.updateStatus(id, body.status(), body.message(), adminEmail);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+
 }

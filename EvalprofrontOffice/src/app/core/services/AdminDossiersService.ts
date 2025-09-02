@@ -19,7 +19,7 @@ export class AdminDossiersService {
   private readonly api = `${this.baseUrl}/api/admin/dossiers`; // ✅ Bonne URL
 
 
-  constructor(private http: HttpClient, private auth: AuthService) {}
+  constructor(private http: HttpClient, private auth: AuthService) { }
 
   private headers(): HttpHeaders {
     const t = this.auth.getToken();
@@ -49,4 +49,10 @@ export class AdminDossiersService {
       responseType: 'blob' as const
     });
   }
+
+
+  updateStatus(id: number, status: 'ACCEPTE' | 'REJETE' | 'EN_COURS', message?: string) {
+    return this.http.patch(`${this.api}/${id}/status`, { status, message }, { headers: this.headers() });
+  }
+
 }

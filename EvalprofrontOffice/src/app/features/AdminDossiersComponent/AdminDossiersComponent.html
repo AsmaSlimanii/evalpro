@@ -34,52 +34,48 @@
                         <th>Propriétaire</th>
                         <th>Soumis le</th>
                         <th>Statut</th>
-                        <th style="width:1%"></th>
+                        <th class="col-actions">Actions</th> <!-- ✅ ICI, une seule colonne Actions -->
+
                     </tr>
                 </thead>
 
                 <tbody>
-                    <!-- Skeletons pendant chargement -->
-                    <ng-container *ngIf="loading">
-                        <tr *ngFor="let _ of [1,2,3,4,5]" class="skeleton-row">
-                            <td colspan="6">
-                                <div class="sk"></div>
-                            </td>
-                        </tr>
-                    </ng-container>
-
-                    <!-- Lignes réelles -->
                     <tr *ngFor="let d of filteredRows">
                         <td>{{ d.id }}</td>
                         <td>{{ d.titre }}</td>
                         <td>{{ d.ownerEmail }}</td>
-                        <td>{{ d.submittedAt | date: 'dd/MM/yyyy, HH:mm' }}</td>
+                        <td>{{ d.submittedAt | date:'dd/MM/yyyy, HH:mm' }}</td>
                         <td>
                             <span class="badge" [ngClass]="d.status">
                                 {{ labels[d.status] || d.status }}
                             </span>
                         </td>
-                        <!-- en-tête -->
-                        <th class="col-actions">Actions</th>
 
-                        <!-- ligne -->
+                        <!-- ✅ une seule cellule pour les boutons -->
                         <td class="row-actions">
-                            <button class="btn tiny" (click)="open(d.id)" title="Ouvrir dans un onglet">
+                            <button class="btn btn-sm" (click)="open(d.id)" title="Ouvrir dans un onglet">
                                 <i class="fas fa-eye"></i> Voir
                             </button>
 
-                            <button class="btn tiny primary" (click)="download(d.id, d.titre)" title="Télécharger PDF">
-                                <i class="fas fa-file-pdf"></i> PDF
+
+                            <button class="btn btn-sm btn-pdf" (click)="download(d.id, d.titre)"
+                                title="Télécharger PDF">
+                                <i class="fas fa-file-pdf"></i> Télécharger PDF
+                            </button>
+
+                            <button class="btn btn-sm success" *ngIf="d.status === 'SOUMIS' || d.status === 'EN_COURS'"
+                                (click)="accept(d)">
+                                <i class="fas fa-check"></i> Accepter
+                            </button>
+
+                            <button class="btn btn-sm danger" *ngIf="d.status === 'SOUMIS' || d.status === 'EN_COURS'"
+                                (click)="reject(d)">
+                                <i class="fas fa-times"></i> Rejeter
                             </button>
                         </td>
-
-
-                    </tr>
-
-                    <tr *ngIf="!loading && !filteredRows.length">
-                        <td colspan="6" class="empty">Aucun dossier.</td>
                     </tr>
                 </tbody>
+
             </table>
         </div>
 

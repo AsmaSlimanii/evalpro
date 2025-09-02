@@ -123,4 +123,22 @@ export class AdminDossiersComponent implements OnInit {
     }
 
 
+    accept(d: AdminDossierItem) {
+        this.loading = true;
+        this.api.updateStatus(d.id, 'ACCEPTE').subscribe({
+            next: _ => { this.message = 'Dossier accepté.'; this.load(); },
+            error: e => { this.message = 'Erreur acceptation'; console.error(e); this.loading = false; }
+        });
+    }
+
+    reject(d: AdminDossierItem) {
+        const msg = prompt('Motif de rejet ?') || '';
+        this.loading = true;
+        this.api.updateStatus(d.id, 'REJETE', msg).subscribe({
+            next: _ => { this.message = 'Dossier rejeté.'; this.load(); },
+            error: e => { this.message = 'Erreur rejet'; console.error(e); this.loading = false; }
+        });
+    }
+
+
 }
