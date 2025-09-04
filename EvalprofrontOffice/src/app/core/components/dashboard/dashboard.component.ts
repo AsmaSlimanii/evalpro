@@ -7,26 +7,23 @@ import { Router } from '@angular/router';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent {
-
-  menuOpen: boolean = false;
+  menuOpen = false;
 
   constructor(private router: Router) {}
 
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
+  toggleMenu() { this.menuOpen = !this.menuOpen; }
+  toggleSidebar() { console.log('Sidebar toggled'); }
+
+  // ➜ Déconnexion + nettoyage des infos auth
+ logout() { console.log('Déconnexion'); }
+
+  // ➜ Nouveau projet : démarre à l’étape 1 et reset via ?new=1
+  startNewProject(): void {
+    this.router.navigate(['/projects/create']);
   }
 
-  toggleSidebar() {
-    console.log('Sidebar toggled');
+  // ➜ Liste de projets
+  goToMyProjects(): void {
+    this.router.navigate(['/projects/list']);
   }
-
-  logout() {
-    console.log('Déconnexion');
-    this.router.navigate(['/home']);
-  }
-
-
- goToStep1(): void {
-  this.router.navigate(['/projects/create/step1']);
-}
 }

@@ -26,7 +26,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { ProjectListComponent } from './features/projects/project-list/project-list.component';
-import { TimeAgoPipe } from './shared/pipes/time-ago.pipe';
+
 import { LayoutComponent } from './layout/layout.component';
 import { PilierEconomiqueComponent } from './features/projects/create-project/auto-evaluation/pilier-economique/pilier-economique.component';
 import { PilierSocioComponent } from './features/projects/create-project/auto-evaluation/pilier-socio/pilier-socio.component';
@@ -36,6 +36,7 @@ import { EntrepriseComponent } from './features/projects/create-project/requete-
 import { ProjetComponent } from './features/projects/create-project/requete-financement/projet/projet.component';
 import { NotificationsComponent } from './features/notifications/notifications.component';
 import { AdminDossiersComponent } from './features/AdminDossiersComponent/AdminDossiersComponent';
+import { TimeAgoPipe } from './shared/pipes/time-ago.pipe';
 
 
 

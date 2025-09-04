@@ -173,3 +173,90 @@ a.active {
   color: #888;
   text-transform: uppercase;
 }
+
+.footer {
+  text-align: center;
+  font-size: 1.10rem;
+  color: #999;
+  font-style: italic;
+  margin-top: 38rem;
+}
+
+
+
+/* ---- base : alignement propre ---- */
+.sidebar {
+  box-sizing: border-box;
+}
+.sidebar .nav {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+.sidebar .nav li a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sidebar .nav li a i {
+  flex: 0 0 24px;
+  text-align: center;
+  line-height: 1;
+}
+.sidebar .nav li a .nav-label {
+  flex: 1 1 auto;
+  display: inline-block;
+}
+
+/* ---- mode réduit (quand <body> a .sidebar-collapsed) ---- */
+:host-context(.sidebar-collapsed) .sidebar {
+  width: 72px;              /* largeur compacte */
+  padding: 0 .5rem;         /* bords serrés */
+}
+
+/* logo compact */
+:host-context(.sidebar-collapsed) .sidebar-logo img {
+  width: 48px;
+}
+
+/* cacher le texte et les sous-menus en réduit */
+:host-context(.sidebar-collapsed) .nav-label,
+:host-context(.sidebar-collapsed) .sub-nav,
+:host-context(.sidebar-collapsed) .menu-section {
+  display: none !important;
+}
+
+/* centrer et compacter au MAX les icônes */
+:host-context(.sidebar-collapsed) .nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;                 /* ← espace MINIMAL entre icônes */
+  padding: .25rem 0;
+}
+:host-context(.sidebar-collapsed) .nav li {
+  margin: 0 !important;     /* annule les marges des <li> */
+}
+:host-context(.sidebar-collapsed) .nav li a {
+  justify-content: center;
+  gap: 0;
+  padding: .25rem 0;        /* ← hauteur cliquable compacte */
+  min-height: 28px;         /* garde un minimum d’accessibilité */
+}
+:host-context(.sidebar-collapsed) .nav li a i {
+  width: 22px;              /* icône bien centrée */
+  font-size: 1.05rem;
+}
+
+/* neutraliser le rond du sous-menu en réduit */
+:host-context(.sidebar-collapsed) .sub-nav li a::before {
+  display: none !important;
+}
+
+/* footer : invisible en réduit */
+:host-context(.sidebar-collapsed) .sidebar .footer {
+  display: none !important;
+}
+
+/* (optionnel) Pour masquer le footer tout le temps :
+.sidebar .footer { display: none !important; }
+*/

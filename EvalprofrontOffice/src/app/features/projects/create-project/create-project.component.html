@@ -76,8 +76,9 @@
     </div>
 
 
-    <div class="action-buttons">
-      <button class="btn-outline" (click)="saveDraft()" [disabled]="isSaving">
+    <!-- Boutons visibles UNIQUEMENT pour les clients -->
+    <div class="action-buttons" *ngIf="isClient">
+      <button class="btn-outline" (click)="saveDraft()" [disabled]="isSaving" >
         <i class="fas fa-save"></i>
         <span *ngIf="!isSaving">Sauvegarder le brouillon</span>
         <span *ngIf="isSaving">Sauvegarde en cours...</span>

@@ -1,25 +1,29 @@
 .project-list-container {
-  margin: 95px 40px; /* plus d'espace autour */
+  margin: 95px 40px;
+  /* plus d'espace autour */
   width: 100%;
   max-width: 95%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-   margin-left: 100px;
+  margin-left: 100px;
 }
 
 .project-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 16.5px; /* ✅ texte plus grand */
+  font-size: 16.5px;
+  /* ✅ texte plus grand */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   overflow: hidden;
   background-color: white;
   border: 1px solid #ddd;
 
-  th, td {
-    padding: 16px 12px; /* ✅ plus d'espace intérieur */
+  th,
+  td {
+    padding: 16px 12px;
+    /* ✅ plus d'espace intérieur */
     text-align: center;
     vertical-align: middle;
   }
@@ -44,22 +48,115 @@
     font-size: 17px;
   }
 
-  .step {
-    margin: 0 3px;
-    padding: 7px 12px;
-    border-radius: 50%;
-    background: #cfd8dc;
-    color: #003b71;
-    font-weight: bold;
-    display: inline-block;
-    min-width: 32px;
+  /* -------- Progression (design propre & compact) -------- */
 
-    &.done {
-      background: #00cc99;
-      color: white;
-    }
+  .steps-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    min-width: 440px;
   }
 
+  .step-chip {
+    width: 130px;
+    padding: 10px 12px 12px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f8fafc, #eef2f7);
+    border: 1px solid #e6ebf2;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .06);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+
+  .step-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(2, 6, 23, .06);
+  }
+
+  .chip-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+  }
+
+  .chip-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #e2e8f0;
+  }
+
+  .chip-label {
+    font-weight: 700;
+    color: #0f172a;
+    flex: 1;
+    font-size: 13px;
+  }
+
+  .chip-percent {
+    font-weight: 900;
+    font-size: 12px;
+    color: #334155;
+  }
+
+  .chip-check {
+    color: #16a34a;
+    font-size: 12px;
+    opacity: 0;
+    transform: scale(.7);
+    transition: .2s ease;
+  }
+
+  .chip-bar {
+    position: relative;
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e7eef6;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7);
+  }
+
+  .chip-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    border-radius: 999px;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .08);
+    transition: width .25s ease;
+  }
+
+  /* états */
+  .step-chip.inprogress .chip-percent {
+    color: #2563eb;
+  }
+
+  .step-chip.done .chip-bar-fill {
+    background: linear-gradient(90deg, #22c55e, #10b981);
+  }
+
+  .step-chip.done .chip-percent {
+    color: #16a34a;
+  }
+
+  .step-chip.done .chip-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+
+
+
+
+
+
+  
   .action-link {
     text-decoration: none;
     color: #007bff;

@@ -4,7 +4,7 @@
       <tr>
         <th>#</th>
         <th>Titre</th>
-        <th>Catégorie</th>
+      
         <th>Situation</th>
         <th>Statut du dossier</th>
         <th>Progression</th>
@@ -17,23 +17,35 @@
       <tr *ngFor="let dossier of paginatedDossiers">
         <td><strong>{{ dossier.code }}</strong></td>
         <td><span class="project-title">{{ dossier.nomOfficielProjet }}</span></td>
-        <td>{{ dossier.categorie || '-' }}</td>
+
         <td>{{ dossier.situation || 'Création' }}</td>
         <td>{{ dossier.statusLabel || 'En préparation' }}</td>
         <td>
           <div class="steps-container">
-            <ng-container *ngFor="let key of getStepKeys(dossier.steps)">
-              <span class="step" [class.done]="dossier.steps[key] === 100">
-                {{ key }}: {{ dossier.steps[key] }}%
-              </span>
+            <ng-container *ngFor="let key of getStepKeys(dossier.steps); let i = index">
+              <div class="step-chip" [class.done]="dossier.steps[key] === 100"
+                [class.inprogress]="dossier.steps[key] > 0 && dossier.steps[key] < 100"
+                [attr.title]="key + ' · ' + dossier.steps[key] + '%'">
+                <div class="chip-head">
+                  <span class="chip-index">{{ i + 1 }}</span>
+                  <span class="chip-label">{{ key }}</span>
+                  <span class="chip-percent">{{ dossier.steps[key] }}%</span>
+                  <i class="fas fa-check chip-check"></i>
+                </div>
+                <div class="chip-bar">
+                  <div class="chip-bar-fill" [style.width.%]="dossier.steps[key]"></div>
+                </div>
+              </div>
             </ng-container>
           </div>
         </td>
+
         <td>{{ dossier.updatedAt | date:'short' }}</td>
         <td>{{ dossier.createdAt | date:'short' }}</td>
         <td>
-          <a [routerLink]="['/projects/edit', dossier.id, 'step' + dossier.lastCompletedStep]" class="action-link">✏️Modifier</a>|
-         <a href="#" (click)="deleteDossier(dossier.id, $event)" class="action-link delete">🗑️ Supprimer</a>
+          <a [routerLink]="['/projects/edit', dossier.id, 'step' + dossier.lastCompletedStep]"
+            class="action-link">✏️Modifier</a>|
+          <a href="#" (click)="deleteDossier(dossier.id, $event)" class="action-link delete">🗑️ Supprimer</a>
 
         </td>
       </tr>

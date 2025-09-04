@@ -54,6 +54,10 @@ export class AuthService {
     return this.getCurrentUserRole() === 'ADMIN';
   }
 
+  isClient(): boolean {
+     return this.getCurrentUserRole() === 'CLIENT';
+  }
+
   getUserEmail(): string | null {
     try {
       const userData = localStorage.getItem('user');
@@ -72,6 +76,7 @@ export class AuthService {
   }
 
 
+
   getRoles(): string[] {
     const t = this.getToken();
     if (!t) return [];
@@ -84,5 +89,7 @@ export class AuthService {
       return [];
     }
   }
+
+  
 
 }

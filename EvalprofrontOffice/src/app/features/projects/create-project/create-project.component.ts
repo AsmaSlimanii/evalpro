@@ -3,6 +3,7 @@ import { Router, ActivatedRoute, NavigationEnd, NavigationStart } from '@angular
 import { filter } from 'rxjs/operators';
 import { DossierService } from '../../../core/services/dossier.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-create-project',
@@ -21,14 +22,18 @@ export class CreateProjectComponent implements OnInit {
   isSubmitting = false;
   message = '';
   dossierId!: number;
+  isClient = false;
 
   readonly stepRoutes = ['step1', 'step2', 'step3', 'step4', 'step5'];
+
+
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
     private dossierService: DossierService,
     private dossiers: DossierService,
+    private auth: AuthService
   ) {
     this.router.events.pipe(
 
@@ -62,6 +67,10 @@ export class CreateProjectComponent implements OnInit {
     this.setupRouteListener?.();
     this.updateCurrentStep?.();
     this.hydrateDossierId();
+    // ✅ fallback: lit aussi le rôle stocké au login
+    const roleLS = (localStorage.getItem('role') || '').toUpperCase();
+    this.isClient = this.auth.getRoles().includes('CLIENT') || roleLS === 'CLIENT' || roleLS === 'ROLE_CLIENT';
+
   }
 
   // ✅ lit history.state: { successMessage, completedStep }
@@ -136,6 +145,7 @@ export class CreateProjectComponent implements OnInit {
   }
 
   saveDraft() {
+    if (!this.isClient) return;
     this.isSaving = true;
     this.dossiers.saveDraft().subscribe({
       next: () => { this.message = 'Brouillon sauvegardé.'; },
@@ -145,6 +155,7 @@ export class CreateProjectComponent implements OnInit {
   }
 
   submitDossier() {
+    if (!this.isClient) return;
     if (!this.canSubmit) return;
     if (!this.dossierId) { this.message = 'Dossier introuvable. Reprenez l’étape 1.'; return; }
 

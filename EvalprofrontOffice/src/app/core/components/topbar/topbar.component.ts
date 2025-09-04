@@ -26,6 +26,10 @@ export class TopbarComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    const saved = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (saved) this.renderer.addClass(this.document.body, 'sidebar-collapsed');
+
+
     this.items$ = this.notif.items$;
     this.unread$ = this.notif.unread$;
     this.notif.load().subscribe(); // charge liste + compteur
@@ -34,11 +38,11 @@ export class TopbarComponent implements OnInit {
   toggleMenu() { this.menuOpen = !this.menuOpen; }
 
   toggleSidebar() {
-    const body = this.document.body;
-    body.classList.contains('sidebar-collapsed')
-      ? this.renderer.removeClass(body, 'sidebar-collapsed')
-      : this.renderer.addClass(body, 'sidebar-collapsed');
-    console.log('toggleSidebar called');
+    const b = this.document.body;
+    const has = b.classList.contains('sidebar-collapsed');
+    has ? this.renderer.removeClass(b, 'sidebar-collapsed')
+      : this.renderer.addClass(b, 'sidebar-collapsed');
+    localStorage.setItem('sidebarCollapsed', String(!has));
   }
 
   // ====== cloche ======

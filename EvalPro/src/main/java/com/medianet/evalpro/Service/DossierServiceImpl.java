@@ -117,6 +117,7 @@ public class DossierServiceImpl implements DossierService {
                 .createdAt(LocalDateTime.now())
                 .status(Dossier.Status.EN_COURS)
                 .nomOfficielProjet(dto.getNomOfficielProjet())  // maintenant ça fonctionne
+                .lastCompletedStep(0)
                 .build();
 
         return dossierRepository.save(dossier);
@@ -129,7 +130,9 @@ public class DossierServiceImpl implements DossierService {
         List<Dossier> dossiers = dossierRepository.findByUserId(user.getId());
 
         return dossiers.stream()
+
                 .map(d -> {
+                    int last = Optional.ofNullable(d.getLastCompletedStep()).orElse(0); // ✅ défini ici
                     // ✅ Logs de debug pour vérifier les données
                     System.out.println(">> ID: " + d.getId());
                     System.out.println(">> Nom: " + d.getNomOfficielProjet());
@@ -148,7 +151,7 @@ public class DossierServiceImpl implements DossierService {
                             // ✅ fallback si updatedAt est null
                             .updatedAt(d.getUpdatedAt() != null ? d.getUpdatedAt() : d.getCreatedAt())
                             .steps(generateStepProgress(d))
-                            .lastCompletedStep(d.getLastCompletedStep() + 1)
+                            .lastCompletedStep(last + 1)
                             .categorie(d.getCategorie() != null ? d.getCategorie() : "-")
                             .build();
                 })
@@ -192,7 +195,8 @@ public class DossierServiceImpl implements DossierService {
 
 private Map<String, Integer> generateStepProgress(Dossier dossier) {
     Map<String, Integer> steps = new LinkedHashMap<>();
-    int lastStep = Optional.of(dossier.getLastCompletedStep()).orElse(0);
+    int lastStep = Optional.ofNullable(dossier.getLastCompletedStep()).orElse(0);
+
 
     for (int i = 1; i <= 5; i++) {
         String stepName = "Step " + i;

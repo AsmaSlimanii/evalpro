@@ -68,30 +68,32 @@
 
 .logout-btn {
   background: linear-gradient(to right, #dc3545, #c82333);
-  color: white;
+  color: #fff;
   padding: 0.8rem 1.8rem;
-  border: none;
+  border: 0;
   border-radius: 8px;
   font-size: 1.1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(220, 53, 69, 0.2);
+  transition: all .3s ease;
+  box-shadow: 0 2px 10px rgba(220,53,69,.2);
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
 
-.logout-btn:hover {
+  text-decoration: none !important;   /* 👈 supprime l’underline */
+}
+.logout-btn:hover,
+.logout-btn:focus,
+.logout-btn:active,
+.logout-btn:visited {
+  text-decoration: none !important;   /* 👈 au cas où des styles globaux existent */
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 4px 15px rgba(220,53,69,.3);
 }
 
-.logout-btn::before {
-  content: "\f2f5";
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-}
+
+
 
 /* Project Card - Version améliorée */
 .project-summary {

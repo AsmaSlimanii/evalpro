@@ -54,8 +54,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/notifications/**").authenticated()
 
                         // ✅ routes dossiers
-                        .requestMatchers(HttpMethod.POST, "/api/dossiers/*/submit").hasAnyRole("CLIENT","ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/dossiers/drafts").hasAnyRole("CLIENT","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/dossiers/*/submit").hasAnyRole("CLIENT")
+                        .requestMatchers(HttpMethod.POST, "/api/dossiers/drafts").hasAnyRole("CLIENT")
                         .requestMatchers("/api/dossiers/**").hasAnyRole("CLIENT","ADMIN")
 
                         // ✅ admin
