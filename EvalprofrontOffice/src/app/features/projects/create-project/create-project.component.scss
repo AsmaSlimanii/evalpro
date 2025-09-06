@@ -13,25 +13,27 @@
   --step-5: #4cc9f0;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
-  
+
 
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    
+
   }
 
   display: block;
-  line-height: 1.6;
-  color: #333;
-  height: 110%;
-  width: 100%;
+  line-height: 2;
+  color: hsl(0, 0%, 20%);
+  min-height: 100%;
+  min-width:100%;
   background: linear-gradient(to bottom, #f9fbfe, #e6ecf5);
-  padding: 2rem;
+  padding: 4rem;
   display: flex;
   justify-content: center;
   align-items: center;
+
+
 
 }
 
@@ -45,7 +47,7 @@
 }
 
 .create-project-wrapper {
-  max-width: 1800px;
+  max-width: 1900px;
   width: 100%;
   background: white;
   border-radius: 24px;
@@ -53,12 +55,15 @@
   padding: 3rem;
   position: relative;
   overflow: hidden;
+
+
 }
+
 /* Style du message de succès */
 .success-message-container {
   margin-bottom: 2rem;
   animation: slideDown 0.5s ease-out;
-  
+
   .success-message {
     background: linear-gradient(135deg, #e0f7e9, #c8f0d5);
     color: #2e7d32;
@@ -71,12 +76,12 @@
     box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
     border-left: 4px solid #2e7d32;
     position: relative;
-    
+
     i.fa-check-circle {
       font-size: 1.5rem;
       color: #2e7d32;
     }
-    
+
     .close-message {
       margin-left: auto;
       background: none;
@@ -85,7 +90,7 @@
       cursor: pointer;
       opacity: 0.7;
       transition: opacity 0.2s;
-      
+
       &:hover {
         opacity: 1;
       }
@@ -99,6 +104,7 @@
     transform: translateY(-20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -130,7 +136,7 @@
     height: 4px;
     background: linear-gradient(90deg, var(--step-1), var(--step-5));
     border-radius: 2px;
-     display: none;
+    display: none;
   }
 }
 
@@ -160,12 +166,12 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, 
-    var(--step-1) 0%, 
-    var(--step-2) 25%, 
-    var(--step-3) 50%, 
-    var(--step-4) 75%, 
-    var(--step-5) 100%);
+  background: linear-gradient(90deg,
+      var(--step-1) 0%,
+      var(--step-2) 25%,
+      var(--step-3) 50%,
+      var(--step-4) 75%,
+      var(--step-5) 100%);
   border-radius: 6px;
   transition: width 0.5s ease;
   position: relative;
@@ -178,10 +184,10 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, 
-      rgba(255,255,255,0.2) 0%, 
-      rgba(255,255,255,0) 50%, 
-      rgba(255,255,255,0.2) 100%);
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(255, 255, 255, 0.2) 100%);
   }
 }
 
@@ -222,29 +228,45 @@
     box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
   }
 
-  &:nth-child(1) { border-top: 4px solid var(--step-1); }
-  &:nth-child(2) { border-top: 4px solid var(--step-2); }
-  &:nth-child(3) { border-top: 4px solid var(--step-3); }
-  &:nth-child(4) { border-top: 4px solid var(--step-4); }
-  &:nth-child(5) { border-top: 4px solid var(--step-5); }
+  &:nth-child(1) {
+    border-top: 4px solid var(--step-1);
+  }
+
+  &:nth-child(2) {
+    border-top: 4px solid var(--step-2);
+  }
+
+  &:nth-child(3) {
+    border-top: 4px solid var(--step-3);
+  }
+
+  &:nth-child(4) {
+    border-top: 4px solid var(--step-4);
+  }
+
+  &:nth-child(5) {
+    border-top: 4px solid var(--step-5);
+  }
 
 
   .completed-badge {
-  position: absolute;
-  bottom: -5px;
-  right: -5px;
-  width: 24px;
-  height: 24px;
-  background: #2e7d32; /* Fond vert */
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  border: 2px solid white; /* Bordure blanche pour le contraste */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-} 
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    background: #2e7d32;
+    /* Fond vert */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    border: 2px solid white;
+    /* Bordure blanche pour le contraste */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
 }
 
 .step-icon {
@@ -266,30 +288,44 @@
 }
 
 /* Couleurs d'icônes par étape */
-.step-card:nth-child(1) .step-icon { 
-  background-color: rgba(67, 97, 238, 0.1); 
-  
-  i { color: var(--step-1); }
+.step-card:nth-child(1) .step-icon {
+  background-color: rgba(67, 97, 238, 0.1);
+
+  i {
+    color: var(--step-1);
+  }
 }
-.step-card:nth-child(2) .step-icon { 
-  background-color: rgba(58, 12, 163, 0.1); 
-  
-  i { color: var(--step-2); }
+
+.step-card:nth-child(2) .step-icon {
+  background-color: rgba(58, 12, 163, 0.1);
+
+  i {
+    color: var(--step-2);
+  }
 }
-.step-card:nth-child(3) .step-icon { 
-  background-color: rgba(114, 9, 183, 0.1); 
-  
-  i { color: var(--step-3); }
+
+.step-card:nth-child(3) .step-icon {
+  background-color: rgba(114, 9, 183, 0.1);
+
+  i {
+    color: var(--step-3);
+  }
 }
-.step-card:nth-child(4) .step-icon { 
-  background-color: rgba(247, 37, 133, 0.1); 
-  
-  i { color: var(--step-4); }
+
+.step-card:nth-child(4) .step-icon {
+  background-color: rgba(247, 37, 133, 0.1);
+
+  i {
+    color: var(--step-4);
+  }
 }
-.step-card:nth-child(5) .step-icon { 
-  background-color: rgba(76, 201, 240, 0.1); 
-  
-  i { color: var(--step-5); }
+
+.step-card:nth-child(5) .step-icon {
+  background-color: rgba(76, 201, 240, 0.1);
+
+  i {
+    color: var(--step-5);
+  }
 }
 
 .step-card.active .step-icon {
@@ -319,11 +355,25 @@
 }
 
 /* Badges colorés */
-.step-card:nth-child(1) .step-badge { background: var(--step-1); }
-.step-card:nth-child(2) .step-badge { background: var(--step-2); }
-.step-card:nth-child(3) .step-badge { background: var(--step-3); }
-.step-card:nth-child(4) .step-badge { background: var(--step-4); }
-.step-card:nth-child(5) .step-badge { background: var(--step-5); }
+.step-card:nth-child(1) .step-badge {
+  background: var(--step-1);
+}
+
+.step-card:nth-child(2) .step-badge {
+  background: var(--step-2);
+}
+
+.step-card:nth-child(3) .step-badge {
+  background: var(--step-3);
+}
+
+.step-card:nth-child(4) .step-badge {
+  background: var(--step-4);
+}
+
+.step-card:nth-child(5) .step-badge {
+  background: var(--step-5);
+}
 
 .step-card.active .step-badge {
   transform: scale(1.1);
@@ -338,11 +388,25 @@
 }
 
 /* Couleurs de texte */
-.step-card:nth-child(1) .step-label { color: var(--step-1); }
-.step-card:nth-child(2) .step-label { color: var(--step-2); }
-.step-card:nth-child(3) .step-label { color: var(--step-3); }
-.step-card:nth-child(4) .step-label { color: var(--step-4); }
-.step-card:nth-child(5) .step-label { color: var(--step-5); }
+.step-card:nth-child(1) .step-label {
+  color: var(--step-1);
+}
+
+.step-card:nth-child(2) .step-label {
+  color: var(--step-2);
+}
+
+.step-card:nth-child(3) .step-label {
+  color: var(--step-3);
+}
+
+.step-card:nth-child(4) .step-label {
+  color: var(--step-4);
+}
+
+.step-card:nth-child(5) .step-label {
+  color: var(--step-5);
+}
 
 .step-description {
   font-size: 1rem;
@@ -359,7 +423,8 @@
   margin-top: 4rem;
 }
 
-.btn-outline, .btn-primary {
+.btn-outline,
+.btn-primary {
   padding: 1rem 2.5rem;
   border-radius: 12px;
   font-size: 1.1rem;
@@ -408,11 +473,11 @@
   :host {
     padding: 1.5rem;
   }
-  
+
   .create-project-wrapper {
     padding: 2.5rem 2rem;
   }
-  
+
   .step-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
@@ -424,37 +489,38 @@
     padding: 2rem 1.5rem;
     border-radius: 16px;
   }
-  
+
   .page-title {
     font-size: 2rem;
   }
-  
+
   .page-subtitle {
     font-size: 1.1rem;
   }
-  
+
   .step-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 1rem;
     margin-top: 3rem;
   }
-  
-  .btn-outline, .btn-primary {
+
+  .btn-outline,
+  .btn-primary {
     width: 100%;
     justify-content: center;
     padding: 1rem;
   }
-  
+
   .step-icon {
     width: 80px;
     height: 80px;
   }
-  
+
   .step-icon i {
     font-size: 2.5rem;
   }
