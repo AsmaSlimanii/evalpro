@@ -19,7 +19,7 @@ services:
     image: asmasl/evalpro:1.0.0
     restart: on-failure
     ports:
-      - "9090:8080"
+      - "9091:8080"
     environment:
       SPRING_APPLICATION_JSON: >-
         {
