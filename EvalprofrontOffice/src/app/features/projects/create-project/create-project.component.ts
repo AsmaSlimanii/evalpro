@@ -47,38 +47,39 @@ export class CreateProjectComponent implements OnInit {
   }
 
   ngOnInit(): void {
-  const url = this.router.url;
-  const wantsNew = this.route.snapshot.queryParamMap.get('new') === '1';
+    const url = this.router.url;
+    const wantsNew = this.route.snapshot.queryParamMap.get('new') === '1';
 
-  // 🔹 TOUT remettre à zéro quand on arrive sur "Créer un projet"
-  if (url.startsWith('/projects/create')) {
-    localStorage.removeItem('dossierId');
-    localStorage.removeItem('currentDossierId');
-    localStorage.removeItem('completedStep');
-    this.completedStep = 0;
-    this.dossierId = undefined as any;
+    // 🔹 TOUT remettre à zéro quand on arrive sur "Créer un projet"
+    if (url.startsWith('/projects/create')) {
+      localStorage.removeItem('dossierId');
+      localStorage.removeItem('currentDossierId');
+      localStorage.removeItem('completedStep');
+      this.completedStep = 0;
+      this.dossierId = undefined as any;
+    }
+
+    // (Tu peux garder le ?new=1 si tu veux un bouton "Nouveau", mais ce n'est plus nécessaire)
+    if (wantsNew) {
+      localStorage.removeItem('dossierId');
+      localStorage.removeItem('currentDossierId');
+      localStorage.removeItem('completedStep');
+      this.completedStep = 0;
+    }
+
+    this.syncFromHistoryState();
+    const stepMatch = url.match(/step(\d+)/);
+    this.currentStep = stepMatch ? +stepMatch[1] : 1;
+
+    this.setupRouteListener?.();
+    this.updateCurrentStep?.();
+
+    // ⛔ IMPORTANT: ne PAS hydrater un ancien dossier sur l'écran "create"
+    // this.hydrateDossierId();  // <-- désactive ici
+    const roleLS = (localStorage.getItem('role') || '').toUpperCase();
+    this.isClient = this.auth.getRoles().includes('CLIENT') || roleLS === 'CLIENT' || roleLS === 'ROLE_CLIENT';
+    this.hydrateDossierId();
   }
-
-  // (Tu peux garder le ?new=1 si tu veux un bouton "Nouveau", mais ce n'est plus nécessaire)
-  if (wantsNew) {
-    localStorage.removeItem('dossierId');
-    localStorage.removeItem('currentDossierId');
-    localStorage.removeItem('completedStep');
-    this.completedStep = 0;
-  }
-
-  this.syncFromHistoryState();
-  const stepMatch = url.match(/step(\d+)/);
-  this.currentStep = stepMatch ? +stepMatch[1] : 1;
-
-  this.setupRouteListener?.();
-  this.updateCurrentStep?.();
-
-  // ⛔ IMPORTANT: ne PAS hydrater un ancien dossier sur l'écran "create"
-  // this.hydrateDossierId();  // <-- désactive ici
-  const roleLS = (localStorage.getItem('role') || '').toUpperCase();
-  this.isClient = this.auth.getRoles().includes('CLIENT') || roleLS === 'CLIENT' || roleLS === 'ROLE_CLIENT';
-}
 
   // ✅ lit history.state: { successMessage, completedStep }
   private syncFromHistoryState(): void {
@@ -138,14 +139,14 @@ export class CreateProjectComponent implements OnInit {
   }
 
   goToStep(step: number): void {
-  const dossierId = localStorage.getItem('dossierId');
-  const isEditMode = dossierId !== null;
-  if (isEditMode) {
-    this.router.navigate([`/projects/edit/${dossierId}/step${step}`]);
-  } else {
-    this.router.navigate([`/projects/create/step${step}`]);
+    const dossierId = localStorage.getItem('dossierId');
+    const isEditMode = dossierId !== null;
+    if (isEditMode) {
+      this.router.navigate([`/projects/edit/${dossierId}/step${step}`]);
+    } else {
+      this.router.navigate([`/projects/create/step${step}`]);
+    }
   }
-}
 
 
   saveDraft() {
@@ -157,62 +158,52 @@ export class CreateProjectComponent implements OnInit {
       complete: () => this.isSaving = false
     });
   }
-submitDossier() {
-  if (!this.isClient || !this.canSubmit || !this.dossierId) {
-    this.message = !this.dossierId ? 'Dossier introuvable. Reprenez l’étape 1.' : this.message;
-    return;
+  submitDossier() {
+    if (!this.isClient || !this.canSubmit) return;
+
+    const id = this.dossierId ?? Number(localStorage.getItem('dossierId'));
+    if (!Number.isFinite(id)) {
+      this.message = 'Dossier introuvable. Reprenez l’étape 1.';
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.dossierService.submitById(id).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.message = '✅ Dossier soumis. En attente de traitement.';
+        // optionnel: purge
+        // localStorage.removeItem('dossierId');
+        // localStorage.removeItem('completedStep');
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.message = (err?.message || (err as any)?.error?.message || 'Erreur de soumission.');
+        console.error(err);
+      }
+    });
   }
 
-  this.isSubmitting = true;
-  this.dossierService.submitById(this.dossierId).subscribe({
-    next: () => {
-      this.isSubmitting = false;
-      this.message = '✅ Dossier soumis. En attente de traitement.';
-      // 🔥 PURGE complète: on termine ce dossier, on repart de zéro
-      localStorage.removeItem('dossierId');
-      localStorage.removeItem('completedStep');
-      // (optionnel) rediriger vers /projects/create
-      this.router.navigateByUrl('/projects/create');
-    },
-    error: (err) => {
-      this.isSubmitting = false;
-      this.message = (err?.message || (err as any)?.error?.message || 'Erreur de soumission.');
-      console.error(err);
-    }
-  });
-}
 
 
 
   private hydrateDossierId(): void {
-    // 1) depuis l’URL /projects/edit/:dossierId/stepX
-    const paramId = this.route.snapshot.paramMap.get('dossierId');
-    if (paramId) {
-      this.dossierId = +paramId;
-      localStorage.setItem('currentDossierId', paramId);
-      return;
-    }
+  // supporte /projects/edit/:dossierId/stepX
+  const paramId =
+    this.route.snapshot.paramMap.get('dossierId') ??
+    this.route.snapshot.paramMap.get('id'); // au cas où
 
-    // 2) depuis le localStorage (créé à l’étape 1)
-    const stored = localStorage.getItem('currentDossierId');
-    if (stored) {
-      this.dossierId = +stored;
-      return;
-    }
-
-    // 3) dernier recours : récupérer le dernier dossier EN_COURS
-    this.dossierService.getAllDossiers().subscribe({
-      next: (list: any[]) => {
-        const last = list
-          .filter(d => d.status === 'EN_COURS')
-          .sort((a, b) => b.id - a.id)[0];
-        if (last) {
-          this.dossierId = last.id;
-          localStorage.setItem('currentDossierId', String(last.id));
-        }
-      }
-    });
+  if (paramId) {
+    this.dossierId = +paramId;
+    localStorage.setItem('dossierId', paramId);   // 👈 une seule clé
+    return;
   }
+
+  const stored = localStorage.getItem('dossierId');
+  if (stored) {
+    this.dossierId = +stored;
+  }
+}
 
 
 

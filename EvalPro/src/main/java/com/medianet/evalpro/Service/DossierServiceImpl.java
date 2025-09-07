@@ -153,7 +153,7 @@ public class DossierServiceImpl implements DossierService {
                             // ✅ fallback si updatedAt est null
                             .updatedAt(d.getUpdatedAt() != null ? d.getUpdatedAt() : d.getCreatedAt())
                             .steps(generateStepProgress(d))
-                            .lastCompletedStep(last + 1)
+                            .lastCompletedStep(last)
                             .categorie(d.getCategorie() != null ? d.getCategorie() : "-")
                             .build();
                 })
