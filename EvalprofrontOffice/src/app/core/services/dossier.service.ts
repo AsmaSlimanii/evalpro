@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { DossierIdResponse } from '../../shared/models/dossier.model';
 
@@ -129,5 +129,8 @@ export class DossierService {
       headers: this.getAuthHeaders()
     }).pipe(catchError(this.handleError.bind(this)));
   }
+
+
+
 
 }

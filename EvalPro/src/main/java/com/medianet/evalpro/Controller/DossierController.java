@@ -34,9 +34,12 @@ public class DossierController {
 
     // 🔹 CREATE
     @PostMapping
-    public ResponseEntity<Dossier> create(@RequestBody Dossier dossier) {
-        return ResponseEntity.ok(dossierService.save(dossier));
+    public ResponseEntity<Map<String, Long>> create(@AuthenticationPrincipal UserDetails user) {
+        Dossier d = dossierService.createNewDossierForUser(user.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("dossierId", d.getId()));
     }
+
+
 
     // 🔹 READ ALL
     @GetMapping

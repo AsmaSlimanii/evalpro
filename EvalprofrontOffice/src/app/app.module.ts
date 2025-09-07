@@ -37,6 +37,8 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
 import { NotificationsComponent } from './features/notifications/notifications.component';
 import { AdminDossiersComponent } from './features/AdminDossiersComponent/AdminDossiersComponent';
 import { TimeAgoPipe } from './shared/pipes/time-ago.pipe';
+import { AiFormDesignerComponent } from './features/ai-form-designer/ai-form-designer.component';
+
 
 
 
@@ -69,6 +71,7 @@ import { TimeAgoPipe } from './shared/pipes/time-ago.pipe';
     TimeAgoPipe,
     NotificationsComponent,
     AdminDossiersComponent,
+    AiFormDesignerComponent
 
   ],
   imports: [
@@ -83,7 +86,7 @@ import { TimeAgoPipe } from './shared/pipes/time-ago.pipe';
     //RecaptchaFormsModule,
     BrowserAnimationsModule,
     MatSnackBarModule,
- 
+
     ReactiveFormsModule,
 
 

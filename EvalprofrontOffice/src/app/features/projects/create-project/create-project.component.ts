@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd, NavigationStart } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { DossierService } from '../../../core/services/dossier.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -48,30 +47,38 @@ export class CreateProjectComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const currentUrl = this.router.url;
+  const url = this.router.url;
+  const wantsNew = this.route.snapshot.queryParamMap.get('new') === '1';
 
-    // 🔄 Démarrer un NOUVEAU projet : /projects/create?new=1
-    const wantsNew = this.route.snapshot.queryParamMap.get('new') === '1';
-    if (wantsNew) {
-      localStorage.removeItem('dossierId');
-      localStorage.removeItem('completedStep');
-      this.completedStep = 0;
-    }
-
-    // ✅ message + progression passés par les étapes
-    this.syncFromHistoryState();
-
-    const stepMatch = currentUrl.match(/step(\d+)/);
-    this.currentStep = stepMatch ? +stepMatch[1] : 1;
-
-    this.setupRouteListener?.();
-    this.updateCurrentStep?.();
-    this.hydrateDossierId();
-    // ✅ fallback: lit aussi le rôle stocké au login
-    const roleLS = (localStorage.getItem('role') || '').toUpperCase();
-    this.isClient = this.auth.getRoles().includes('CLIENT') || roleLS === 'CLIENT' || roleLS === 'ROLE_CLIENT';
-
+  // 🔹 TOUT remettre à zéro quand on arrive sur "Créer un projet"
+  if (url.startsWith('/projects/create')) {
+    localStorage.removeItem('dossierId');
+    localStorage.removeItem('currentDossierId');
+    localStorage.removeItem('completedStep');
+    this.completedStep = 0;
+    this.dossierId = undefined as any;
   }
+
+  // (Tu peux garder le ?new=1 si tu veux un bouton "Nouveau", mais ce n'est plus nécessaire)
+  if (wantsNew) {
+    localStorage.removeItem('dossierId');
+    localStorage.removeItem('currentDossierId');
+    localStorage.removeItem('completedStep');
+    this.completedStep = 0;
+  }
+
+  this.syncFromHistoryState();
+  const stepMatch = url.match(/step(\d+)/);
+  this.currentStep = stepMatch ? +stepMatch[1] : 1;
+
+  this.setupRouteListener?.();
+  this.updateCurrentStep?.();
+
+  // ⛔ IMPORTANT: ne PAS hydrater un ancien dossier sur l'écran "create"
+  // this.hydrateDossierId();  // <-- désactive ici
+  const roleLS = (localStorage.getItem('role') || '').toUpperCase();
+  this.isClient = this.auth.getRoles().includes('CLIENT') || roleLS === 'CLIENT' || roleLS === 'ROLE_CLIENT';
+}
 
   // ✅ lit history.state: { successMessage, completedStep }
   private syncFromHistoryState(): void {
@@ -131,18 +138,15 @@ export class CreateProjectComponent implements OnInit {
   }
 
   goToStep(step: number): void {
-    // si tu veux verrouiller les étapes non atteintes, décommente :
-    // if (!this.isStepEnabled(step)) return;
-
-    const dossierId = localStorage.getItem('dossierId');
-    const isEditMode = dossierId !== null;
-
-    if (isEditMode) {
-      this.router.navigate([`/projects/edit/${dossierId}/step${step}`]);
-    } else {
-      this.router.navigate([`/projects/create/step${step}`]);
-    }
+  const dossierId = localStorage.getItem('dossierId');
+  const isEditMode = dossierId !== null;
+  if (isEditMode) {
+    this.router.navigate([`/projects/edit/${dossierId}/step${step}`]);
+  } else {
+    this.router.navigate([`/projects/create/step${step}`]);
   }
+}
+
 
   saveDraft() {
     if (!this.isClient) return;
@@ -153,26 +157,30 @@ export class CreateProjectComponent implements OnInit {
       complete: () => this.isSaving = false
     });
   }
-
-  submitDossier() {
-    if (!this.isClient) return;
-    if (!this.canSubmit) return;
-    if (!this.dossierId) { this.message = 'Dossier introuvable. Reprenez l’étape 1.'; return; }
-
-    this.isSubmitting = true;
-    this.dossierService.submitById(this.dossierId).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.message = '✅ Dossier soumis. En attente de traitement.';
-        // optionnel : localStorage.removeItem('currentDossierId');
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        this.message = (err?.message || (err as any)?.error?.message || 'Erreur de soumission.');
-        console.error(err);
-      }
-    });
+submitDossier() {
+  if (!this.isClient || !this.canSubmit || !this.dossierId) {
+    this.message = !this.dossierId ? 'Dossier introuvable. Reprenez l’étape 1.' : this.message;
+    return;
   }
+
+  this.isSubmitting = true;
+  this.dossierService.submitById(this.dossierId).subscribe({
+    next: () => {
+      this.isSubmitting = false;
+      this.message = '✅ Dossier soumis. En attente de traitement.';
+      // 🔥 PURGE complète: on termine ce dossier, on repart de zéro
+      localStorage.removeItem('dossierId');
+      localStorage.removeItem('completedStep');
+      // (optionnel) rediriger vers /projects/create
+      this.router.navigateByUrl('/projects/create');
+    },
+    error: (err) => {
+      this.isSubmitting = false;
+      this.message = (err?.message || (err as any)?.error?.message || 'Erreur de soumission.');
+      console.error(err);
+    }
+  });
+}
 
 
 

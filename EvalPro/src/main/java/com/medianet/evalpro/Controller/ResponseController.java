@@ -207,6 +207,7 @@ public ResponseEntity<?> saveStep(@RequestBody ResponseRequestDTO dto,
 
 
 
+
     //But : Vérifie si chaque pilier de l’étape 3 (auto-évaluation) est complété.
     //Logique :
     //

@@ -260,3 +260,19 @@ a.active {
 /* (optionnel) Pour masquer le footer tout le temps :
 .sidebar .footer { display: none !important; }
 */
+/* rendre la liste verticale "flex" */
+.sidebar .nav {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* l’élément vide qui pousse tout ce qui suit en bas */
+.sidebar .nav .nav-push {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1 1 auto;
+}
+
+/* en mode réduit, rien de spécial à faire, ça reste en bas */

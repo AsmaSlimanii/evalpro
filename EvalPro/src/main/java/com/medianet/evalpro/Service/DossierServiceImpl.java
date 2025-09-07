@@ -122,6 +122,8 @@ public class DossierServiceImpl implements DossierService {
 
         return dossierRepository.save(dossier);
     }
+
+
     @Override
     public List<DossierDto> getUserDossiers(String email) {
         User user = userRepository.findByEmail(email)

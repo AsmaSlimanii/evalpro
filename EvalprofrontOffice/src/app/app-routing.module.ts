@@ -36,6 +36,8 @@ import { ProjetComponent } from './features/projects/create-project/requete-fina
 import { NotificationsComponent } from './features/notifications/notifications.component';
 import { AdminDossiersComponent } from './features/AdminDossiersComponent/AdminDossiersComponent';
 import { AdminGuard } from './core/guards/admin.guard';
+import { AiFormDesignerComponent } from './features/ai-form-designer/ai-form-designer.component';
+
 
 
 const routes: Routes = [
@@ -55,6 +57,8 @@ const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'notifications', component: NotificationsComponent },
+      { path: 'ai/form-designer', component: AiFormDesignerComponent },
+
 
       { path: 'projects/create/step1', component: PreIdentificationComponent },
       { path: 'projects/create', component: CreateProjectComponent },
