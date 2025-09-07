@@ -177,13 +177,13 @@
 }
 
 /* === Bouton bas gauche === */
-.bottom-left-button {
+.bottom-right-button {
   position: absolute;
   bottom: 1.5rem;
-  left: 2rem;
+  right: 2rem;
 }
 
-.bottom-left-button button {
+.bottom-right-button button {
   background-color: #c4dbf5;
   color: #070707;
   border: none;
@@ -195,33 +195,11 @@
   transition: background-color 0.3s ease;
 }
 
-.bottom-left-button button:hover {
+.bottom-right-button button:hover {
   background-color: #0b2c55;
 }
 
-/* === Bouton droite === */
-.right-button {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 40px;
-  padding: 0 20px;
-}
-.right-button button {
-  background-color: #0c559e;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 25px;
-  font-size: 1rem;
-  font-weight: 600;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.right-button button:hover {
-  background-color: #005599;
-  transform: scale(1.03);
-}
+
 
 /* === Messages de succès / erreur === */
 .alert {

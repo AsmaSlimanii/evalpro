@@ -47,7 +47,7 @@
                     <input type="file" (change)="onFile($event, l, Q.immo.construction.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.construction,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.construction,i)"></button>
                 </div>
               </details>
 
@@ -63,7 +63,7 @@
                     <input type="file" (change)="onFile($event, l, Q.immo.amenagement.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.amenagement,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.amenagement,i)"></button>
                 </div>
               </details>
 
@@ -79,7 +79,7 @@
                     <input type="file" (change)="onFile($event, l, Q.immo.genieCivil.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.genieCivil,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(immo.genieCivil,i)"></button>
                 </div>
               </details>
             </div>
@@ -111,7 +111,7 @@
                     <input type="file" (change)="onFile($event, l, Q.mob.roulant.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.roulant,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.roulant,i)"></button>
                 </div>
               </details>
 
@@ -127,7 +127,7 @@
                     <input type="file" (change)="onFile($event, l, Q.mob.equipement.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.equipement,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.equipement,i)"></button>
                 </div>
               </details>
 
@@ -143,7 +143,7 @@
                     <input type="file" (change)="onFile($event, l, Q.mob.cheptel.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.cheptel,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.cheptel,i)"></button>
                 </div>
               </details>
 
@@ -159,7 +159,7 @@
                     <input type="file" (change)="onFile($event, l, Q.mob.vegetal.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.vegetal,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(mob.vegetal,i)"></button>
                 </div>
               </details>
             </div>
@@ -191,7 +191,7 @@
                       [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.constitutionSociete,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.constitutionSociete,i)"></button>
                 </div>
               </details>
 
@@ -207,7 +207,7 @@
                       [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.obtentionCredit,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.obtentionCredit,i)"></button>
                 </div>
               </details>
 
@@ -221,7 +221,7 @@
                     <input type="file" (change)="onFile($event, l, Q.services.etude.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.etude,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.etude,i)"></button>
                 </div>
               </details>
 
@@ -235,7 +235,7 @@
                     <input type="file" (change)="onFile($event, l, Q.services.marketing.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.marketing,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.marketing,i)"></button>
                 </div>
               </details>
 
@@ -249,7 +249,7 @@
                     <input type="file" (change)="onFile($event, l, Q.services.expertise.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.expertise,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.expertise,i)"></button>
                 </div>
               </details>
 
@@ -265,7 +265,7 @@
                       [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assistanceTech,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assistanceTech,i)"></button>
                 </div>
               </details>
 
@@ -279,7 +279,7 @@
                     <input type="file" (change)="onFile($event, l, Q.services.assurance.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assurance,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.assurance,i)"></button>
                 </div>
               </details>
 
@@ -295,7 +295,7 @@
                       [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.formalisationEmploi,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.formalisationEmploi,i)"></button>
                 </div>
               </details>
 
@@ -311,7 +311,7 @@
                       [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.miseNiveauRegl,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.miseNiveauRegl,i)"></button>
                 </div>
               </details>
 
@@ -325,7 +325,7 @@
                     <input type="file" (change)="onFile($event, l, Q.services.autres.file)" [disabled]="isAdmin">
                     <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                   </div>
-                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.autres,i)">✕</button>
+                  <button class="icon" *ngIf="!isAdmin" (click)="removeLine(serv.autres,i)"></button>
                 </div>
               </details>
             </div>
@@ -391,7 +391,7 @@
                   <input type="file" (change)="onFile($event, l, Q.credits.file)" [disabled]="isAdmin">
                   <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                 </div>
-                <button class="icon" *ngIf="!isAdmin" (click)="removeLine(credits,i)">✕</button>
+                <button class="icon" *ngIf="!isAdmin" (click)="removeLine(credits,i)"></button>
               </div>
             </details>
           </div>
@@ -410,7 +410,7 @@
                   <input type="file" (change)="onFile($event, l, Q.apports.file)" [disabled]="isAdmin">
                   <a *ngIf="l.file" [href]="l.file" target="_blank">📎 Voir le fichier joint</a>
                 </div>
-                <button class="icon" *ngIf="!isAdmin" (click)="removeLine(apports,i)">✕</button>
+                <button class="icon" *ngIf="!isAdmin" (click)="removeLine(apports,i)"></button>
               </div>
             </details>
           </div>

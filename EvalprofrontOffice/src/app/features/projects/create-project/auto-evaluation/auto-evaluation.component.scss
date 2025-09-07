@@ -179,13 +179,13 @@
 }
 
 
-.bottom-left-button {
+.bottom-right-button {
   position: absolute;
   bottom: 1.5rem;
-  left: 2rem;
+  right: 2rem;
 }
 
-.bottom-left-button button {
+.bottom-right-button button {
   background-color: #c4dbf5;
   color: #070707;
   border: none;
@@ -197,14 +197,14 @@
   transition: background-color 0.3s ease;
 }
 
-.bottom-left-button button:hover {
+.bottom-right-button button:hover {
   background-color: #0b2c55;
 }
 
 
-.right-button {
+.left-button {
   display: flex;
-  justify-content: flex-end;
+   justify-content: center;
   margin-top: 40px;
   padding: 0 20px;
 
@@ -226,12 +226,15 @@
     transform: scale(1.03);
   }
 }
-.right-button .btn-primary {
+
+.felt-button .btn-primary {
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
+ 
 }
+
 .alert {
   padding: 1rem 1.5rem;
   border-radius: 5px;

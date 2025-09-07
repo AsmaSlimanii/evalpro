@@ -42,7 +42,7 @@ export class SchemaFinancementComponent implements OnInit {
   readonly stepId = 5;
 
   private readonly EVALPRO_MAX = 70000; // plafond contribution EVALPRO
-  fundingRight: TemplateRef<NgIfContext<boolean>> | null | undefined;
+  //fundingRight: TemplateRef<NgIfContext<boolean>> | null | undefined;
 
   // 🔢 % jauge (0 → 100)
   get adaptPct(): number {
