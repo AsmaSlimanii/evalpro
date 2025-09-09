@@ -62,6 +62,9 @@ public class SecurityConfig {
                         // ✅ admin
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/ai/**").hasAnyRole("ADMIN","CLIENT")
+                        .requestMatchers(HttpMethod.POST, "/api/ai/forms/generate").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/ai/forms").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/api/ai/**").permitAll()
 
                         .anyRequest().authenticated()
                 )

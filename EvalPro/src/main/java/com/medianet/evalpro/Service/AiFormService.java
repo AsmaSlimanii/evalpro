@@ -22,18 +22,23 @@ public class AiFormService {
     public FormSchema generate(Long stepId, String description, String stepName){
         return ai.generate(description, stepName);
     }
+    // AiFormService.java
     public AiForm save(Long stepId, FormSchema schema) throws JsonProcessingException {
-        var e = new AiForm();
+        if (schema == null) throw new IllegalArgumentException("schema null");
+        AiForm e = new AiForm();
         e.setStepId(stepId);
         e.setTitle(schema.getTitle());
         e.setSchemaJson(mapper.writeValueAsString(schema));
         return repo.save(e);
     }
+
     public Optional<FormSchema> getForStep(Long stepId){
         return repo.findTopByStepIdOrderByIdDesc(stepId).map(a -> {
             try { return mapper.readValue(a.getSchemaJson(), FormSchema.class); }
             catch (Exception ex) { return null; }
         });
     }
+
+
 }
 

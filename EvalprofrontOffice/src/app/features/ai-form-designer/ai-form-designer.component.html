@@ -1,3 +1,4 @@
+<!-- ai-form-designer.component.html -->
 <div class="ai-wrap">
   <header class="ai-head">
     <h1>AI Form Designer</h1>
@@ -5,83 +6,123 @@
   </header>
 
   <section class="ai-grid">
-    <!-- Brief / commandes -->
+    <!-- Panneau de saisie (gauche) -->
     <div class="panel brief">
-      <form (ngSubmit)="generate()" #f="ngForm">
+      <div class="brief-form">
         <div class="row">
-          <label>Step ID</label>
-          <input type="number" name="stepId" [(ngModel)]="stepId" min="1">
+          <label for="stepId">Step ID</label>
+          <input
+            id="stepId"
+            type="number"
+            name="stepId"
+            min="1"
+            [(ngModel)]="stepId"
+            (ngModelChange)="onStepChange($event)"
+            autocomplete="off"
+          />
         </div>
 
         <div class="row">
-          <label>Nom d'étape</label>
-          <input type="text" name="stepName" [(ngModel)]="stepName" />
+          <label for="stepName">Nom d'étape</label>
+          <input
+            id="stepName"
+            type="text"
+            name="stepName"
+            [(ngModel)]="stepName"
+            autocomplete="off"
+          />
         </div>
 
         <div class="row">
-          <label>Consignes (ce que tu veux dans le formulaire)</label>
-          <textarea name="description" rows="4"
-                    [(ngModel)]="description"
-                    placeholder="Ex: Nom du projet, budget (nombre), catégorie (liste), description courte..."></textarea>
+          <label for="desc">Consignes (ce que tu veux dans le formulaire)</label>
+          <textarea
+            id="desc"
+            name="description"
+            rows="4"
+            [(ngModel)]="description"
+            (keydown.enter)="$event.preventDefault()"
+            placeholder="Ex: Nom du projet, budget (nombre), catégorie (liste), description courte..."
+          ></textarea>
         </div>
 
         <div class="actions">
-          <button type="submit" [disabled]="loading">
+          <!-- type=button pour éviter toute soumission -->
+          <button type="button" [disabled]="loading" (click)="generate()">
             <i class="fas fa-wand-magic-sparkles"></i>
             {{ loading ? 'Génération...' : 'Générer' }}
           </button>
 
-          <button type="button" class="ghost" (click)="save()" [disabled]="!schema || saving">
+          <button
+            type="button"
+            class="ghost"
+            (click)="save()"
+            [disabled]="!schema || saving"
+          >
             <i class="fas fa-save"></i>
             {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
           </button>
 
           <label class="toggle">
-            <input type="checkbox" [(ngModel)]="chatMode" name="chatMode"> Mode chat (beta)
+            <input type="checkbox" [(ngModel)]="chatMode" name="chatMode" />
+            Mode chat (beta)
           </label>
         </div>
 
         <p class="err" *ngIf="error">{{ error }}</p>
-      </form>
-
-      <!-- Chat (optionnel) -->
-      <div class="chat" *ngIf="chatMode">
-        <div class="messages">
-          <div class="msg" *ngFor="let m of messages" [class.me]="m.role==='user'">
-            <div class="bubble">
-              <strong *ngIf="m.role==='user'">Toi :</strong>
-              <strong *ngIf="m.role==='assistant'">IA :</strong>
-              <span>{{ m.text }}</span>
-            </div>
-          </div>
-        </div>
-        <form class="chat-input" (ngSubmit)="send()">
-          <input [(ngModel)]="chatText" name="chatText" placeholder="Décris le formulaire à générer..." />
-          <button [disabled]="!chatText || loading"><i class="fas fa-paper-plane"></i></button>
-        </form>
       </div>
     </div>
 
-    <!-- Aperçu -->
+    <!-- Aperçu (droite) -->
     <div class="panel preview" *ngIf="schema; else empty">
       <h3 class="title">{{ schema.title }}</h3>
 
-      <form class="preview-form">
-        <div class="f" *ngFor="let f of schema.fields">
-          <label>{{ f.label }} <span *ngIf="f.required" class="req">*</span></label>
+      <!-- on bloque toute soumission involontaire -->
+      <form class="preview-form" (submit)="$event.preventDefault()">
+        <div class="f" *ngFor="let f of schema.fields; trackBy: trackByIndex">
+          <label>
+            {{ f.label }}
+            <span *ngIf="f.required" class="req">*</span>
+          </label>
 
-          <input *ngIf="f.type==='text' || f.type==='number' || f.type==='date'"
-                 [attr.type]="f.type==='text' ? 'text' : f.type"
-                 [placeholder]="f.placeholder || ''">
+          <!-- text / number / date -->
+          <input
+            *ngIf="f.type === 'text' || f.type === 'number' || f.type === 'date'"
+            [attr.type]="f.type === 'text' ? 'text' : f.type"
+            [(ngModel)]="f.value"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="f.placeholder || ''"
+            [required]="!!f.required"
+            autocomplete="off"
+          />
 
-          <textarea *ngIf="f.type==='textarea'" [placeholder]="f.placeholder || ''"></textarea>
+          <!-- textarea -->
+          <textarea
+            *ngIf="f.type === 'textarea'"
+            [(ngModel)]="f.value"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="f.placeholder || ''"
+            [required]="!!f.required"
+          ></textarea>
 
-          <select *ngIf="f.type==='select'">
-            <option *ngFor="let o of f.options" [value]="o">{{ o }}</option>
+          <!-- select -->
+          <select
+            *ngIf="f.type === 'select'"
+            [(ngModel)]="f.value"
+            [ngModelOptions]="{ standalone: true }"
+            [required]="!!f.required"
+          >
+            <option [ngValue]="null" disabled>— Choisir —</option>
+            <option *ngFor="let o of f.options" [ngValue]="o">{{ o }}</option>
           </select>
 
-          <label class="check" *ngIf="f.type==='checkbox'">
-            <input type="checkbox"> {{ f.placeholder || 'Oui / Non' }}
+          <!-- checkbox -->
+          <label class="check" *ngIf="f.type === 'checkbox'">
+            <input
+              type="checkbox"
+              [(ngModel)]="f.value"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            {{ f.placeholder || 'Oui / Non' }}
           </label>
         </div>
       </form>
