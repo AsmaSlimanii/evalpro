@@ -31,8 +31,13 @@ public class AiFormController {
         if (req.schema() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "schema manquant");
         }
+        System.out.println("[AI-FORM] POST save stepId=" + req.stepId()
+                + " title=" + req.schema().getTitle()
+                + " fields=" + (req.schema().getFields()==null?0:req.schema().getFields().size()));
+
         return service.save(req.stepId(), req.schema());
     }
+
 
 
 

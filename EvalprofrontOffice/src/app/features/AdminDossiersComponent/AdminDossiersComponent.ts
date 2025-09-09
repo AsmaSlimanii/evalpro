@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AdminDossierItem, AdminDossiersService } from '../../core/services/AdminDossiersService';
 import { DossierStatus } from '../../shared/models/status';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-admin-dossiers',
@@ -28,7 +29,7 @@ export class AdminDossiersComponent implements OnInit {
         REJETE: 'Rejeté'
     };
 
-    constructor(private api: AdminDossiersService) { }
+    constructor(private api: AdminDossiersService,  private router: Router) { }
 
     ngOnInit(): void { this.load(); }
 
@@ -47,6 +48,8 @@ export class AdminDossiersComponent implements OnInit {
             }
         });
     }
+
+
     get filteredRows() {
         const k = (this.q || '').toLowerCase().trim();
         if (!k) { return this.rows; }
@@ -62,6 +65,26 @@ export class AdminDossiersComponent implements OnInit {
         this.page = p;
         this.load();
     }
+
+    // ✅ met le dossier en EN_COURS puis ouvre le Step 1
+    startValidation(d: AdminDossierItem): void {
+        this.loading = true;
+
+        this.api.updateStatus(d.id, 'EN_COURS').subscribe({
+            next: _ => {
+                this.loading = false;
+                // ouvre la page d’édition Step 1 (où l’admin voit les réponses et peut commenter)
+                this.router.navigate(['/projects/edit', d.id, 'step1']);
+            },
+            error: e => {
+                // en cas d’erreur de statut, on navigue quand même (optionnel)
+                console.error(e);
+                this.loading = false;
+                this.router.navigate(['/projects/edit', d.id, 'step1']);
+            }
+        });
+    }
+
 
     open(id: number): void {
         this.api.downloadPdf(id).subscribe({

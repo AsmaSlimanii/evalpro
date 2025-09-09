@@ -25,7 +25,7 @@
 }
 
 .container {
-    max-width: 2100px;
+    max-width: 2200px;
     margin: 0 auto;
 }
 
@@ -390,30 +390,44 @@ table tbody td {
 }
 
 /* Base (garde ton padding/radius) */
-.alert{
-  padding:12px 14px;
-  border:1px solid;
-  border-radius:10px;
-  font-weight:700;
+.alert {
+    padding: 12px 14px;
+    border: 1px solid;
+    border-radius: 10px;
+    font-weight: 700;
 }
 
 /* ✅ Succès (ACCEPTE) = vert */
-.alert.success{
-  background:#ecfdf5;      /* vert très clair */
-  border-color:#a7f3d0;
-  color:#065f46;
+.alert.success {
+    background: #ecfdf5;
+    /* vert très clair */
+    border-color: #a7f3d0;
+    color: #065f46;
 }
 
 /* ❌ Erreur / rejet (REJETE) = rouge */
-.alert.error{
-  background:#fef2f2;
-  border-color:#fecaca;
-  color:#991b1b;
+.alert.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
 }
 
 /* (optionnel) Info neutre */
-.alert.info{
-  background:#eff6ff;
-  border-color:#bfdbfe;
-  color:#1e3a8a;
+.alert.info {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e3a8a;
+}
+
+
+
+
+.btn.primary {
+    background: #2563eb;
+    /* bleu */
+    color: #fff;
+}
+
+.btn.primary:hover {
+    filter: brightness(1.05);
 }

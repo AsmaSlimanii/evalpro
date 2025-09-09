@@ -225,6 +225,8 @@ textarea:disabled {
 }
 
 /* --- RADIO --- */
+
+
 .radio-input:disabled~.radio-custom {
     border-color: #9ca3af;
     /* gris */
@@ -242,7 +244,9 @@ textarea:disabled {
 .radio-input:disabled~.radio-text {
     color: #9ca3af;
     cursor: not-allowed;
+    
 }
+
 
 /* --- CHECKBOX --- */
 .checkbox-input:disabled~.checkbox-custom {

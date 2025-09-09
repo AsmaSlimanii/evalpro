@@ -23,14 +23,18 @@ public class AiFormService {
         return ai.generate(description, stepName);
     }
     // AiFormService.java
+    // AiFormService.java
     public AiForm save(Long stepId, FormSchema schema) throws JsonProcessingException {
         if (schema == null) throw new IllegalArgumentException("schema null");
         AiForm e = new AiForm();
         e.setStepId(stepId);
         e.setTitle(schema.getTitle());
         e.setSchemaJson(mapper.writeValueAsString(schema));
-        return repo.save(e);
+        AiForm saved = repo.save(e);
+        System.out.println("[AI-FORM] saved id=" + saved.getId());
+        return saved;
     }
+
 
     public Optional<FormSchema> getForStep(Long stepId){
         return repo.findTopByStepIdOrderByIdDesc(stepId).map(a -> {

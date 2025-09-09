@@ -62,6 +62,11 @@
                                 title="Télécharger PDF">
                                 <i class="fas fa-file-pdf"></i> Télécharger PDF
                             </button>
+                            <!-- ✅ Nouveau : bouton Valider (uniquement pour les dossiers SOUMIS) -->
+                            <button class="btn btn-sm primary" *ngIf="d.status === 'SOUMIS'"
+                                (click)="startValidation(d)" title="Ouvrir le dossier au Step 1 pour le valider">
+                                <i class="fas fa-clipboard-check"></i> Valider
+                            </button>
 
                             <button class="btn btn-sm success" *ngIf="d.status === 'SOUMIS' || d.status === 'EN_COURS'"
                                 (click)="accept(d)">

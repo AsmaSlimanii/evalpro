@@ -276,3 +276,13 @@ a.active {
 }
 
 /* en mode réduit, rien de spécial à faire, ça reste en bas */
+
+a.disabled {
+  pointer-events: none;
+  opacity: .5;
+  cursor: not-allowed;
+}
+.nav-section.locked > a::after {
+  font-size: 12px;
+  opacity: .7;
+}
