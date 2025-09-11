@@ -52,32 +52,47 @@
                         </td>
 
                         <!-- ✅ une seule cellule pour les boutons -->
-                        <td class="row-actions">
-                            <button class="btn btn-sm" (click)="open(d.id)" title="Ouvrir dans un onglet">
-                                <i class="fas fa-eye"></i> Voir
-                            </button>
+                        <td class="col-actions">
+                            <div class="row-actions"> <!-- wrapper flex -->
+                                <button type="button" class="btn btn-sm" (click)="open(d.id)"
+                                    title="Ouvrir dans un onglet">
+                                    <i class="fas fa-eye"></i> Voir
+                                </button>
 
+                                <button type="button" class="btn btn-sm btn-pdf" (click)="download(d.id, d.titre)"
+                                    title="Télécharger PDF">
+                                    <i class="fas fa-file-pdf"></i> Télécharger PDF
+                                </button>
 
-                            <button class="btn btn-sm btn-pdf" (click)="download(d.id, d.titre)"
-                                title="Télécharger PDF">
-                                <i class="fas fa-file-pdf"></i> Télécharger PDF
-                            </button>
-                            <!-- ✅ Nouveau : bouton Valider (uniquement pour les dossiers SOUMIS) -->
-                            <button class="btn btn-sm primary" *ngIf="d.status === 'SOUMIS'"
-                                (click)="startValidation(d)" title="Ouvrir le dossier au Step 1 pour le valider">
-                                <i class="fas fa-clipboard-check"></i> Valider
-                            </button>
+                                <button type="button" class="btn btn-sm primary" *ngIf="d.status === 'SOUMIS'"
+                                    (click)="startValidation(d)" title="Ouvrir le dossier au Step 1 pour le valider">
+                                    <i class="fas fa-clipboard-check"></i> Valider
+                                </button>
 
-                            <button class="btn btn-sm success" *ngIf="d.status === 'SOUMIS' || d.status === 'EN_COURS'"
-                                (click)="accept(d)">
-                                <i class="fas fa-check"></i> Accepter
-                            </button>
+                                <!-- Actions -->
+                                <button type="button" class="btn btn-sm success"
+                                    *ngIf="d.status === 'SOUMIS' || d.status === 'EN_COURS'"
+                                    [disabled]="isActionDisabled(d)" [class.is-disabled]="isActionDisabled(d)"
+                                    [attr.aria-disabled]="isActionDisabled(d)"
+                                    (click)="!isActionDisabled(d) && accept(d)">
+                                    <i class="fas fa-check"></i> Accepter
+                                </button>
 
-                            <button class="btn btn-sm danger" *ngIf="d.status === 'SOUMIS' || d.status === 'EN_COURS'"
-                                (click)="reject(d)">
-                                <i class="fas fa-times"></i> Rejeter
-                            </button>
+                                <button type="button" class="btn btn-sm danger"
+                                    *ngIf="d.status === 'SOUMIS' || d.status === 'EN_COURS'"
+                                    [disabled]="isActionDisabled(d)" [class.is-disabled]="isActionDisabled(d)"
+                                    [attr.aria-disabled]="isActionDisabled(d)"
+                                    (click)="!isActionDisabled(d) && reject(d)">
+                                    <i class="fas fa-times"></i> Rejeter
+                                </button>
+
+                            </div>
                         </td>
+
+
+
+
+
                     </tr>
                 </tbody>
 

@@ -59,7 +59,7 @@ export class CreationProjetComponent implements OnInit {
     this.initForm();
     this.loadForm();
 
-   
+
 
   }
   setReadOnlyMode() {
@@ -446,5 +446,332 @@ export class CreationProjetComponent implements OnInit {
     }, 100);
   }
 
+
+
+
+  // === ÉTAT MINIMAL DE L’ASSISTANT IA ===
+  // === ÉTAT MINIMAL DE L’ASSISTANT IA (step2) ===
+  ai = {
+    open: false,
+    description: ''
+  };
+
+  // Ouvre/ferme le drawer
+  openAi(): void {
+    this.ai.open = true;
+    this.ai.description = this.buildBriefFromForm(); // pré-rempli depuis le formulaire
+  }
+  closeAi(): void { this.ai.open = false; }
+
+  /** Construit un petit brief depuis les réponses existantes (sert à pré-remplir le textarea) */
+  private buildBriefFromForm(): string {
+    try {
+      if (!this.questions?.length) return '';
+      const lines: string[] = [];
+      const arr = this.responses;
+
+      this.questions.forEach((q, i) => {
+        const grp = arr.at(i);
+        if (!grp) return;
+
+        const value = grp.get('value')?.value;
+        const optionIds: number[] = (grp.get('optionIds')?.value ?? []) as number[];
+
+        let pretty = '';
+        if (Array.isArray(optionIds) && optionIds.length && q.options?.length) {
+          const labels = q.options.filter((o: any) => optionIds.includes(o.id)).map((o: any) => o.value);
+          pretty = labels.join(', ');
+        } else if (value != null && String(value).trim() !== '') {
+          pretty = String(value).trim();
+        }
+        if (pretty) lines.push(`${q.text} : ${pretty}`);
+      });
+
+      if (this.shouldShowAutresTextField() && this.autresCtrl?.value) {
+        lines.push(`Autres : ${this.autresCtrl.value}`);
+      }
+      return lines.join('\n');
+    } catch { return ''; }
+  }
+
+  /* -------------------- Parsing & application (step2) -------------------- */
+
+  // normalisation
+private norm(s: any): string {
+  return (s ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+  /** Synonymes/mots-clés utilisés pour retrouver les options (Étape 2) */
+  private STEP2_SYNONYMS: Record<string, string[]> = {
+    // Q9 (grande liste à cocher) — mets ici les libellés EXACTS de tes options à gauche :
+    'Toute activité ayant un impact négatif direct, significatif et irréversible avec des risques pour la santé et la sécurité des communautés concernées': [
+      'impact négatif direct', 'risques pour la santé', 'sécurité des communautés'
+    ],
+    'Toute activité de tannerie': ['tannerie'],
+    'La capacité journalière de traitement de lait (ou dérivés) de l’activité collecte, transformation, etc est supérieure à 30 000 l': [
+      'traitement de lait', '30000', '30 000'
+    ],
+    'La capacité totale des vases d’extraction pour la distillation est supérieure à 5 m3': ['distillation', '5 m3', 'extraction'],
+    'Tout élevage de ruminants intégralement hors sol': ['ruminants', 'hors sol'],
+    'Toute arboriculture monospecifique en intensif ou hyper intensif sans pratiques agricoles durables ni diversification': [
+      'arboriculture', 'monospécifique', 'hyper intensif'
+    ],
+    'Toute grande culture en monoculture et sans rotation culturale ni amendement organique': [
+      'grande culture', 'monoculture', 'sans rotation', 'amendement organique'
+    ],
+    'Tout projet ne respectant pas la réglementation applicable': ['ne respectant pas la réglementation'],
+    'Toute activité de pêche illégale': ['pêche illégale', 'peche illegale'],
+    'Aucun de ces choix': ['aucun']
+    // ➜ Ajoute ici les autres libellés de Q9 s’il en manque
+    ,
+
+    // Étude de faisabilité (Q?) — SELECT
+    'Non, pas encore': ['non', 'pas encore', 'non pas encore'],
+    'Oui, elle est en cours': ['en cours', 'oui en cours'],
+    'Oui, elle est disponible': ['oui', 'disponible', 'oui disponible'],
+
+    // Catégorie APIA/APII (Q10) — SELECT
+    'APIA': ['apia'],
+    'APII': ['apii'],
+    'Autres': ['autre', 'autres'],
+
+    // Sous-secteur APIA (Q11) — SELECT (exemples, adapte aux tiens)
+    'Production : Agriculture & élevage (APIA)': ['agriculture', 'élevage', 'production apia', 'elevage'],
+    'Première transformation (APIA)': ['première transformation', '1ere transformation', 'premiere transformation'],
+    'Services à la production (APIA)': ['services à la production', 'services production'],
+
+    // Catégorie d’investissement (Q12) — SELECT (exemples fréquents)
+    'Grandes Cultures': ['grandes cultures'],
+    'Cultures Maraîchères': ['maraicheres', 'maraîchères'],
+    'Arboriculture (y compris les oliviers)': ['arboriculture', 'oliviers'],
+    'Production de Semences et de Plants': ['semences', 'plants'],
+    'Floriculture, plantes aromatiques et médicinales': ['floriculture', 'plantes aromatiques', 'médicinales'],
+    'Cultures sous serres': ['serres', 'cultures sous serres'],
+    'Élevage (y compris l’Aviculture, la Cuniculture, l’Apiculture, l’élevage de dindes, …)': [
+      'elevage', 'aviculture', 'cuniculture', 'apiculture', 'dindes'
+    ]
+  };
+
+  /** Essaie de retrouver l’ID d’option à partir d’une réponse texte */
+  private pickOptionId(q: any, answer: string): number | null {
+    if (!q?.options?.length) return null;
+    const a = this.norm(answer);
+
+    // match direct/partiel
+    let opt =
+      q.options.find((o: any) => this.norm(o.value) === a) ||
+      q.options.find((o: any) => a.includes(this.norm(o.value))) ||
+      q.options.find((o: any) => this.norm(o.value).includes(a));
+    if (opt) return opt.id ?? null;
+
+    // synonymes (ajuste/complète au besoin)
+    const SYN: Record<string, string[]> = this.STEP2_SYNONYMS ?? {};
+    for (const o of q.options) {
+      const key = o.value as string;
+      const syns = SYN[key] ?? [key];
+      if (syns.some(s => a.includes(this.norm(s)))) return o.id ?? null;
+    }
+    return null;
+  }
+
+
+  /** Affecte la réponse à la question i (gère toutes les variantes + dépendances Q10 → Q11 → Q12) */
+  /** Affecte la réponse en respectant les dépendances Q10 -> Q11 -> Q12 */
+  private setAnswer(i: number, q: any, answer: string): void {
+    const grp = this.responses.at(i);
+    if (!grp) return;
+
+    if (q.type === 'TEXTE') {
+      // ne mets pas un nombre pur dans "Nom du projet"
+      const digitsOnly = String(answer).replace(/[^\d]/g, '');
+      const looksLikeOnlyNumber = digitsOnly.length && digitsOnly === String(answer).replace(/\s/g, '');
+      if (looksLikeOnlyNumber && /nom.*projet/i.test(this.norm(q.text))) return;
+      grp.get('value')?.setValue(answer);
+      return;
+    }
+
+
+    if (q.type === 'NUMERIQUE') {
+      const onlyDigits = String(answer).replace(/[^\d.]/g, '');
+      grp.get('value')?.setValue(onlyDigits);
+      return;
+    }
+
+    if (q.type === 'SELECT') {
+      const id = this.pickOptionId(q, answer);
+      if (id == null) return;
+      grp.get('value')?.setValue(id);
+      if (q.id === 10) this.updateOptionsForQuestion11(Number(id));
+      if (q.id === 11) this.updateOptionsForQuestion12(Number(id));
+      return;
+    }
+
+    if (q.type === 'RADIO') {
+      const id = this.pickOptionId(q, answer);
+      if (id != null) {
+        const arr = grp.get('optionIds') as FormArray;
+        while (arr.length) arr.removeAt(0);
+        arr.push(this.fb.control(id));
+      }
+      return;
+    }
+
+    if (q.type === 'CHOIXMULTIPLE') {
+      const parts = String(answer).split(/[;,/]\s*|\n/).map(s => s.trim()).filter(Boolean);
+      const ids = parts.map(p => this.pickOptionId(q, p)).filter((x): x is number => x != null);
+      const arr = grp.get('optionIds') as FormArray;
+      while (arr.length) arr.removeAt(0);
+      ids.forEach(id => arr.push(this.fb.control(id)));
+    }
+  }
+
+
+
+
+
+
+
+  /** Applique la description : tente d’abord “clé: valeur”, sinon “par ordre” */
+
+applyAnswersFromDescription(): void {
+  if (this.isAdmin) return;
+  const raw = (this.ai.description || '').trim();
+  if (!raw) return;
+
+  const hasColon = raw.includes(':');
+  const applied = hasColon ? this.applyByKeywords(raw) : 0;
+  if (!hasColon && applied === 0) this.applyByOrder(raw);  // fallback rare
+
+  this.formGroup.updateValueAndValidity({ onlySelf: false, emitEvent: true });
+  this.questions.forEach((_, i) => this.onFieldBlur(i));
+  this.closeAi();
+}
+
+  /** Mode 1 : “clé: valeur” (ordre logique respecté pour les dépendances) */
+  /** Mode 1 : “clé: valeur” (renvoie combien de champs ont été appliqués) */
+private applyByKeywords(raw: string): number {
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (!lines.some(l => l.includes(':'))) return 0;
+
+  const pairs = lines.map(l => {
+    const [k, ...r] = l.split(':');
+    return { k: this.norm(k), v: r.join(':').trim() };
+  });
+
+  // Indices cibles trouvés UNIQUEMENT par libellé (plus d’ID figés)
+  const findIdx = (re: RegExp) => this.questions.findIndex(q => re.test(this.norm(q.text)));
+
+  const idxName      = findIdx(/nom.*projet/);
+  const idxChecklist = this.questions.findIndex(q =>
+    q.type === 'CHOIXMULTIPLE' ||
+    /correspond.*descriptions|liste.*cocher|exclusions?/.test(this.norm(q.text))
+  );
+  const idxStudy     = findIdx(/etude.*faisabilite|plan.*affaire/);
+  const idxCatA      = findIdx(/categorie.*(apia|apii)/);                 // Catégorie APIA/APII
+  const idxSous      = findIdx(/sous.*secteur/);                          // Sous secteur (APIA)
+  const idxCatInv    = findIdx(/categorie.*invest(?!.*nom.*projet)/);     // Catégorie d’investissement (exclut le titre du nom)
+  const idxAmount    = findIdx(/(estimez|montant)(.*global)?|en\s*tnd/);  // Montant global en TND
+  const idxAutres    = findIdx(/autres?/);
+
+  let count = 0;
+
+  // 1) Nom du projet
+  for (const {k, v} of pairs) {
+    if (/nom.*projet|titre/.test(k) && idxName >= 0) {
+      // évite de mettre un nombre pur dans le nom
+      const onlyDigits = v.replace(/[^\d]/g, '');
+      if (!(onlyDigits && onlyDigits === v.replace(/\s/g, ''))) {
+        this.setAnswer(idxName, this.questions[idxName], v); count++;
+      }
+      break;
+    }
+  }
+
+  // 2) Cases à cocher (descriptions)
+  for (const {k, v} of pairs) {
+    if ((/description|liste|exclusion/.test(k)) && idxChecklist >= 0) {
+      this.setAnswer(idxChecklist, this.questions[idxChecklist], v); count++;
+      break;
+    }
+  }
+
+  // 3) Étude de faisabilité
+  for (const {k, v} of pairs) {
+    if ((/etude|faisabilite|plan.*affaire/.test(k)) && idxStudy >= 0) {
+      this.setAnswer(idxStudy, this.questions[idxStudy], v); count++;
+      break;
+    }
+  }
+
+  // 4) Catégorie APIA/APII  →  5) Sous-secteur  →  6) Catégorie d’investissement
+  for (const {k, v} of pairs) {
+    if ((/categorie.*(apia|apii)/.test(k)) && idxCatA >= 0) {
+      this.setAnswer(idxCatA, this.questions[idxCatA], v); count++;
+      // filtre les options de Q11
+      const posed = this.responses.at(idxCatA)?.get('value')?.value;
+      this.updateOptionsForQuestion11(Number(typeof posed === 'object' ? posed?.id : posed));
+      break;
+    }
+  }
+  for (const {k, v} of pairs) {
+    if ((/sous.*secteur/.test(k)) && idxSous >= 0) {
+      this.setAnswer(idxSous, this.questions[idxSous], v); count++;
+      // filtre les options de Q12
+      const posed = this.responses.at(idxSous)?.get('value')?.value;
+      this.updateOptionsForQuestion12(Number(typeof posed === 'object' ? posed?.id : posed));
+      break;
+    }
+  }
+  for (const {k, v} of pairs) {
+    if ((/categorie.*invest/.test(k)) && idxCatInv >= 0) {
+      this.setAnswer(idxCatInv, this.questions[idxCatInv], v); count++;
+      break;
+    }
+  }
+
+  // 7) Montant global
+  for (const {k, v} of pairs) {
+    if ((/(estimez|montant)(.*global)?|en\s*tnd/.test(k)) && idxAmount >= 0) {
+      this.setAnswer(idxAmount, this.questions[idxAmount], v); count++;
+      break;
+    }
+  }
+
+  // 8) Autres
+  for (const {k, v} of pairs) {
+    if ((/autres?/.test(k)) && idxAutres >= 0) {
+      this.setAnswer(idxAutres, this.questions[idxAutres], v); count++;
+      break;
+    }
+  }
+
+  return count;
+}
+
+  /** Mode 2 : par ordre des questions (1 ligne par réponse) */
+  /** Mode 2 : par ordre des questions (1 ligne par réponse) */
+  private applyByOrder(raw: string): void {
+  const parts = raw.split(/\r?\n|;/).map(s => s.trim()).filter(Boolean);
+  let j = 0;
+
+  for (let i = 0; i < this.questions.length && j < parts.length; i++) {
+    // si la question a déjà une valeur, on saute
+    const existing = this.responses.at(i)?.get('value')?.value;
+    if (existing != null && existing !== '') continue;
+
+    let ans = parts[j++];
+    if (ans.includes(':')) ans = ans.split(':').slice(1).join(':').trim(); // ne garde que la valeur
+
+    this.setAnswer(i, this.questions[i], ans);
+
+    // gère les dépendances si on vient de poser Q "Catégorie" → "Sous-secteur" → "Catégorie d’invest"
+    const posed = this.responses.at(i)?.get('value')?.value;
+    const posedId = typeof posed === 'object' ? posed?.id : posed;
+    const label = this.norm(this.questions[i].text);
+
+    if (/categorie.*(apia|apii)/.test(label)) this.updateOptionsForQuestion11(Number(posedId));
+    if (/sous.*secteur/.test(label))        this.updateOptionsForQuestion12(Number(posedId));
+  }
+}
 
 }

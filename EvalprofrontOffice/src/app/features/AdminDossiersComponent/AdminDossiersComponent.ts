@@ -20,6 +20,7 @@ export class AdminDossiersComponent implements OnInit {
     message = '';
     readonly Math = Math;
 
+
     q = ''; // recherche
     labels: Record<DossierStatus, string> = {
         SOUMIS: 'Soumis',
@@ -29,7 +30,7 @@ export class AdminDossiersComponent implements OnInit {
         REJETE: 'Rejeté'
     };
 
-    constructor(private api: AdminDossiersService,  private router: Router) { }
+    constructor(private api: AdminDossiersService, private router: Router) { }
 
     ngOnInit(): void { this.load(); }
 
@@ -48,6 +49,12 @@ export class AdminDossiersComponent implements OnInit {
             }
         });
     }
+
+    // Désactive les actions quand le filtre courant est "EN_COURS" et que la ligne est "EN_COURS"
+    isActionDisabled(d: any): boolean {
+        return this.status === 'EN_COURS' && d.status === 'EN_COURS';
+    }
+
 
 
     get filteredRows() {

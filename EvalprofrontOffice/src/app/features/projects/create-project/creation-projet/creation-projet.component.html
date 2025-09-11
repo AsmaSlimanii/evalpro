@@ -2,12 +2,7 @@
 
   <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
     <div class="form-header">
-      <div class="header-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19.5 3.75h-15v15h15v-15z" opacity="0.25" />
-          <path d="M11.25 11.25h1.5v1.5h-1.5v-1.5zM7.5 11.25h1.5v1.5H7.5v-1.5zM15 11.25h1.5v1.5H15v-1.5z" />
-        </svg>
-      </div>
+
       <h2 class="form-title">
         <span [class.invalid-title]="formGroup.invalid && formGroup.touched">
           {{ formMetadata?.title }}
@@ -19,7 +14,9 @@
           </svg>
         </span>
       </h2>
-      <p class="form-description">{{ formMetadata?.description }}</p>
+      <div class="form-subtitle-box">
+        Merci de renseigner les informations de votre projet en remplissant les champs suivants.
+      </div>
     </div>
 
     <div formArrayName="responses">
@@ -126,14 +123,65 @@
     </div>
 
     <div class="form-actions">
-      <button type="button" class="btn-secondary" (click)="goBack()">
-        Précédent
-      </button>
-      <!-- bouton Valider : laisse le form gérer la soumission -->
-      <button type="submit" class="btn-primary" [disabled]="!isAdmin && formGroup.invalid">Valider</button>
-
+      <button type="submit" class="btn-primary">Valider →</button>
     </div>
+    <!-- === FAB IA (bouton flottant) === -->
+    <button type="button" class="ai-fab" (click)="openAi()" title="Assistant IA">
+      <i class="fas fa-robot"></i>
+    </button>
   </form>
+  <!-- === Drawer IA (en dehors du <form>) === -->
+ <!-- Drawer IA (EN DEHORS du <form>) -->
+<div class="ai-drawer" *ngIf="ai.open">
+  <div class="ai-drawer__backdrop" (click)="closeAi()"></div>
+
+  <div class="ai-drawer__panel">
+    <div class="ai-drawer__head">
+      <div class="title">
+        <i class="fas fa-wand-magic-sparkles"></i>
+        Assistant IA — Étape 2
+      </div>
+      <button type="button" class="icon" (click)="closeAi()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="ai-drawer__body">
+      <label class="small is-title">Description (pré-remplie depuis vos réponses)</label>
+
+      <!-- IMPORTANT : pas de formControl/Name ici -->
+<textarea
+  [(ngModel)]="ai.description"
+  [ngModelOptions]="{standalone:true}"
+  rows="6"
+  class="ai-input"
+  placeholder="Exemples :
+nom du projet : EvalPro
+descriptions : tannerie; distillation; ruminants hors sol
+étude de faisabilité : oui, elle est en cours
+catégorie apia/apii : apia
+sous secteur : production : agriculture & élevage (APIA)
+catégorie d’investissement : cultures sous serres
+montant global : 90000
+"></textarea>
+
+
+      <div class="ai-actions">
+        <button type="button" class="btn primary"
+                (click)="applyAnswersFromDescription()"
+                [disabled]="isAdmin || !ai.description.trim()">
+          Remplir le formulaire
+        </button>
+      </div>
+    </div>
+
+    <div class="ai-drawer__foot">
+      <button type="button" class="btn ghost" (click)="closeAi()">Fermer</button>
+    </div>
+  </div>
+</div>
+
+  
 
   <div class="loading-spinner" *ngIf="isLoading">
     <div class="spinner"></div>
