@@ -335,3 +335,18 @@ select.input:disabled {
 .input[readonly]::placeholder {
   color: #a8a8a8;
 }
+
+
+
+
+/* --- ESPACE ENTRE RADIO ET TEXTE --- */
+.option-group .radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;              /* espace entre le bouton radio et le texte */
+}
+
+/* si le gap est écrasé ailleurs, force seulement le span */
+.option-group .radio-label input[type="radio"] + .radio-text {
+  margin-left: .3rem;
+}
