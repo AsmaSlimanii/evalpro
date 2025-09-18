@@ -37,6 +37,8 @@ public class ResponseServiceImpl implements ResponseService {
     @Autowired private StepRepository stepRepository;
     @Autowired private  ResponseAdminRepository responseAdminRepository;
     @Autowired private NotificationService notificationService;
+    @Autowired private StepHistoryService stepHistoryService;
+
 
 
     public ResponseServiceImpl(ResponseRepository responseRepository) {
@@ -388,6 +390,17 @@ public class ResponseServiceImpl implements ResponseService {
             // on log, mais on ne casse pas l’enregistrement du commentaire
             System.err.println("⚠️ Échec envoi notification commentaire admin : " + ex.getMessage());
         }
+
+
+        // ... après responseAdminRepository.save(...)
+        stepHistoryService.log(
+                dossier, step, admin,
+                existingComments.isEmpty()
+                        ? StepHistory.StepHistoryAction.COMMENT_ADDED
+                        : StepHistory.StepHistoryAction.COMMENT_UPDATED,
+                trimmed,               // le texte du commentaire
+                true                   // visible côté client
+        );
 
     }
 

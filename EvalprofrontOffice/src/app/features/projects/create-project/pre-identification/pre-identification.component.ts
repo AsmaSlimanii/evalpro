@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { FormService } from '../../../../core/services/form.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Payload } from '../../../../shared/models/creation-projet.dto';
+import { HistoryService, StepHistory } from '../../../../core/services/HistoryService';
 
 @Component({
   selector: 'app-pre-identification',
@@ -27,13 +28,20 @@ export class PreIdentificationComponent implements OnInit {
     open: false,
     description: ''
   };
+  history: StepHistory[] = [];
+  historyLoaded = false;
+  confirmOpen = false;
+  toDelete?: StepHistory;
+
+  trackByHistory = (_: number, h: StepHistory) => h.id ?? _;
 
   constructor(
     private fb: FormBuilder,
     private formService: FormService,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private historyService: HistoryService
   ) { }
 
   ngOnInit(): void {
@@ -62,6 +70,7 @@ export class PreIdentificationComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin();
     this.initForm();
     this.loadForm();
+    this.loadHistoryForThisStep();
   }
 
   private setupRouteListener(): void {
@@ -114,6 +123,7 @@ export class PreIdentificationComponent implements OnInit {
         error: () => { this.isLoading = false; }
       });
     }
+    this.loadHistoryForThisStep(); // <— charge l’historique
   }
 
   private buildFormControlsWithData(existingResponses: any[]): void {
@@ -236,7 +246,11 @@ export class PreIdentificationComponent implements OnInit {
 
     const dossierIdToSend: number | null = this.dossierId ? Number(this.dossierId) : null;
     const onSuccess = (res: any): void => {
+
+      this.loadHistoryForThisStep();   // <-- refresh de la timeline
+
       const dossierId = res.dossierId || dossierIdToSend;
+
       if (dossierId) {
         localStorage.setItem('dossierId', String(dossierId));
         const prev = Number(localStorage.getItem('completedStep') || '0');
@@ -442,5 +456,50 @@ export class PreIdentificationComponent implements OnInit {
       this.setAnswer(i, q, ans);
       j++;
     }
+  }
+
+
+  private loadHistoryForThisStep(): void {
+    this.historyLoaded = false;
+
+    if (!this.dossierId) {
+      this.history = [];
+      this.historyLoaded = true;
+      return;
+    }
+    const stepId = 1;
+    console.log('[HIST] load for dossier', this.dossierId, 'step', stepId);
+
+    this.historyService
+      .byDossierAndStep(Number(this.dossierId), stepId)
+      .subscribe({
+        next: (items) => {
+          console.log('[HIST] items', items);
+          this.history = items ?? [];
+          this.historyLoaded = true;
+        },
+        error: (err) => {
+          console.error('[HIST] error', err); // regarde l’onglet Network si 401/403/404
+          this.history = [];
+          this.historyLoaded = true;
+        }
+      });
+  }
+
+
+  prettifyAction(a: string): string {
+    if (!a) return '';
+    const clean = a.toString().replace(/_/g, ' ').toLowerCase();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
+  openDeleteConfirm(h: StepHistory) { this.toDelete = h; this.confirmOpen = true; }
+  cancelDelete() { this.confirmOpen = false; this.toDelete = undefined; }
+  doDelete() {
+    if (!this.toDelete?.id) return;
+    this.historyService.delete(this.toDelete.id).subscribe({
+      next: () => { this.history = this.history.filter(x => x.id !== this.toDelete!.id); this.cancelDelete(); },
+      error: () => alert("Échec de suppression de l'historique.")
+    });
   }
 }

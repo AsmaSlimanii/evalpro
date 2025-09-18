@@ -6,11 +6,13 @@ import com.medianet.evalpro.Dto.PreIdentificationDto;
 import com.medianet.evalpro.Entity.Dossier;
 import com.medianet.evalpro.Entity.Notification; // <-- OBLIGATOIRE
 
+import com.medianet.evalpro.Entity.StepHistory;
 import com.medianet.evalpro.Entity.User;
 import com.medianet.evalpro.Repository.DossierRepository;
 import com.medianet.evalpro.Repository.ResponseAdminRepository;
 import com.medianet.evalpro.Repository.ResponseRepository;
 import com.medianet.evalpro.Repository.UserRepository;
+import com.medianet.evalpro.Entity.StepHistory;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +33,11 @@ public class DossierServiceImpl implements DossierService {
 
     private final DossierRepository dossierRepository;
     private final UserRepository userRepository;
-    @Autowired
-    private ResponseAdminRepository responseAdminRepository;
-    @Autowired
-    private ResponseRepository responseRepository;
+    @Autowired private ResponseAdminRepository responseAdminRepository;
+    @Autowired private ResponseRepository responseRepository;
     // ✅ injection du service de notifications
     @Autowired private  NotificationService notificationService;
+    @Autowired private StepHistoryService stepHistoryService;
 
 
     public DossierServiceImpl(DossierRepository dossierRepository, UserRepository userRepository, NotificationService notificationService) {
@@ -250,6 +251,17 @@ private Map<String, Integer> generateStepProgress(Dossier dossier) {
                         ? "Des compléments sont requis pour finaliser votre dossier."
                         : message.trim();
         }
+        User admin = userRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new RuntimeException("Admin introuvable"));
+
+        stepHistoryService.log(
+                dossier, null, admin,
+                StepHistory.StepHistoryAction.STATUS_CHANGED,
+                "Statut changé en " + status.name()
+                        + (finalMessage != null && !finalMessage.isBlank() ? (" — " + finalMessage) : ""),
+                true
+        );
+
 
         // envoi de la notification
         notificationService.notifyStatus(dossier, type, finalMessage);
@@ -350,7 +362,21 @@ private Map<String, Integer> generateStepProgress(Dossier dossier) {
         d.setStatus(Dossier.Status.SOUMIS);
         d.setSubmittedAt(LocalDateTime.now());
         d.setUpdatedAt(LocalDateTime.now());
-        return dossierRepository.save(d);
+
+        Dossier saved = dossierRepository.save(d);
+
+        // step = null car action globale sur le dossier
+        stepHistoryService.log(
+                saved,
+                null,
+                user,
+                StepHistory.StepHistoryAction.FORM_SUBMITTED,
+                "Dossier soumis" + (isAdmin ? " (forcé par admin)" : ""),
+                true
+        );
+
+
+        return saved;
     }
 
 

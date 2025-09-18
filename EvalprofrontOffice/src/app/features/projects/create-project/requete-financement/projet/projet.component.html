@@ -109,14 +109,68 @@
     </div>
 
     
-        <div class="input-container mt-5" *ngIf="isAdmin">
-            <label class="label">Commentaire de l’administrateur</label>
-            <div class="input-wrapper">
-                <textarea formControlName="comment" class="input textarea"
-                    placeholder="Saisissez un commentaire ou une note complémentaire..." rows="5"></textarea>
+       <div class="input-container mt-5" *ngIf="isAdmin">
+      <label class="label">Commentaire de l’administrateur</label>
+      <div class="input-wrapper">
+        <textarea formControlName="comment" class="input textarea"
+          placeholder="Saisissez un commentaire ou une note complémentaire..." rows="5"></textarea>
+      </div>
 
+      <!-- Historique -->
+      <div class="history" *ngIf="historyLoaded">
+        <div class="history-title">Historique de cette étape</div>
+
+        <!-- Debug temporaire -->
+        <!-- <pre>{{ history | json }}</pre> -->
+
+        <ng-container *ngIf="history.length > 0; else noHistory">
+          <ul class="timeline">
+            <li *ngFor="let h of history; trackBy: trackByHistory" class="timeline-item">
+              <button class="t-close" type="button" (click)="openDeleteConfirm(h)" aria-label="Supprimer">×</button>
+
+              <div class="t-row">
+                <span class="t-badge">{{ prettifyAction(h.action) }}</span>
+                <span class="t-time">{{ h.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="t-desc" *ngIf="h.description">{{ h.description }}</div>
+              <div class="t-actor">par {{ h.actor?.displayName || h.actor?.email }}</div>
+            </li>
+          </ul>
+
+        </ng-container>
+
+
+        <!-- Backdrop -->
+        <div class="modal-backdrop" *ngIf="confirmOpen" (click)="cancelDelete()"></div>
+
+        <!-- Modal -->
+        <div class="modal" *ngIf="confirmOpen" (keydown.escape)="cancelDelete()" tabindex="0" role="dialog"
+          aria-modal="true">
+          <div class="modal-panel">
+            <div class="modal-head">
+              <h3>Supprimer l’entrée</h3>
+              <button type="button" class="icon" (click)="cancelDelete()" aria-label="Fermer">×</button>
             </div>
+
+            <div class="modal-body">
+              Voulez-vous vraiment supprimer cette entrée d’historique ?
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn ghost" (click)="cancelDelete()">Annuler</button>
+              <button type="button" class="btn danger" (click)="doDelete()">Supprimer</button>
+            </div>
+          </div>
         </div>
+
+
+
+        <ng-template #noHistory>
+          <div class="empty">Aucun historique pour cette étape.</div>
+        </ng-template>
+      </div>
+
+    </div>
 
     <!-- Actions -->
     <div class="form-actions">

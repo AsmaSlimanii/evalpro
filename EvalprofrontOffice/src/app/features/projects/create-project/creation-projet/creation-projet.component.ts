@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { FormService } from '../../../../core/services/form.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Payload } from '../../../../shared/models/creation-projet.dto';
+import { HistoryService, StepHistory } from '../../../../core/services/HistoryService';
 
 
 @Component({
@@ -25,13 +26,21 @@ export class CreationProjetComponent implements OnInit {
   filteredOptions12: any[] = [];
   autresCtrl: any;
   isAdmin = false;
+  history: StepHistory[] = [];
+  historyLoaded = false;
+  confirmOpen = false;
+  toDelete?: StepHistory;
+  
+
+  trackByHistory = (_: number, h: StepHistory) => h.id ?? _;
 
   constructor(
     private fb: FormBuilder,
     private formService: FormService,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService  // ⬅️ Ajoute ceci
+    private authService: AuthService,  // ⬅️ Ajoute ceci
+    private historyService: HistoryService
   ) { }
 
 
@@ -58,6 +67,7 @@ export class CreationProjetComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
+    this.loadHistoryForThisStep();
 
 
 
@@ -107,6 +117,7 @@ export class CreationProjetComponent implements OnInit {
   private loadForm(): void {
     const step = 'creation-projet';
     this.isLoading = true;
+    this.loadHistoryForThisStep(); // <— charge l’historique
 
     const onFormLoad = (form: any) => {
       this.formMetadata = form;
@@ -390,7 +401,11 @@ export class CreationProjetComponent implements OnInit {
 
     // 4) au succès: stocker l'id, avancer la barre, et renvoyer au hub AVEC message + progression
     const onSuccess = (res: any): void => {
+
+      this.loadHistoryForThisStep();   // <-- refresh de la timeline
+
       const dossierId = res?.dossierId || dossierIdToSend;
+
       if (!dossierId) return;
 
       localStorage.setItem('dossierId', String(dossierId));
@@ -497,9 +512,9 @@ export class CreationProjetComponent implements OnInit {
   /* -------------------- Parsing & application (step2) -------------------- */
 
   // normalisation
-private norm(s: any): string {
-  return (s ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-}
+  private norm(s: any): string {
+    return (s ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
 
   /** Synonymes/mots-clés utilisés pour retrouver les options (Étape 2) */
   private STEP2_SYNONYMS: Record<string, string[]> = {
@@ -633,145 +648,188 @@ private norm(s: any): string {
 
   /** Applique la description : tente d’abord “clé: valeur”, sinon “par ordre” */
 
-applyAnswersFromDescription(): void {
-  if (this.isAdmin) return;
-  const raw = (this.ai.description || '').trim();
-  if (!raw) return;
+  applyAnswersFromDescription(): void {
+    if (this.isAdmin) return;
+    const raw = (this.ai.description || '').trim();
+    if (!raw) return;
 
-  const hasColon = raw.includes(':');
-  const applied = hasColon ? this.applyByKeywords(raw) : 0;
-  if (!hasColon && applied === 0) this.applyByOrder(raw);  // fallback rare
+    const hasColon = raw.includes(':');
+    const applied = hasColon ? this.applyByKeywords(raw) : 0;
+    if (!hasColon && applied === 0) this.applyByOrder(raw);  // fallback rare
 
-  this.formGroup.updateValueAndValidity({ onlySelf: false, emitEvent: true });
-  this.questions.forEach((_, i) => this.onFieldBlur(i));
-  this.closeAi();
-}
+    this.formGroup.updateValueAndValidity({ onlySelf: false, emitEvent: true });
+    this.questions.forEach((_, i) => this.onFieldBlur(i));
+    this.closeAi();
+  }
 
   /** Mode 1 : “clé: valeur” (ordre logique respecté pour les dépendances) */
   /** Mode 1 : “clé: valeur” (renvoie combien de champs ont été appliqués) */
-private applyByKeywords(raw: string): number {
-  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  if (!lines.some(l => l.includes(':'))) return 0;
+  private applyByKeywords(raw: string): number {
+    const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (!lines.some(l => l.includes(':'))) return 0;
 
-  const pairs = lines.map(l => {
-    const [k, ...r] = l.split(':');
-    return { k: this.norm(k), v: r.join(':').trim() };
-  });
+    const pairs = lines.map(l => {
+      const [k, ...r] = l.split(':');
+      return { k: this.norm(k), v: r.join(':').trim() };
+    });
 
-  // Indices cibles trouvés UNIQUEMENT par libellé (plus d’ID figés)
-  const findIdx = (re: RegExp) => this.questions.findIndex(q => re.test(this.norm(q.text)));
+    // Indices cibles trouvés UNIQUEMENT par libellé (plus d’ID figés)
+    const findIdx = (re: RegExp) => this.questions.findIndex(q => re.test(this.norm(q.text)));
 
-  const idxName      = findIdx(/nom.*projet/);
-  const idxChecklist = this.questions.findIndex(q =>
-    q.type === 'CHOIXMULTIPLE' ||
-    /correspond.*descriptions|liste.*cocher|exclusions?/.test(this.norm(q.text))
-  );
-  const idxStudy     = findIdx(/etude.*faisabilite|plan.*affaire/);
-  const idxCatA      = findIdx(/categorie.*(apia|apii)/);                 // Catégorie APIA/APII
-  const idxSous      = findIdx(/sous.*secteur/);                          // Sous secteur (APIA)
-  const idxCatInv    = findIdx(/categorie.*invest(?!.*nom.*projet)/);     // Catégorie d’investissement (exclut le titre du nom)
-  const idxAmount    = findIdx(/(estimez|montant)(.*global)?|en\s*tnd/);  // Montant global en TND
-  const idxAutres    = findIdx(/autres?/);
+    const idxName = findIdx(/nom.*projet/);
+    const idxChecklist = this.questions.findIndex(q =>
+      q.type === 'CHOIXMULTIPLE' ||
+      /correspond.*descriptions|liste.*cocher|exclusions?/.test(this.norm(q.text))
+    );
+    const idxStudy = findIdx(/etude.*faisabilite|plan.*affaire/);
+    const idxCatA = findIdx(/categorie.*(apia|apii)/);                 // Catégorie APIA/APII
+    const idxSous = findIdx(/sous.*secteur/);                          // Sous secteur (APIA)
+    const idxCatInv = findIdx(/categorie.*invest(?!.*nom.*projet)/);     // Catégorie d’investissement (exclut le titre du nom)
+    const idxAmount = findIdx(/(estimez|montant)(.*global)?|en\s*tnd/);  // Montant global en TND
+    const idxAutres = findIdx(/autres?/);
 
-  let count = 0;
+    let count = 0;
 
-  // 1) Nom du projet
-  for (const {k, v} of pairs) {
-    if (/nom.*projet|titre/.test(k) && idxName >= 0) {
-      // évite de mettre un nombre pur dans le nom
-      const onlyDigits = v.replace(/[^\d]/g, '');
-      if (!(onlyDigits && onlyDigits === v.replace(/\s/g, ''))) {
-        this.setAnswer(idxName, this.questions[idxName], v); count++;
+    // 1) Nom du projet
+    for (const { k, v } of pairs) {
+      if (/nom.*projet|titre/.test(k) && idxName >= 0) {
+        // évite de mettre un nombre pur dans le nom
+        const onlyDigits = v.replace(/[^\d]/g, '');
+        if (!(onlyDigits && onlyDigits === v.replace(/\s/g, ''))) {
+          this.setAnswer(idxName, this.questions[idxName], v); count++;
+        }
+        break;
       }
-      break;
     }
-  }
 
-  // 2) Cases à cocher (descriptions)
-  for (const {k, v} of pairs) {
-    if ((/description|liste|exclusion/.test(k)) && idxChecklist >= 0) {
-      this.setAnswer(idxChecklist, this.questions[idxChecklist], v); count++;
-      break;
+    // 2) Cases à cocher (descriptions)
+    for (const { k, v } of pairs) {
+      if ((/description|liste|exclusion/.test(k)) && idxChecklist >= 0) {
+        this.setAnswer(idxChecklist, this.questions[idxChecklist], v); count++;
+        break;
+      }
     }
-  }
 
-  // 3) Étude de faisabilité
-  for (const {k, v} of pairs) {
-    if ((/etude|faisabilite|plan.*affaire/.test(k)) && idxStudy >= 0) {
-      this.setAnswer(idxStudy, this.questions[idxStudy], v); count++;
-      break;
+    // 3) Étude de faisabilité
+    for (const { k, v } of pairs) {
+      if ((/etude|faisabilite|plan.*affaire/.test(k)) && idxStudy >= 0) {
+        this.setAnswer(idxStudy, this.questions[idxStudy], v); count++;
+        break;
+      }
     }
-  }
 
-  // 4) Catégorie APIA/APII  →  5) Sous-secteur  →  6) Catégorie d’investissement
-  for (const {k, v} of pairs) {
-    if ((/categorie.*(apia|apii)/.test(k)) && idxCatA >= 0) {
-      this.setAnswer(idxCatA, this.questions[idxCatA], v); count++;
-      // filtre les options de Q11
-      const posed = this.responses.at(idxCatA)?.get('value')?.value;
-      this.updateOptionsForQuestion11(Number(typeof posed === 'object' ? posed?.id : posed));
-      break;
+    // 4) Catégorie APIA/APII  →  5) Sous-secteur  →  6) Catégorie d’investissement
+    for (const { k, v } of pairs) {
+      if ((/categorie.*(apia|apii)/.test(k)) && idxCatA >= 0) {
+        this.setAnswer(idxCatA, this.questions[idxCatA], v); count++;
+        // filtre les options de Q11
+        const posed = this.responses.at(idxCatA)?.get('value')?.value;
+        this.updateOptionsForQuestion11(Number(typeof posed === 'object' ? posed?.id : posed));
+        break;
+      }
     }
-  }
-  for (const {k, v} of pairs) {
-    if ((/sous.*secteur/.test(k)) && idxSous >= 0) {
-      this.setAnswer(idxSous, this.questions[idxSous], v); count++;
-      // filtre les options de Q12
-      const posed = this.responses.at(idxSous)?.get('value')?.value;
-      this.updateOptionsForQuestion12(Number(typeof posed === 'object' ? posed?.id : posed));
-      break;
+    for (const { k, v } of pairs) {
+      if ((/sous.*secteur/.test(k)) && idxSous >= 0) {
+        this.setAnswer(idxSous, this.questions[idxSous], v); count++;
+        // filtre les options de Q12
+        const posed = this.responses.at(idxSous)?.get('value')?.value;
+        this.updateOptionsForQuestion12(Number(typeof posed === 'object' ? posed?.id : posed));
+        break;
+      }
     }
-  }
-  for (const {k, v} of pairs) {
-    if ((/categorie.*invest/.test(k)) && idxCatInv >= 0) {
-      this.setAnswer(idxCatInv, this.questions[idxCatInv], v); count++;
-      break;
+    for (const { k, v } of pairs) {
+      if ((/categorie.*invest/.test(k)) && idxCatInv >= 0) {
+        this.setAnswer(idxCatInv, this.questions[idxCatInv], v); count++;
+        break;
+      }
     }
-  }
 
-  // 7) Montant global
-  for (const {k, v} of pairs) {
-    if ((/(estimez|montant)(.*global)?|en\s*tnd/.test(k)) && idxAmount >= 0) {
-      this.setAnswer(idxAmount, this.questions[idxAmount], v); count++;
-      break;
+    // 7) Montant global
+    for (const { k, v } of pairs) {
+      if ((/(estimez|montant)(.*global)?|en\s*tnd/.test(k)) && idxAmount >= 0) {
+        this.setAnswer(idxAmount, this.questions[idxAmount], v); count++;
+        break;
+      }
     }
-  }
 
-  // 8) Autres
-  for (const {k, v} of pairs) {
-    if ((/autres?/.test(k)) && idxAutres >= 0) {
-      this.setAnswer(idxAutres, this.questions[idxAutres], v); count++;
-      break;
+    // 8) Autres
+    for (const { k, v } of pairs) {
+      if ((/autres?/.test(k)) && idxAutres >= 0) {
+        this.setAnswer(idxAutres, this.questions[idxAutres], v); count++;
+        break;
+      }
     }
-  }
 
-  return count;
-}
+    return count;
+  }
 
   /** Mode 2 : par ordre des questions (1 ligne par réponse) */
   /** Mode 2 : par ordre des questions (1 ligne par réponse) */
   private applyByOrder(raw: string): void {
-  const parts = raw.split(/\r?\n|;/).map(s => s.trim()).filter(Boolean);
-  let j = 0;
+    const parts = raw.split(/\r?\n|;/).map(s => s.trim()).filter(Boolean);
+    let j = 0;
 
-  for (let i = 0; i < this.questions.length && j < parts.length; i++) {
-    // si la question a déjà une valeur, on saute
-    const existing = this.responses.at(i)?.get('value')?.value;
-    if (existing != null && existing !== '') continue;
+    for (let i = 0; i < this.questions.length && j < parts.length; i++) {
+      // si la question a déjà une valeur, on saute
+      const existing = this.responses.at(i)?.get('value')?.value;
+      if (existing != null && existing !== '') continue;
 
-    let ans = parts[j++];
-    if (ans.includes(':')) ans = ans.split(':').slice(1).join(':').trim(); // ne garde que la valeur
+      let ans = parts[j++];
+      if (ans.includes(':')) ans = ans.split(':').slice(1).join(':').trim(); // ne garde que la valeur
 
-    this.setAnswer(i, this.questions[i], ans);
+      this.setAnswer(i, this.questions[i], ans);
 
-    // gère les dépendances si on vient de poser Q "Catégorie" → "Sous-secteur" → "Catégorie d’invest"
-    const posed = this.responses.at(i)?.get('value')?.value;
-    const posedId = typeof posed === 'object' ? posed?.id : posed;
-    const label = this.norm(this.questions[i].text);
+      // gère les dépendances si on vient de poser Q "Catégorie" → "Sous-secteur" → "Catégorie d’invest"
+      const posed = this.responses.at(i)?.get('value')?.value;
+      const posedId = typeof posed === 'object' ? posed?.id : posed;
+      const label = this.norm(this.questions[i].text);
 
-    if (/categorie.*(apia|apii)/.test(label)) this.updateOptionsForQuestion11(Number(posedId));
-    if (/sous.*secteur/.test(label))        this.updateOptionsForQuestion12(Number(posedId));
+      if (/categorie.*(apia|apii)/.test(label)) this.updateOptionsForQuestion11(Number(posedId));
+      if (/sous.*secteur/.test(label)) this.updateOptionsForQuestion12(Number(posedId));
+    }
   }
-}
+
+private loadHistoryForThisStep(): void {
+    this.historyLoaded = false;
+
+    if (!this.dossierId) {
+      this.history = [];
+      this.historyLoaded = true;
+      return;
+    }
+    const stepId = 2;
+    console.log('[HIST] load for dossier', this.dossierId, 'step', stepId);
+
+    this.historyService
+      .byDossierAndStep(Number(this.dossierId), stepId)
+      .subscribe({
+        next: (items) => {
+          console.log('[HIST] items', items);
+          this.history = items ?? [];
+          this.historyLoaded = true;
+        },
+        error: (err) => {
+          console.error('[HIST] error', err); // regarde l’onglet Network si 401/403/404
+          this.history = [];
+          this.historyLoaded = true;
+        }
+      });
+  }
+
+  prettifyAction(a: string): string {
+    if (!a) return '';
+    const clean = a.toString().replace(/_/g, ' ').toLowerCase();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
+  openDeleteConfirm(h: StepHistory) { this.toDelete = h; this.confirmOpen = true; }
+  cancelDelete() { this.confirmOpen = false; this.toDelete = undefined; }
+  doDelete() {
+    if (!this.toDelete?.id) return;
+    this.historyService.delete(this.toDelete.id).subscribe({
+      next: () => { this.history = this.history.filter(x => x.id !== this.toDelete!.id); this.cancelDelete(); },
+      error: () => alert("Échec de suppression de l'historique.")
+    });
+  }
 
 }

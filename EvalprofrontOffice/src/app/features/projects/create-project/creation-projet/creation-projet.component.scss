@@ -313,6 +313,10 @@ input:disabled, select:disabled, textarea:disabled { … }
 */
 
 /* Ajouts pour readonly et priorité accrue */
+.input-container .label {
+  font-size: 20px;         /* ← augmente ici */
+  font-weight: 700;
+}
 .input:disabled,
 .input[disabled],
 .input[readonly],
@@ -329,6 +333,115 @@ select.input:disabled {
 .input:disabled::placeholder,
 .input[readonly]::placeholder {
   color: #a8a8a8;
+}
+
+/* ===== Bloc commentaire admin ===== */
+.input-container.mt-5,
+.admin-comment {
+  margin-top: 24px;
+  max-width: 1260px;
+  padding: 16px;
+  background: #f8fafc;
+  /* ardoise très clair */
+  border: 1px solid #e5e7eb;
+  /* gris clair */
+  border-radius: 12px;
+}
+
+/* Label */
+.input-container .label,
+.admin-comment .label {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #334155;
+  /* slate-700 */
+}
+
+/* Wrapper utile si on veut des icônes, etc. */
+.input-container .input-wrapper,
+.admin-comment .input-wrapper {
+  position: relative;
+}
+
+/* Textarea stylée */
+.input-container .input.textarea,
+.admin-comment .input.textarea {
+  width: 100%;
+  min-height: 160px;
+  resize: vertical;
+  /* autorise redimensionnement vertical */
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;
+  /* slate-900 */
+  background: #fff;
+  border: 1px solid #d1d5db;
+  /* gray-300 */
+  border-radius: 10px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .03);
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.input-container .input.textarea::placeholder,
+.admin-comment .input.textarea::placeholder {
+  color: #94a3b8;
+  /* slate-400 */
+}
+
+/* Focus */
+.input-container .input.textarea:focus,
+.admin-comment .input.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  /* blue-500 */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+}
+
+/* Accessibilité : hover léger */
+.input-container .input.textarea:hover,
+.admin-comment .input.textarea:hover {
+  border-color: #cbd5e1;
+  /* slate-300 */
+}
+
+/* Pour donner un aspect “lecture seule” si jamais on passe readonly */
+.input-container .input.textarea[readonly],
+.admin-comment .input.textarea[readonly] {
+  background: #f1f5f9;
+  /* slate-100 */
+  color: #475569;
+  /* slate-600 */
+}
+
+/* Optionnel : style cohérent pour inputs/textarea read-only dans tout le composant */
+:host ::ng-deep input[readonly],
+:host ::ng-deep textarea[readonly] {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #475569;
+  pointer-events: none;
+}
+
+/* File input désactivé pour admin */
+:host ::ng-deep input[type="file"]:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Petit ajustement responsive */
+@media (max-width: 768px) {
+
+  .input-container.mt-5,
+  .admin-comment {
+    padding: 12px;
+  }
+
+  .input-container .input.textarea,
+  .admin-comment .input.textarea {
+    min-height: 140px;
+  }
 }
 
 
@@ -482,3 +595,125 @@ select.input:disabled {
 
 
 
+
+
+/* historique */
+.history { margin-top:16px; font-weight:500; font-size: 18px;  }
+.history-title { font-weight:700; color:#0f172a; margin-bottom:8px; font-size: 20px; }
+.timeline { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px; }
+.timeline li { position:relative; background:#fff; border:1px solid #e7edf6; border-radius:10px; padding:12px 14px; box-shadow:0 2px 8px rgba(16,24,40,.05); }
+.t-row { display:flex; align-items:center; gap:10px; }
+.t-badge { text-transform:capitalize; font-size:16.9px; border:1px solid #cfe0ff; color:#1d5bd8; padding:2px 8px; border-radius:1000px; background:#f4f8ff; }
+.t-time { margin-left:auto; color:#64748b; font-size:16.5px; }
+.t-desc { margin-top:6px; color:#0f172a; }
+.t-actor { margin-top:4px; font-size:16.2px; color:#64748b; }
+
+
+
+
+
+/* close (sur chaque item d'historique) */
+.t-close{
+  position:absolute; right:8px; bottom:8px;
+  border:0; width:26px; height:26px; line-height:26px;
+  border-radius:8px; cursor:pointer;
+  background:#f1f5f9; color:#64748b; transition:.2s;
+}
+.t-close:hover{ background:#fee2e2; color:#b91c1c; transform:translateY(-1px); }
+
+
+
+/* ===== MODAL ===== */
+.modal-backdrop{
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(2,6,23,.55);
+  backdrop-filter: blur(3px);                  /* un peu plus de blur */
+}
+
+.modal{
+  position:fixed; inset:0; z-index:1001;
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;                                /* + espace autour */
+  outline:0;
+}
+
+/* panneau */
+.modal-panel{
+  width: clamp(540px, 68vw, 560px);            /* ← plus large */
+  max-height: 136vh;                            /* évite le débordement */
+  overflow:auto;                               /* scroll si nécessaire */
+  background:linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+  border:1px solid #e5eefc;
+  border-radius:18px;                          /* coins un peu plus doux */
+  box-shadow:
+    0 22px 70px rgba(15,23,42,.25),
+    0 6px 16px rgba(15,23,42,.12);
+  padding:28px 28px 22px;                      /* + padding interne */
+  animation: modalIn .18s ease-out;
+}
+
+@keyframes modalIn{
+  from{ transform:translateY(8px) scale(.985); opacity:0; }
+  to{ transform:none; opacity:1; }
+}
+
+/* header */
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; margin-bottom:12px;
+}
+.modal-head h3{
+  margin:0; font-size:22px; font-weight:750; color:#0f172a; /* + grand */
+}
+.modal-head .icon{
+  border:0; background:#f1f5f9; color:#334155;
+  width:32px; height:32px;                      /* + grand */
+  border-radius:10px; cursor:pointer;
+  transition:.2s;
+}
+.modal-head .icon:hover{ background:#e2e8f0; transform:rotate(90deg); }
+
+/* corps */
+.modal-body{
+  font-size:16px;                               /* + grand */
+  color:#334155; line-height:1.6;
+  background:#f8fbff; border:1px dashed #dbeafe;
+  border-radius:12px;
+  padding:16px 18px;                            /* + padding */
+  margin:12px 0 16px;
+}
+
+/* actions */
+.modal-actions{
+  display:flex; justify-content:flex-end; gap:12px; margin-top:6px;
+}
+.btn{
+  appearance:none; border:1px solid transparent; cursor:pointer;
+  padding:12px 18px;                            /* + paddings */
+  border-radius:12px; font-weight:700;
+  font-size:16px;                               /* + grand */
+  transition:.18s; line-height:1;
+  box-shadow: 0 1px 0 rgba(15,23,42,.04);
+}
+.btn:focus{ outline:4px solid #dbeafe; outline-offset:2px; }
+
+/* variantes */
+.btn.ghost{
+  background:#fff; border-color:#e2e8f0; color:#0f172a;
+}
+.btn.ghost:hover{ background:#f8fafc; }
+
+.btn.danger{
+  background:#ef4444; color:#fff; border-color:#ef4444;
+  box-shadow:0 4px 12px rgba(239,68,68,.25);    /* lift visuel */
+}
+.btn.danger:hover{ background:#dc2626; border-color:#dc2626; }
+
+/* responsive: sur mobile on garde une boîte large mais comfortable */
+@media (max-width: 640px){
+  .modal{ padding:16px; }
+  .modal-panel{ width: 94vw; padding:22px 20px; }
+  .modal-head h3{ font-size:20px; }
+  .modal-body{ font-size:15px; padding:14px; }
+  .btn{ font-size:15px; padding:10px 16px; }
+}

@@ -57,6 +57,18 @@ public class User implements UserDetails {
     private List<Dossier> dossiers;
 
 
+    @JsonProperty("fullName")
+    @Transient
+    public String getFullName() {
+        String p = prenom == null ? "" : prenom.trim();
+        String n = name   == null ? "" : name.trim();
+        String composed = (p + " " + n).trim();
+        if (!composed.isEmpty()) return composed;
+
+        if (username != null && !username.isBlank()) return username;
+        return email; // dernier fallback
+    }
+
     public enum Role {
         ADMIN, CLIENT
     }

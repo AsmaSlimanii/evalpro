@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormService } from '../../../../../core/services/form.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { HistoryService, StepHistory } from '../../../../../core/services/HistoryService';
 
 @Component({
   selector: 'app-entreprise',
@@ -20,7 +21,12 @@ export class EntrepriseComponent implements OnInit {
   uploadedFiles: File[] = [];
   allQuestions: any[] = [];
   isAdmin = false;
+  history: StepHistory[] = [];
+  historyLoaded = false;
+  confirmOpen = false;
+  toDelete?: StepHistory;
 
+  trackByHistory = (_: number, h: StepHistory) => h.id ?? _;
 
   readonly step = 'requete-financement';
   readonly stepId = 4;
@@ -32,8 +38,10 @@ export class EntrepriseComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cdRef: ChangeDetectorRef,
-    private authService: AuthService
-  ) { }
+    private authService: AuthService,
+    private historyService: HistoryService
+  ) 
+    { }
 
   ngOnInit(): void {
     this.dossierId = this.route.snapshot.params['id'] || localStorage.getItem('dossierId');
@@ -42,6 +50,7 @@ export class EntrepriseComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
+    this.loadHistoryForThisStep();
   }
   private setReadOnlyMode(): void {
     const responses = this.formGroup.get('responses') as FormArray;
@@ -79,6 +88,7 @@ export class EntrepriseComponent implements OnInit {
   }
 
   loadForm(): void {
+    this.loadHistoryForThisStep();
     const callback = (form: any) => {
       this.formMetadata = form;
       this.formId = form.id;
@@ -230,7 +240,7 @@ export class EntrepriseComponent implements OnInit {
 
     const ids = new Set(this.allQuestions.map(q => q.id));
     const raw: Array<{ questionId: number, value: any, optionIds: any[] }> = this.responses.getRawValue();
-
+    this.loadHistoryForThisStep();
     const onlyEntrepriseResponses = raw
       .filter(r => ids.has(r.questionId))
       .map(r => ({
@@ -330,5 +340,52 @@ export class EntrepriseComponent implements OnInit {
 
   onFieldBlur(index: number): void {
     // facultatif
+  }
+
+
+
+
+  private loadHistoryForThisStep(): void {
+    this.historyLoaded = false;
+
+    if (!this.dossierId) {
+      this.history = [];
+      this.historyLoaded = true;
+      return;
+    }
+    const stepId = 4;
+    console.log('[HIST] load for dossier', this.dossierId, 'step', stepId);
+
+    this.historyService
+      .byDossierAndStep(Number(this.dossierId), stepId)
+      .subscribe({
+        next: (items) => {
+          console.log('[HIST] items', items);
+          this.history = items ?? [];
+          this.historyLoaded = true;
+        },
+        error: (err) => {
+          console.error('[HIST] error', err); // regarde l’onglet Network si 401/403/404
+          this.history = [];
+          this.historyLoaded = true;
+        }
+      });
+  }
+
+
+  prettifyAction(a: string): string {
+    if (!a) return '';
+    const clean = a.toString().replace(/_/g, ' ').toLowerCase();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
+  openDeleteConfirm(h: StepHistory) { this.toDelete = h; this.confirmOpen = true; }
+  cancelDelete() { this.confirmOpen = false; this.toDelete = undefined; }
+  doDelete() {
+    if (!this.toDelete?.id) return;
+    this.historyService.delete(this.toDelete.id).subscribe({
+      next: () => { this.history = this.history.filter(x => x.id !== this.toDelete!.id); this.cancelDelete(); },
+      error: () => alert("Échec de suppression de l'historique.")
+    });
   }
 }

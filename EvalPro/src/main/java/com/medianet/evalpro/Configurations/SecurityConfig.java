@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/ai/forms/generate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/ai/forms").permitAll()
                         .requestMatchers(HttpMethod.GET,  "/api/ai/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/history/**").hasAnyRole("ADMIN","CLIENT")
 
                         .anyRequest().authenticated()
                 )

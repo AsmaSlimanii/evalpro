@@ -3,6 +3,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormService } from '../../../../../core/services/form.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { HistoryService, StepHistory } from '../../../../../core/services/HistoryService';
 
 @Component({
   selector: 'app-projet',
@@ -23,6 +24,12 @@ export class ProjetComponent implements OnInit {
   allQuestions: any[] = [];
   isAdmin = false;
 
+  history: StepHistory[] = [];
+  historyLoaded = false;
+  confirmOpen = false;
+  toDelete?: StepHistory;
+
+  trackByHistory = (_: number, h: StepHistory) => h.id ?? _;
 
   // ⚙️ Étape & pilier
   readonly step = 'requete-financement';
@@ -35,7 +42,8 @@ export class ProjetComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cdRef: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private historyService: HistoryService
   ) { }
 
   ngOnInit(): void {
@@ -45,6 +53,7 @@ export class ProjetComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
+    this.loadHistoryForThisStep();
   }
   setReadOnlyMode() {
     const responsesArray = this.formGroup.get('responses') as FormArray;
@@ -69,7 +78,7 @@ export class ProjetComponent implements OnInit {
   initForm(): void {
     this.formGroup = this.fb.group({
       responses: this.fb.array([]),
-       comment: ['']
+      comment: ['']
     });
   }
 
@@ -81,6 +90,7 @@ export class ProjetComponent implements OnInit {
 
   // Chargement + préremplissage
   loadForm(): void {
+    this.loadHistoryForThisStep();
     const onOk = (form: any) => {
       this.formMetadata = form;
       this.formId = form.id;
@@ -95,7 +105,7 @@ export class ProjetComponent implements OnInit {
 
       this.buildFormControlsWithData(existing);
       this.isLoading = false;
-       this.formGroup.patchValue({ comment: form.comment || '' });
+      this.formGroup.patchValue({ comment: form.comment || '' });
       // ✅ seulement maintenant : désactiver si admin
       if (this.isAdmin) {
         this.setReadOnlyMode();
@@ -219,7 +229,7 @@ export class ProjetComponent implements OnInit {
 
     const ids = new Set(this.allQuestions.map(q => q.id));
     const raw: Array<{ questionId: number, value: any, optionIds: any[] }> = this.responses.getRawValue();
-
+    this.loadHistoryForThisStep();
     const onlyProjectResponses = raw
       .filter(r => ids.has(r.questionId))
       .map(r => ({
@@ -327,4 +337,51 @@ export class ProjetComponent implements OnInit {
   }
 
   onFieldBlur(_index: number): void { }
+
+
+
+
+  private loadHistoryForThisStep(): void {
+    this.historyLoaded = false;
+
+    if (!this.dossierId) {
+      this.history = [];
+      this.historyLoaded = true;
+      return;
+    }
+    const stepId = 4;
+    console.log('[HIST] load for dossier', this.dossierId, 'step', stepId);
+
+    this.historyService
+      .byDossierAndStep(Number(this.dossierId), stepId)
+      .subscribe({
+        next: (items) => {
+          console.log('[HIST] items', items);
+          this.history = items ?? [];
+          this.historyLoaded = true;
+        },
+        error: (err) => {
+          console.error('[HIST] error', err); // regarde l’onglet Network si 401/403/404
+          this.history = [];
+          this.historyLoaded = true;
+        }
+      });
+  }
+
+
+  prettifyAction(a: string): string {
+    if (!a) return '';
+    const clean = a.toString().replace(/_/g, ' ').toLowerCase();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
+  openDeleteConfirm(h: StepHistory) { this.toDelete = h; this.confirmOpen = true; }
+  cancelDelete() { this.confirmOpen = false; this.toDelete = undefined; }
+  doDelete() {
+    if (!this.toDelete?.id) return;
+    this.historyService.delete(this.toDelete.id).subscribe({
+      next: () => { this.history = this.history.filter(x => x.id !== this.toDelete!.id); this.cancelDelete(); },
+      error: () => alert("Échec de suppression de l'historique.")
+    });
+  }
 }

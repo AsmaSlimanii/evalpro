@@ -4,6 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { FormService } from '../../../../../core/services/form.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { HistoryService, StepHistory } from '../../../../../core/services/HistoryService';
 
 @Component({
   selector: 'app-pilier-economique',
@@ -22,6 +23,16 @@ export class PilierEconomiqueComponent implements OnInit {
   fieldStates: { [key: number]: { touched: boolean } } = {};
   isAdmin = false;
 
+  history: StepHistory[] = [];
+  historyLoaded = false;
+  confirmOpen = false;
+  toDelete?: StepHistory;
+  
+
+
+  trackByHistory = (_: number, h: StepHistory) => h.id ?? _;
+
+
   readonly step = 'auto-evaluation';
   readonly pillar = 'ECONOMIQUE';
   readonly stepId = 3;
@@ -33,11 +44,13 @@ export class PilierEconomiqueComponent implements OnInit {
     private formService: FormService,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private historyService: HistoryService
   ) { }
 
   ngOnInit(): void {
     this.setupRouteListener();
+   
 
     const routeParams = this.route.snapshot.params;
     this.dossierId = routeParams['id'] || localStorage.getItem('dossierId');
@@ -46,6 +59,7 @@ export class PilierEconomiqueComponent implements OnInit {
     this.isAdmin = this.authService.isAdmin(); // 👈 Détermine si l'utilisateur est admin
     this.initForm();
     this.loadForm();
+     this.loadHistoryForThisStep();   // <-- refresh de la timeline
   }
 
 
@@ -91,6 +105,7 @@ export class PilierEconomiqueComponent implements OnInit {
   }
 
   private loadForm(): void {
+    this.loadHistoryForThisStep();   // <-- refresh de la timeline
     this.isLoading = true;
 
     const handleForm = (form: any) => {
@@ -289,6 +304,8 @@ export class PilierEconomiqueComponent implements OnInit {
     const dossierIdToSend: number | null = this.dossierId ? Number(this.dossierId) : null;
 
     const onSuccess = (res: any): void => {
+      this.loadHistoryForThisStep();   // <-- refresh de la timeline
+
       const dossierId = res.dossierId || dossierIdToSend;
 
       if (dossierId) {
@@ -348,6 +365,48 @@ export class PilierEconomiqueComponent implements OnInit {
       const el = document.querySelector('.ng-invalid');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
+  }
+  private loadHistoryForThisStep(): void {
+    this.historyLoaded = false;
+
+    if (!this.dossierId) {
+      this.history = [];
+      this.historyLoaded = true;
+      return;
+    }
+    const stepId = 3;
+    console.log('[HIST] load for dossier', this.dossierId, 'step', stepId);
+
+    this.historyService
+      .byDossierAndStep(Number(this.dossierId), stepId)
+      .subscribe({
+        next: (items) => {
+          console.log('[HIST] items', items);
+          this.history = items ?? [];
+          this.historyLoaded = true;
+        },
+        error: (err) => {
+          console.error('[HIST] error', err); // regarde l’onglet Network si 401/403/404
+          this.history = [];
+          this.historyLoaded = true;
+        }
+      });
+  }
+
+  prettifyAction(a: string): string {
+    if (!a) return '';
+    const clean = a.toString().replace(/_/g, ' ').toLowerCase();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
+  openDeleteConfirm(h: StepHistory) { this.toDelete = h; this.confirmOpen = true; }
+  cancelDelete() { this.confirmOpen = false; this.toDelete = undefined; }
+  doDelete() {
+    if (!this.toDelete?.id) return;
+    this.historyService.delete(this.toDelete.id).subscribe({
+      next: () => { this.history = this.history.filter(x => x.id !== this.toDelete!.id); this.cancelDelete(); },
+      error: () => alert("Échec de suppression de l'historique.")
+    });
   }
 
 }

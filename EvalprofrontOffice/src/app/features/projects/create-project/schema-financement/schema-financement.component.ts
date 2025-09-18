@@ -5,6 +5,7 @@ import { NgIfContext } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { FormService } from '../../../../core/services/form.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { HistoryService, StepHistory } from '../../../../core/services/HistoryService';
 
 type Cat = 'immobilier' | 'mobilier' | 'services' | 'fonds';
 type SubImm = 'construction' | 'amenagement' | 'genieCivil';
@@ -37,6 +38,8 @@ export class SchemaFinancementComponent implements OnInit {
   isEditMode = false;
   projectName = '';
   isAdmin = false;
+
+
 
   readonly stepKey = 'schema-financement';
   readonly stepId = 5;
@@ -109,12 +112,19 @@ export class SchemaFinancementComponent implements OnInit {
     adapt: 0
   };
 
+  history: StepHistory[] = [];
+  historyLoaded = false;
+  confirmOpen = false;
+  toDelete?: StepHistory;
+
+  trackByHistory = (_: number, h: StepHistory) => h.id ?? _;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private formService: FormService,
     private fb: FormBuilder,
-    private auth: AuthService
+    private auth: AuthService,
+    private historyService: HistoryService
   ) { }
 
   ngOnInit(): void {
@@ -124,6 +134,7 @@ export class SchemaFinancementComponent implements OnInit {
 
     this.initForm();
     this.loadForm();
+    this.loadHistoryForThisStep();
   }
 
   private initForm(): void {
@@ -140,6 +151,7 @@ export class SchemaFinancementComponent implements OnInit {
   }
 
   private loadForm(): void {
+    this.loadHistoryForThisStep();
     this.isLoading = true;
 
     const dossierIdNum = Number(this.dossierId);
@@ -412,6 +424,7 @@ export class SchemaFinancementComponent implements OnInit {
     if (this.isAdmin) payload.comment = this.formGroup.get('comment')?.value || '';
 
     const onSuccess = (res: any) => {
+      this.loadHistoryForThisStep();
       const id = res?.dossierId || dossierIdToSend;
       if (id) {
         localStorage.setItem('dossierId', String(id));
@@ -445,6 +458,54 @@ export class SchemaFinancementComponent implements OnInit {
     if (prev < 5) localStorage.setItem('completedStep', '5');
     this.router.navigate(['/projects/edit', this.dossierId], {
       state: { successMessage: 'Étape 5 terminée avec succès !', completedStep: 5 }
+    });
+  }
+
+
+
+
+
+  private loadHistoryForThisStep(): void {
+    this.historyLoaded = false;
+
+    if (!this.dossierId) {
+      this.history = [];
+      this.historyLoaded = true;
+      return;
+    }
+    const stepId = 5;
+    console.log('[HIST] load for dossier', this.dossierId, 'step', stepId);
+
+    this.historyService
+      .byDossierAndStep(Number(this.dossierId), stepId)
+      .subscribe({
+        next: (items) => {
+          console.log('[HIST] items', items);
+          this.history = items ?? [];
+          this.historyLoaded = true;
+        },
+        error: (err) => {
+          console.error('[HIST] error', err); // regarde l’onglet Network si 401/403/404
+          this.history = [];
+          this.historyLoaded = true;
+        }
+      });
+  }
+
+
+  prettifyAction(a: string): string {
+    if (!a) return '';
+    const clean = a.toString().replace(/_/g, ' ').toLowerCase();
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+
+  openDeleteConfirm(h: StepHistory) { this.toDelete = h; this.confirmOpen = true; }
+  cancelDelete() { this.confirmOpen = false; this.toDelete = undefined; }
+  doDelete() {
+    if (!this.toDelete?.id) return;
+    this.historyService.delete(this.toDelete.id).subscribe({
+      next: () => { this.history = this.history.filter(x => x.id !== this.toDelete!.id); this.cancelDelete(); },
+      error: () => alert("Échec de suppression de l'historique.")
     });
   }
 }
