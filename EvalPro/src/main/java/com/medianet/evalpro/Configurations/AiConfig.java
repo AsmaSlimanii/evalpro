@@ -20,6 +20,23 @@ import java.time.Duration;
 @Slf4j
 @Configuration
 public class AiConfig {
+    // ---- REGEX SÛRES (précompilées) ----
+    private static final java.util.regex.Pattern SPLIT_LINES =
+            java.util.regex.Pattern.compile("\\R+");                // split lignes
+
+    private static final java.util.regex.Pattern CSV_SPLIT =
+            java.util.regex.Pattern.compile("\\s*,\\s*");           // "a, b ,c"
+
+    private static final java.util.regex.Pattern HEADER_LINE =
+            // on évite .* ... .* -> on passe à .find() avec une liste bornée de mots-clés
+            java.util.regex.Pattern.compile("(?i)\\b(nom|sdu|projet|titre|budget|cat(?:é|e)gorie|description)\\b");
+
+    private static final java.util.regex.Pattern CLEAN_TOKENS =
+            // remplace un préfixe 'nom:' / 'budget - ' / 'catégorie :' / 'description - ' etc.
+            java.util.regex.Pattern.compile("(?i)^(?:nom|sdu|projet|titre|budget|cat(?:é|e)gorie|description)\\s*[:\\-–]?\\s*");
+
+    private static final int MAX_TEXT = 5000; // borne anti-DoS
+
 
     /** Log non sensible : méthode, URL, en-têtes (sans Authorization) */
     private static ExchangeFilterFunction logFilter() {
@@ -48,7 +65,10 @@ public class AiConfig {
         // 1) Normaliser baseUrl et garantir .../v1
         String base = (p.getBaseUrl() == null ? "" : p.getBaseUrl().trim());
         if (base.isEmpty()) base = "https://api.openai.com/v1";
-        base = base.replaceAll("/+$", ""); // supprime les / finaux
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        // supprime les / finaux
         if (!base.endsWith("/v1")) base = base + "/v1";
 
         // 2) Clé API obligatoire + sanitization
