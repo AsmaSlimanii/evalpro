@@ -47,16 +47,16 @@ public class User implements UserDetails {
     private LocalDateTime resetTokenExpiry;
     @JsonProperty("role")
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING)   
     @Builder.Default
-    private Role role = Role.CLIENT; // Valeur par défaut
+    private Role role = Role.CLIENT;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference //pour éviter les boucles infinies :
     // Le champ dossiers sera bien présent en base de données,Mais il ne sera pas visible dans la réponse JSON envoyée à Postman ou Angular lors d’un GET.
     private List<Dossier> dossiers;
 
-
+// les relation biderectionnel much unidirectioonel  ( diagramme unidirectionnel
     @JsonProperty("fullName")
     @Transient
     public String getFullName() {

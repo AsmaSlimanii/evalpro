@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,8 +17,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -25,10 +27,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
+    /**
+     * On lit la valeur de spring.security.oauth2.resourceserver.jwt.issuer-uri (Keycloak)
+     * pour reconnaître les tokens Keycloak et les laisser au Resource Server.
+     */
+    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}")
+    private String keycloakIssuerUri;
+
     public JwtAuthenticationFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
-
     }
 
     @Override
@@ -39,33 +47,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = parseJwt(request);
 
-            if (jwt != null && jwtUtil.validateToken(jwt) &&
-                    SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Rien à faire si déjà authentifié (par ex. par le Resource Server)
+            if (SecurityContextHolder.getContext().getAuthentication() != null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-                // 1) Email depuis le token
-                String email = jwtUtil.extractEmail(jwt);
+            if (jwt != null) {
+                // 1) Si c'est un token Keycloak -> on laisse passer (handled par Resource Server OAuth2)
+                if (isKeycloakToken(jwt)) {
+                    // Ne pas authentifier ici : BearerTokenAuthenticationFilter s'en charge
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
-                // 2) Charge l'utilisateur depuis la BDD (source de vérité)
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                // 2) Sinon, on traite ton JWT "maison"
+                if (jwtUtil.validateToken(jwt)) {
+                    String email = jwtUtil.extractEmail(jwt);
 
-                // ⚠️ IMPORTANT : s’assurer que CustomUserDetailsService renvoie bien des autorités
-                // préfixées ROLE_ (ex: ROLE_CLIENT, ROLE_ADMIN). Si besoin, recrée-les ici :
-                List<SimpleGrantedAuthority> authorities = userDetails.getAuthorities().stream()
-                        .map(a -> {
-                            String name = a.getAuthority();
-                            return name.startsWith("ROLE_")
-                                    ? new SimpleGrantedAuthority(name)
-                                    : new SimpleGrantedAuthority("ROLE_" + name);
-                        })
-                        .toList();
+                    // Charge l'utilisateur depuis la BDD
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    // S'assure que les autorités sont préfixées "ROLE_"
+                    List<SimpleGrantedAuthority> authorities = userDetails.getAuthorities().stream()
+                            .map(a -> {
+                                String name = a.getAuthority();
+                                return name.startsWith("ROLE_")
+                                        ? new SimpleGrantedAuthority(name)
+                                        : new SimpleGrantedAuthority("ROLE_" + name);
+                            })
+                            .toList();
 
-                System.out.println("✅ Utilisateur authentifié : " + email);
-                System.out.println("🛡️ Autorités effectives : " + authorities);
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+
+                    System.out.println("✅ Utilisateur authentifié (JWT maison) : " + email);
+                    System.out.println("🛡️ Autorités effectives : " + authorities);
+                }
             }
         } catch (Exception e) {
             System.err.println("❌ JwtAuthenticationFilter error: " + e.getMessage());
@@ -80,5 +100,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return headerAuth.substring(7);
         }
         return null;
+    }
+
+    /**
+     * Détection simple d’un token Keycloak via le claim "iss" du payload JWT.
+     * On évite un parsing JSON complet : un check texte suffit ici.
+     */
+    private boolean isKeycloakToken(String token) {
+        if (!StringUtils.hasText(keycloakIssuerUri)) return false;
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) return false;
+
+            // Decode payload (base64url)
+            byte[] decoded = Base64.getUrlDecoder().decode(parts[1]);
+            String payloadJson = new String(decoded, StandardCharsets.UTF_8);
+
+            // Keycloak met exactement issuer = issuer-uri
+            // On tolère guillemets ou espaces éventuels
+            return payloadJson.contains("\"iss\":\"" + keycloakIssuerUri + "\"")
+                    || payloadJson.contains("\"iss\": \"" + keycloakIssuerUri + "\"");
+        } catch (IllegalArgumentException e) {
+            // Token mal formé
+            return false;
+        }
     }
 }
