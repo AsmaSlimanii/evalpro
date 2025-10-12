@@ -19,3 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 }
 
+
+//But général de UserRepository
+//
+//Fournir un accès standardisé et performant aux utilisateurs(CRUD, recherche, pagination) via Spring Data JPA.

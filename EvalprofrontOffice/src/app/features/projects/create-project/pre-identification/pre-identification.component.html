@@ -1,12 +1,13 @@
 <div class="form-container">
-
+  <!-- Formulaire réactif lié à formGroup ; on affiche seulement quand les données sont chargées -->
   <form [formGroup]="formGroup" (ngSubmit)="submit()" *ngIf="!isLoading">
     <div class="form-header">
 
-
+      <!-- Titre du formulaire + icône d’avertissement si invalid/touché -->
       <h2 class="form-title">
         <span [class.invalid-title]="formGroup.invalid && formGroup.touched">
           {{ formMetadata?.title }}
+          <!-- Icône attention si le form est invalide et a déjà été touché -->
           <svg *ngIf="formGroup.invalid && formGroup.touched" class="warning-icon" xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd"
@@ -16,18 +17,20 @@
         </span>
       </h2>
 
-
+      <!-- Sous-titre/consigne -->
       <div class="form-subtitle-box">
         Merci de renseigner les informations de votre projet en remplissant les champs suivants.
       </div>
     </div>
-
+    <!-- Conteneur des réponses : chaque entrée du FormArray "responses" correspond à une question -->
     <div formArrayName="responses">
+      <!-- Boucle sur les questions ; i = index synchronisé avec l’index des controls du FormArray -->
       <ng-container *ngFor="let q of questions; let i = index">
+        <!-- On n’affiche pas les questions masquées (logique conditionnelle) -->
         <div *ngIf="!q.isHidden" [formGroupName]="i" class="form-section">
 
 
-          <!-- Label de la question -->
+          <!-- Label/intitulé de la question + astérisque si required + icône d’erreur si invalide -->
           <label class="label" [class.invalid-label]="showError(i)">
             {{ q.text }}
             <span *ngIf="q.isRequired" class="required-asterisk">*</span>
@@ -45,6 +48,7 @@
               <input class="input" formControlName="value" type="text"
                 [placeholder]="q.placeholder || 'Saisissez votre réponse'" [readonly]="isAdmin" [disabled]="isAdmin"
                 [class.invalid]="!isAdmin && showError(i)" />
+              <!-- Icône d’erreur intégrée à l’input -->
               <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                 fill="currentColor">
                 <path fill-rule="evenodd"
@@ -52,6 +56,7 @@
                   clip-rule="evenodd" />
               </svg>
             </div>
+            <!-- Message d’erreur (required, etc.) -->
             <div class="error-text" *ngIf="showError(i)">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
@@ -69,6 +74,7 @@
               <input class="input" formControlName="value" type="number"
                 [placeholder]="q.placeholder || 'Saisissez un nombre'" [readonly]="isAdmin" [disabled]="isAdmin"
                 [class.invalid]="!isAdmin && showError(i)" />
+              <!-- Icône d’erreur -->
               <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                 fill="currentColor">
                 <path fill-rule="evenodd"
@@ -76,6 +82,7 @@
                   clip-rule="evenodd" />
               </svg>
             </div>
+            <!-- Message d’erreur spécifique au numérique -->
             <div class="error-text" *ngIf="showError(i)">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
@@ -120,7 +127,7 @@
                 <option value="" disabled selected>Veuillez sélectionner une option</option>
                 <option *ngFor="let opt of q.options" [value]="opt.id">{{ opt.value }}</option>
               </select>
-
+              <!-- Icône d’erreur -->
               <svg *ngIf="showError(i)" class="input-error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                 fill="currentColor">
                 <path fill-rule="evenodd"
@@ -128,6 +135,8 @@
                   clip-rule="evenodd" />
               </svg>
             </div>
+            <!-- Message d’erreur spécifique au select -->
+
             <div class="error-text" *ngIf="showError(i)">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd"
@@ -142,6 +151,7 @@
         </div>
       </ng-container>
     </div>
+       <!-- Zone commentaire visible pour l’admin (champ 'comment' du formGroup) -->
 
     <div class="input-container mt-5" *ngIf="isAdmin">
       <label class="label">Commentaire de l’administrateur</label>
@@ -209,7 +219,7 @@
 
 
 
-    
+
 
 
     <div class="form-actions">

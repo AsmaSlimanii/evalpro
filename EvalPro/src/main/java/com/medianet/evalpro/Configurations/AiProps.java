@@ -6,15 +6,22 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+
+
+/**
+ * AiProps:
+ * Objet de configuration pour centraliser les paramètres IA.
+ * Les valeurs sont injectées depuis application.properties via le préfixe "ai".
+ */
 @Data
-@Component                               // makes it a Spring bean
-@ConfigurationProperties(prefix = "ai")  // binds ai.* from application.properties
+@Component // Enregistre ce POJO comme bean Spring (disponible à l'injection)
+@ConfigurationProperties(prefix = "ai") // Lie les clés "ai.*" aux champs ci-dessous
 public class AiProps {
+    @NotBlank // Validation : doit être non vide au démarrage, sinon erreur
+    private String baseUrl;  // URL de base de l’API IA (ex: https://api.openai.com/v1)
     @NotBlank
-    private String baseUrl;
+    private String apiKey; // Clé API lue depuis l'env (ex: OPENAI_API_KEY), jamais commitée
     @NotBlank
-    private String apiKey;
-    @NotBlank
-    private String model;
+    private String model; // Nom du modèle IA utilisé par les requêtes (chat/completions, etc.)
 }
 

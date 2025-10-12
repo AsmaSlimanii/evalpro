@@ -23,9 +23,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-@Service
-@Transactional
-public class ResponseServiceImpl implements ResponseService {
+@Service // Déclare la classe comme service Spring (disponible à l’injection)
+@Transactional // Toutes les méthodes publiques s’exécutent dans une transaction
+public class ResponseServiceImpl implements ResponseService {  // Implémente l’interface métier ResponseService
 
 
     @Autowired
@@ -118,6 +118,9 @@ public class ResponseServiceImpl implements ResponseService {
 //Enregistre la pillar si présent
 //
 //(optionnel) Gère le champ UPLOAD pour les fichiers
+
+
+    // --- Service d’enregistrement d’un lot de réponses liées à un dossier/étape (avec gestion pilier & doublons) ---
     @Override
     public void saveStepResponses(ResponseRequestDTO dto, String userEmail) {
 
@@ -130,12 +133,12 @@ public class ResponseServiceImpl implements ResponseService {
             System.out.println("⚠️ Aucune réponse reçue dans le payload.");
             return;
         }
-        if (dto.getFormId() == null) {
+        if (dto.getFormId() == null) { // formId obligatoire
             throw new RuntimeException("❌ formId manquant dans le payload.");
         }
-        // ✅✅ AJOUTE CETTE VÉRIFICATION ICI
-        for (SingleResponseDTO r : dto.getResponses()) {
-            if (r.getQuestionId() == null) {
+        // ✅ Validation des identifiants de question/option
+        for (SingleResponseDTO r : dto.getResponses()) { // Si options présentes
+            if (r.getQuestionId() == null) { // questionId obligatoire
                 throw new RuntimeException("❌ questionId est null dans une des réponses !");
             }
 
@@ -148,10 +151,11 @@ public class ResponseServiceImpl implements ResponseService {
             }
         }
 
-
+        // Récupère l’utilisateur par email
         User user = userRepository.findByEmail(userEmail).orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+        // Récupère le dossier + son owner
         Dossier dossier = dossierRepository.findByIdWithUser(dto.getDossierId()).orElseThrow(() -> new RuntimeException("Dossier introuvable"));
-
+        // Récupère l’étape
         Step step = stepRepository.findById(dto.getStepId()).orElseThrow(() -> new RuntimeException("Étape introuvable"));
         System.out.println("✅✅ Réponses enregistrées pour le dossier ID = " + dossier.getId());
 
@@ -183,12 +187,12 @@ public class ResponseServiceImpl implements ResponseService {
         String pillar = dto.getPillar() == null ? null : dto.getPillar().trim().toUpperCase();
 
         if (pillar != null && !pillar.isBlank()) {
-            // ✅ NE SUPPRIME QUE CE PILIER POUR CE STEP
+            // Supprime uniquement les réponses de CE pilier pour ce form/dossier/step
             responseRepository.deleteByFormIdAndDossierIdAndStepIdAndPillarIgnoreCase(
                     dto.getFormId(), dossier.getId(), step.getId(), pillar
             );
         } else {
-            // fallback si jamais aucun pilier n'est envoyé
+            // Sinon supprime au scope (form + dossier + step) sans pilier
             responseRepository.deleteByFormIdAndDossierIdAndStepId(
                     dto.getFormId(), dossier.getId(), dto.getStepId()
             );
@@ -199,29 +203,29 @@ public class ResponseServiceImpl implements ResponseService {
 
 
 
-        for (SingleResponseDTO r : dto.getResponses()) {
+        for (SingleResponseDTO r : dto.getResponses()) {  // Parcours les réponses envoyées
             System.out.println("🟡 Traitement de la question ID = " + r.getQuestionId());
 
-            Question question = questionRepository.findById(r.getQuestionId()).orElseThrow(() ->
+            Question question = questionRepository.findById(r.getQuestionId()).orElseThrow(() -> // Charge la question
                     new RuntimeException("Question introuvable ID=" + r.getQuestionId()));
 
             // ✅ Réponse à choix multiple
-            if (r.getOptionIds() != null && !r.getOptionIds().isEmpty()) {
-                for (Long optId : r.getOptionIds()) {
-                    Option opt = optionRepository.findById(optId).orElse(null);
+            if (r.getOptionIds() != null && !r.getOptionIds().isEmpty()) {  // Si au moins une option choisie
+                for (Long optId : r.getOptionIds()) { // Pour chaque option cochée
+                    Option opt = optionRepository.findById(optId).orElse(null); // Charge l’option (tolère null)
                     if (opt != null) {
-                        Response response = Response.builder()
+                        Response response = Response.builder()  // Construit une entité Response
                                 .user(user)
-                                .form(Form.builder().id(dto.getFormId()).build())
-                                .dossier(dossier)
+                                .form(Form.builder().id(dto.getFormId()).build()) // Référence formulaire par ID
+                                .dossier(dossier) // Dossier concerné
                                 .step(step)
                                 .question(question)
                                 .option(opt)
-                                .value(null)
-                                .isValid(false)
-                                .pillar(pillar) // ✅
+                                .value(null) // Pas de valeur texte pour un choix
+                                .isValid(false) // Marque non validé (workflow ultérieur)
+                                .pillar(pillar) // Pilier (peut être null)
                                 .build();
-                        responseRepository.save(response);
+                        responseRepository.save(response);  // Persiste la réponse
                         System.out.println("✅ Réponse multiple enregistrée : questionId=" + r.getQuestionId() + " | optionId=" + optId);
                     } else {
                         System.out.println("⚠️ Option introuvable ID=" + optId);
@@ -229,13 +233,13 @@ public class ResponseServiceImpl implements ResponseService {
                 }
             }
 
-            // ✅ Réponse texte/numérique
-            if ((r.getValue() != null && !r.getValue().isBlank()) ||
-                    ("UPLOAD".equalsIgnoreCase(question.getType().name()) && r.getValue() != null)) {
+            // ✅ Réponse texte/numérique (ou UPLOAD avec value=URL)
+            if ((r.getValue() != null && !r.getValue().isBlank()) || // Si valeur texte/numérique présente
+                    ("UPLOAD".equalsIgnoreCase(question.getType().name()) && r.getValue() != null)) { // Ou type UPLOAD avec valeur (URL)
                 Response response = Response.builder()
                         .user(user)
                         .form(Form.builder().id(dto.getFormId()).build())
-                        .dossier(dossier)
+                        .dossier(dossier)  // Dossier
                         .step(step)
                         .question(question)
                         .value(r.getValue())
@@ -248,8 +252,9 @@ public class ResponseServiceImpl implements ResponseService {
             }
         }
         // 💬 Enregistrement du commentaire admin si fourni
-        if (dto.getComment() != null && !dto.getComment().isBlank()) {
-            saveAdminComment(dossier.getId(), step.getId(), dto.getComment(), userEmail);
+        if (dto.getComment() != null && !dto.getComment().isBlank()) { // S’il y a un commentaire
+
+            saveAdminComment(dossier.getId(), step.getId(), dto.getComment(), userEmail); // Enregistre
         }
 
         System.out.println("✅✅ Toutes les réponses ont été enregistrées.");
@@ -279,50 +284,48 @@ public class ResponseServiceImpl implements ResponseService {
     //
     //Si texte/numérique, attribue un score
     @Override
-    public Map<String, Object> calculatePillarScores(Long dossierId) {
-        List<Response> responses = responseRepository.findByDossierId(dossierId);
+    public Map<String, Object> calculatePillarScores(Long dossierId) { // Calcule scores par pilier
+        List<Response> responses = responseRepository.findByDossierId(dossierId); // Toutes réponses du dossier
 
-        Map<String, Integer> scoreMap = new HashMap<>();
+        Map<String, Integer> scoreMap = new HashMap<>(); // Somme des scores par pilier
         Map<String, Integer> maxScoreMap = new HashMap<>();
         Map<String, Object> result = new HashMap<>();
 
-        for (Response r : responses) {
-            String pillar = r.getPillar();
-            if (pillar == null) continue;
+        for (Response r : responses) { // Parcourt les réponses
+            String pillar = r.getPillar(); // Récupère le pilier
+            if (pillar == null) continue; // Ignore si non renseigné
 
-            int score = 0;
+            int score = 0; // Score par défaut
 
-            if (r.getOption() != null && r.getOption().getScore() != null) {
+            if (r.getOption() != null && r.getOption().getScore() != null) { // Si réponse par option scorée
                 // Cas des options (RADIO, CHOIXMULTIPLE...)
-                score = r.getOption().getScore();
-            }else if (r.getQuestion() != null && r.getValue() != null && !r.getValue().isEmpty()) {
+                score = r.getOption().getScore(); // Utilise score de l’option
+            }else if (r.getQuestion() != null && r.getValue() != null && !r.getValue().isEmpty()) { // Sinon, si valeur texte/numérique
                 String type = r.getQuestion().getType().name();
 
-                if ("TEXTE".equalsIgnoreCase(type)) {
+                if ("TEXTE".equalsIgnoreCase(type)) { // Texte => +1
                     score = 1;
-                } else if ("NUMERIQUE".equalsIgnoreCase(type)) {
+                } else if ("NUMERIQUE".equalsIgnoreCase(type)) {  // Numérique => valeur entière
                     try {
-                        score = Integer.parseInt(r.getValue());
+                        score = Integer.parseInt(r.getValue()); // Parse int
                     } catch (NumberFormatException e) {
-                        score = 0;
+                        score = 0;// Valeur invalide => 0
                     }
                 }
             }
 
 
-            scoreMap.merge(pillar, score, Integer::sum);
-
-            // TODO : à améliorer avec vrai max dynamique plus tard
-            maxScoreMap.put(pillar, 15);
+            scoreMap.merge(pillar, score, Integer::sum); // Ajoute au cumul du pilier
+            maxScoreMap.put(pillar, 15); // Max fixe par pilier (à rendre dynamique plus tard)
         }
 
-        // ⚠️ Tu avais oublié cette partie ! Elle remplit le `result`
-        for (String p : scoreMap.keySet()) {
-            Map<String, Integer> pData = new HashMap<>();
-            pData.put("score", scoreMap.get(p));
+        // Construit la map résultat {pilier: {score, max, threshold}}
+        for (String p : scoreMap.keySet()) { // Pour chaque pilier scoré
+            Map<String, Integer> pData = new HashMap<>(); // Données du pilier
+            pData.put("score", scoreMap.get(p)); // Score cumulé
             pData.put("max", maxScoreMap.getOrDefault(p, 15));
             pData.put("threshold", 9); // seuil fixe (à adapter si nécessaire)
-            result.put(p.toLowerCase(), pData);
+            result.put(p.toLowerCase(), pData);  // Clé en minuscule (uniformisation)
         }
 
         return result;
@@ -339,9 +342,9 @@ public class ResponseServiceImpl implements ResponseService {
     //Enregistre un objet ResponseAdmin avec le commentaire
     @Override
     public void saveAdminComment(Long dossierId, Long stepId, String comment, String adminEmail) {
-        final String trimmed = (comment == null) ? "" : comment.trim();  // <-- ajoute cette ligne
+        final String trimmed = (comment == null) ? "" : comment.trim();  // Normalise le texte (évite espaces seuls)
 
-        User admin = userRepository.findByEmail(adminEmail)
+        User admin = userRepository.findByEmail(adminEmail) // Récupère l’utilisateur
                 .orElseThrow(() -> new RuntimeException("Admin introuvable"));
 
         if (admin.getRole() != User.Role.ADMIN) {

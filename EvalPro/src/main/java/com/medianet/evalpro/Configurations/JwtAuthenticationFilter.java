@@ -22,32 +22,45 @@ import java.util.Base64;
 import java.util.List;
 
 @Component
+
+/**
+ * JwtAuthenticationFilter:
+ * Objet Assurer l’authentification Spring Security à partir d’un JWT :
+ * déléguer aux filtres OAuth2 si le token vient de Keycloak, sinon valider le JWT “maison”,
+ * charger l’utilisateur et déposer l’Authentication dans le SecurityContext.
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
-    /**
-     * On lit la valeur de spring.security.oauth2.resourceserver.jwt.issuer-uri (Keycloak)
-     * pour reconnaître les tokens Keycloak et les laisser au Resource Server.
-     */
+    //permet d’identifier les tokens émis par Keycloak (Resource Server OAuth2 actif)
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri:}")
     private String keycloakIssuerUri;
-
+    //JwtAuthenticationFilter : Filtre Spring Security (JWT).
     public JwtAuthenticationFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Chaîne de filtrage principale :
+     * - Récupère le Bearer token
+     * - Si déjà authentifié => laisse passer
+     * - Si token Keycloak => laisse le Resource Server gérer
+     * - Sinon, traite le JWT "maison": valide, extrait email, charge UserDetails, pose Authentication dans le SecurityContext
+     */
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
+    //doFilterInternal: Point d’entrée du filtre par requête.
+    protected void doFilterInternal(HttpServletRequest request,//HttpServletRequest:  Représente la requête HTTP côté serveur (Java).
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
         try {
-            String jwt = parseJwt(request);
+            String jwt = parseJwt(request); // lit l’en-tête Authorization: Bearer XXX
 
-            // Rien à faire si déjà authentifié (par ex. par le Resource Server)
+            // Si une auth existe déjà (ex: Resource Server a déjà authentifié), ne rien refaire
             if (SecurityContextHolder.getContext().getAuthentication() != null) {
                 filterChain.doFilter(request, response);
                 return;
@@ -77,7 +90,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                         : new SimpleGrantedAuthority("ROLE_" + name);
                             })
                             .toList();
-
+                    // Construit l’Authentication et l’injecte dans le contexte
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -88,12 +101,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
+            // On journalise sans divulguer de détails sensibles
             System.err.println("❌ JwtAuthenticationFilter error: " + e.getMessage());
         }
-
+        // Poursuit la chaîne de filtres quoi qu’il arrive
         filterChain.doFilter(request, response);
     }
 
+    /** Extrait le token Bearer depuis l’en-tête Authorization */
     private String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
@@ -101,11 +116,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
-
     /**
-     * Détection simple d’un token Keycloak via le claim "iss" du payload JWT.
-     * On évite un parsing JSON complet : un check texte suffit ici.
+     * Heuristique simple pour détecter un token Keycloak:
+     * - Décoder la partie payload (Base64URL) du JWT
+     * - Vérifier si "iss" (issuer) == issuer-uri configuré
+     * Si oui: on considère que le Resource Server OAuth2 gère l’auth.
      */
+
     private boolean isKeycloakToken(String token) {
         if (!StringUtils.hasText(keycloakIssuerUri)) return false;
         try {

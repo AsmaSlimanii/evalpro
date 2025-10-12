@@ -34,3 +34,7 @@ public class QuestionMapper {
     }
 }
 
+//But général de QuestionMapper
+//
+//Transformer une entité métier Question (et ses Option) en objets de transfert QuestionDTO
+// / OptionDTO prêts pour l’API.

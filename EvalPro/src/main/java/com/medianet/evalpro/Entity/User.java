@@ -16,7 +16,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "user")
-@Data
+@Data     // Lombok : génère automatiquement getters/setters
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
