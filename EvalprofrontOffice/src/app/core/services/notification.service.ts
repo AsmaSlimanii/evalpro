@@ -5,6 +5,8 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+
 export type NotificationType =
   | 'STEP_COMMENT'
   | 'DOSSIER_ACCEPTED'
@@ -18,7 +20,7 @@ export interface NotificationDto {
   message: string;
   type: NotificationType;
   link?: string | null;
-  createdAt: string;       // string OK (ISO). Si tu préfères: Date.
+  createdAt: string;
   readFlag: boolean;
   dossierId?: number | null;
   stepId?: number | null;
@@ -26,7 +28,6 @@ export interface NotificationDto {
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-  // ⚠ Même pattern que DossierService
   private readonly baseUrl = 'http://localhost:8080';
   private readonly apiUrl = `${this.baseUrl}/api/notifications`;
 
@@ -39,7 +40,10 @@ export class NotificationService {
   private _localMessages = new BehaviorSubject<string[]>([]);
   readonly localMessages$ = this._localMessages.asObservable();
 
-  constructor(private http: HttpClient, private authService: AuthService) { }
+  private client?: Client;
+  private sub?: StompSubscription;
+
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   // ================== Public API ==================
 
@@ -102,12 +106,70 @@ export class NotificationService {
   }
 
   openAndRead(n: NotificationDto, routerNavigate: (url: string) => void): void {
-    if (n.link) {
-      routerNavigate(n.link);
-    }
-    if (!n.readFlag) {
-      this.markRead(n.id).subscribe();
-    }
+    if (n.link) routerNavigate(n.link);
+    if (!n.readFlag) this.markRead(n.id).subscribe();
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      tap(() => {
+        // ✅ calculer wasUnread AVANT de mettre à jour la liste
+        const before = this._items.value;
+        const wasUnread = before.find(x => x.id === id)?.readFlag === false;
+        const next = before.filter(x => x.id !== id);
+        this._items.next(next);
+        if (wasUnread) this._unread.next(Math.max(0, this._unread.value - 1));
+      }),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  deleteAll(): Observable<void> {
+    return this.http.delete<void>(this.apiUrl, { headers: this.getAuthHeaders() }).pipe(
+      tap(() => { this._items.next([]); this._unread.next(0); }),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  // ================== Realtime (STOMP) ==================
+
+  startRealtime(userId: number, token?: string) {
+    if (this.client?.active) return;
+
+    this.client = new Client({
+      brokerURL: 'ws://localhost:8080/ws',
+      reconnectDelay: 5000,
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+      debug: () => {}
+    });
+
+    this.client.onConnect = () => {
+      this.sub = this.client!.subscribe(`/topic/notifications.${userId}`, (msg: IMessage) => {
+        const n = JSON.parse(msg.body) as NotificationDto;
+
+        // ✅ anti-doublon + insertion en tête
+        const exists = this._items.value.some(x => x.id === n.id);
+        const next = exists
+          ? this._items.value.map(x => (x.id === n.id ? n : x))
+          : [n, ...this._items.value];
+        this._items.next(next);
+
+        if (!n.readFlag) this._unread.next(this._unread.value + 1);
+      });
+    };
+
+    this.client.onStompError = () => { /* fallback REST */ };
+    this.client.activate();
+  }
+
+  stopRealtime() {
+    this.sub?.unsubscribe();
+    this.sub = undefined;
+    // deactivate() est async ; on ne bloque pas l’app ici
+    this.client?.deactivate();
+    this.client = undefined;
   }
 
   // ================== Helpers ==================
@@ -124,15 +186,11 @@ export class NotificationService {
     this._unread.next(0);
     return of(0);
   }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
-    // ✅ déconnexion UNIQUEMENT si 401
-    if (error.status === 401) {
-      this.authService.logout();
-    }
+    if (error.status === 401) this.authService.logout();
     console.error('Erreur API Notifications :', error);
-    return throwError(() =>
-      new Error(error.error?.message || 'Une erreur serveur est survenue.')
-    );
+    return throwError(() => new Error(error.error?.message || 'Une erreur serveur est survenue.'));
   }
 
   private getAuthHeaders(): HttpHeaders {
@@ -141,34 +199,8 @@ export class NotificationService {
       throw new Error('Token JWT manquant ou invalide');
     }
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
   }
-
-
-  // notification.service.ts
-delete(id: number): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/${id}`, {
-    headers: this.getAuthHeaders()
-  }).pipe(
-    tap(() => {
-      // maj du cache local
-      this._items.next(this._items.value.filter(x => x.id !== id));
-      // si c'était non-lu, décrémenter
-      const wasUnread = this._items.value.find(x => x.id === id)?.readFlag === false;
-      if (wasUnread) this._unread.next(Math.max(0, this._unread.value - 1));
-    }),
-    catchError(this.handleError.bind(this))
-  );
-}
-
-deleteAll(): Observable<void> {
-  return this.http.delete<void>(this.apiUrl, { headers: this.getAuthHeaders() }).pipe(
-    tap(() => { this._items.next([]); this._unread.next(0); }),
-    catchError(this.handleError.bind(this))
-  );
-}
-
-
 }

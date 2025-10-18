@@ -99,6 +99,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/ai/**").permitAll()
                         // Historique
                         .requestMatchers(HttpMethod.GET, "/api/history/**").hasAnyRole("ADMIN","CLIENT")
+                        .requestMatchers("/ws/**").permitAll()
                         // Tout le reste → authentifié
                         .anyRequest().authenticated()
                 );

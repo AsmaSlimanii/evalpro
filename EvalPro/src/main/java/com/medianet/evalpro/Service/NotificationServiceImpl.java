@@ -1,10 +1,12 @@
     package com.medianet.evalpro.Service;
 
+    import com.medianet.evalpro.Dto.NotificationDTO;
     import com.medianet.evalpro.Entity.Dossier;
     import com.medianet.evalpro.Entity.Notification;
     import com.medianet.evalpro.Entity.Step;
     import com.medianet.evalpro.Repository.NotificationRepository;
     import lombok.RequiredArgsConstructor;
+    import org.springframework.messaging.simp.SimpMessagingTemplate;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +18,7 @@
     public class NotificationServiceImpl implements NotificationService {
 
         private final NotificationRepository repo;
-
+        private final SimpMessagingTemplate messaging;
         @Override
         public void notifyStepComment(Dossier dossier, Step step, String title, String message, String link) {
             if (dossier == null || dossier.getUser() == null) return;
@@ -32,6 +34,9 @@
                     .readFlag(false)
                     .createdAt(LocalDateTime.now())
                     .build();
+            // TOPIC par utilisateur -> pas besoin de Principal
+            var dto = NotificationDTO.from(n);
+            messaging.convertAndSend("/topic/notifications." + n.getUser().getId(), dto);
 
             repo.save(n);
         }
@@ -42,8 +47,7 @@
 
             String title =
                     (type == Notification.Type.DOSSIER_ACCEPTED) ? "Dossier accepté" :
-                            (type == Notification.Type.DOSSIER_REJECTED) ? "Dossier refusé" :
-                                    "Modifications requises";
+                            (type == Notification.Type.DOSSIER_REJECTED) ? "Dossier refusé" :  "Modifications requises";
 
             Notification n = Notification.builder()
                     .user(dossier.getUser())
@@ -55,7 +59,11 @@
                     .readFlag(false)
                     .createdAt(LocalDateTime.now())
                     .build();
+            var dto = NotificationDTO.from(n);
+            messaging.convertAndSend("/topic/notifications." + n.getUser().getId(), dto);
 
             repo.save(n);
         }
+
+
     }

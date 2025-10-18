@@ -1,33 +1,49 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
+
 import {
   NotificationService,
   NotificationDto,
   NotificationType
 } from '../../core/services/notification.service';
-import { Observable } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-notifications',
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss']
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent implements OnInit, OnDestroy {
 
   items$!: Observable<NotificationDto[]>;
   unread$!: Observable<number>;
   n: NotificationDto | null = null;
 
-
-  constructor(private notif: NotificationService, private router: Router) { }
+  constructor(
+    private notif: NotificationService,
+    private http: HttpClient,           // ✅ injecté
+    private authService: AuthService,   // ✅ injecté
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    // branche les streams du service (évite les field initializers)
+    // branche les streams du service
     this.items$ = this.notif.items$;
     this.unread$ = this.notif.unread$;
 
     // charge la liste + met à jour le compteur
     this.notif.load().subscribe();
+
+    this.http.get<{ id: number }>('http://localhost:8080/api/me').subscribe({
+      next: me => this.notif.startRealtime(me.id),
+      error: () => {} // fallback REST only
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.notif.stopRealtime();
   }
 
   refresh(): void {
@@ -64,9 +80,6 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-
-
-  // dans ta classe NotificationsComponent
   readonly STEP_NAMES: Readonly<Record<number, string>> = {
     1: 'Pré-identification',
     2: 'Identification',
@@ -85,8 +98,7 @@ export class NotificationsComponent implements OnInit {
     }
   }
 
-
-  // notifications.component.ts
+  // Confirm modals
   confirm = { open: false, item: null as NotificationDto | null };
 
   openConfirm(n: NotificationDto, ev?: MouseEvent) {
@@ -101,12 +113,13 @@ export class NotificationsComponent implements OnInit {
 
   deleteConfirmed() {
     const n = this.confirm.item;
-    if (!n) { return; }
+    if (!n) return;
     this.notif.delete(n.id).subscribe({
       next: () => this.closeConfirm(),
       error: () => this.closeConfirm()
     });
   }
+
   confirmAll = { open: false };
 
   openConfirmAll(ev?: MouseEvent) { ev?.stopPropagation(); this.confirmAll.open = true; }
@@ -118,8 +131,4 @@ export class NotificationsComponent implements OnInit {
       error: () => this.closeConfirmAll()
     });
   }
-
-
-  
-
 }
